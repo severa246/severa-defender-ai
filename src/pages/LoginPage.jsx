@@ -50,11 +50,12 @@ export default function LoginPage({ onLogin }) {
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
   const [errorAction, setErrorAction] = useState(null); // { type: 'switch_to_login' | 'switch_to_signup', email: '' }
-  const [loading, setLoading] = useState(false);
-
-  // OAuth Modal Prompt State
-  const [oauthModal, setOauthModal] = useState(null); // null | 'google' | 'github'
-  const [oauthEmailInput, setOauthEmailInput] = useState('');
+  // OTP Verification Modal State
+  const [otpModal, setOtpModal] = useState(null); // null | { email: '', name: '', userSession: {} }
+  const [otpCode, setOtpCode] = useState('');
+  const [otpError, setOtpError] = useState('');
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpResent, setOtpResent] = useState(false);
 
   function setField(key, val) {
     setForm((f) => ({ ...f, [key]: val }));
@@ -86,7 +87,11 @@ export default function LoginPage({ onLogin }) {
       try {
         const userSession = await authService.signup({ name, email: normEmail, password: form.password });
         setLoading(false);
-        onLogin(userSession);
+        // Show 6-digit OTP Modal
+        setOtpCode('');
+        setOtpError('');
+        setOtpResent(false);
+        setOtpModal({ email: normEmail, name, userSession });
       } catch (err) {
         setLoading(false);
         setError(err.message || 'Signup failed.');
@@ -174,6 +179,48 @@ export default function LoginPage({ onLogin }) {
       isNewUser: false,
       authProvider: provider
     });
+  }
+
+  async function handleOtpVerify(e) {
+    if (e) e.preventDefault();
+    setOtpError('');
+    if (!otpCode || otpCode.trim().length < 6) {
+      setOtpError('Please enter the full 6-digit verification code.');
+      return;
+    }
+
+    setOtpLoading(true);
+    try {
+      const verifiedSession = await authService.verifyOtp({
+        email: otpModal.email,
+        token: otpCode
+      });
+      setOtpLoading(false);
+      setOtpModal(null);
+      onLogin(verifiedSession);
+    } catch (err) {
+      setOtpLoading(false);
+      setOtpError(err.message || 'Verification failed. Please check the code.');
+    }
+  }
+
+  async function handleResendOtp() {
+    setOtpError('');
+    setOtpResent(false);
+    try {
+      await authService.resendOtp({ email: otpModal.email });
+      setOtpResent(true);
+    } catch (err) {
+      setOtpError(err.message || 'Failed to resend verification code.');
+    }
+  }
+
+  function handleSkipOtp() {
+    if (otpModal?.userSession) {
+      const session = otpModal.userSession;
+      setOtpModal(null);
+      onLogin(session);
+    }
   }
 
   return (
@@ -595,6 +642,107 @@ export default function LoginPage({ onLogin }) {
                 <ArrowRight size={14} />
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── 6-Digit OTP Code Verification Modal ── */}
+      {otpModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
+          <div className="bg-[#121826] border border-emerald-500/30 text-white rounded-2xl w-full max-w-md p-7 shadow-2xl space-y-5 relative font-sans">
+            <button
+              onClick={() => setOtpModal(null)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
+            >
+              <X size={18} />
+            </button>
+
+            {/* Modal Header */}
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-[#00dc82]/10 border border-[#00dc82]/30 flex items-center justify-center shadow-lg shadow-[#00dc82]/10">
+                <Shield size={22} className="text-[#00dc82]" />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-white">
+                  Verify Your Account
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Enter the 6-digit code sent to <span className="text-emerald-400 font-bold">{otpModal.email}</span>
+                </p>
+              </div>
+            </div>
+
+            {/* OTP Code Form */}
+            <form onSubmit={handleOtpVerify} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-2">
+                  6-Digit Verification Code
+                </label>
+                <input
+                  type="text"
+                  maxLength={6}
+                  autoFocus
+                  value={otpCode}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, ''); // Numbers only
+                    setOtpCode(val);
+                    setOtpError('');
+                  }}
+                  placeholder="123456"
+                  className="w-full bg-slate-900 border border-slate-700 focus:border-[#00dc82] rounded-xl px-4 py-3 text-center text-2xl tracking-[0.5em] font-mono text-[#00dc82] placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-[#00dc82]/30 transition-all font-bold"
+                  required
+                />
+              </div>
+
+              {/* Error state */}
+              {otpError && (
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-400 font-medium">
+                  {otpError}
+                </div>
+              )}
+
+              {/* Resend success notice */}
+              {otpResent && (
+                <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400 font-medium text-center">
+                  ✓ A new 6-digit code has been sent to your email.
+                </div>
+              )}
+
+              {/* Submit Action */}
+              <button
+                type="submit"
+                disabled={otpLoading || otpCode.length < 6}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-[#00dc82] to-emerald-500 hover:from-[#00c574] hover:to-emerald-400 text-black font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#00dc82]/25 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {otpLoading ? (
+                  <Loader2 size={16} className="animate-spin text-black" />
+                ) : (
+                  <>
+                    <span>Verify & Continue to Severa AI</span>
+                    <ArrowRight size={15} />
+                  </>
+                )}
+              </button>
+            </form>
+
+            {/* Options footer */}
+            <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-xs">
+              <button
+                type="button"
+                onClick={handleResendOtp}
+                className="text-slate-400 hover:text-[#00dc82] font-semibold transition-colors cursor-pointer"
+              >
+                Didn't get code? Resend Code
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSkipOtp}
+                className="text-slate-500 hover:text-slate-300 font-medium underline transition-colors cursor-pointer"
+              >
+                Continue without code →
+              </button>
+            </div>
           </div>
         </div>
       )}

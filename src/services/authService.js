@@ -73,8 +73,63 @@ export const authService = {
       createdAt: new Date().toISOString()
     };
 
+    return userSession;
+  },
+
+  // Verify 6-digit OTP code via Supabase Auth
+  async verifyOtp({ email, token }) {
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanToken = token.trim();
+
+    if (!cleanToken || cleanToken.length < 6) {
+      throw new Error('Please enter the full 6-digit verification code.');
+    }
+
+    // Try type 'signup' first, then fallback to 'email'
+    let { data, error } = await supabase.auth.verifyOtp({
+      email: cleanEmail,
+      token: cleanToken,
+      type: 'signup'
+    });
+
+    if (error) {
+      const fallback = await supabase.auth.verifyOtp({
+        email: cleanEmail,
+        token: cleanToken,
+        type: 'email'
+      });
+      if (fallback.error) {
+        throw new Error(error.message || fallback.error.message || 'Invalid or expired 6-digit code. Please try again.');
+      }
+      data = fallback.data;
+    }
+
+    const userSession = {
+      name: data?.user?.user_metadata?.full_name || cleanEmail.split('@')[0],
+      email: cleanEmail,
+      isNewUser: true,
+      createdAt: new Date().toISOString()
+    };
+
     storageService.setUserSession(userSession);
     return userSession;
+  },
+
+  // Resend OTP Code
+  async resendOtp({ email }) {
+    const cleanEmail = email.trim().toLowerCase();
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: cleanEmail
+    });
+    if (error) {
+      const fallback = await supabase.auth.resend({
+        type: 'email_change',
+        email: cleanEmail
+      });
+      if (fallback.error) throw new Error(error.message || 'Failed to resend code.');
+    }
+    return true;
   },
 
   // Perform Real Email Sign In via Supabase
