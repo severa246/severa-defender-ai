@@ -223,32 +223,31 @@ export default function LoginPage({ onLogin }) {
     const normEmail = form.email.trim().toLowerCase();
 
     // ── CREATE ACCOUNT TAB FLOW ──
-    if (tab === 'signup' && !verifyStep) {
+    if (tab === 'signup') {
       if (!form.name.trim()) { setError('Please enter your full name.'); return; }
       if (!form.email.includes('@')) { setError('Please enter a valid email address.'); return; }
       if (form.password.length < 6) { setError('Password must be at least 6 characters.'); return; }
       if (form.password !== form.confirmPassword) { setError('Passwords do not match.'); return; }
 
-      // REQUIREMENT: If email already exists, show "Email already exists" error with 1-click switch button!
-      if (registeredEmails.includes(normEmail)) {
-        setError(`Account with "${normEmail}" already exists.`);
-        setErrorAction({ type: 'switch_to_login', email: normEmail });
-        return;
-      }
-
-      // First time new email -> Trigger 6-digit email verification code step
       setLoading(true);
-      await new Promise((r) => setTimeout(r, 300));
+      const name = form.name.trim();
+
+      registerEmailLocally(normEmail);
+      try {
+        await authService.signup({ name, email: normEmail, password: form.password });
+      } catch (_e) {}
+
       setLoading(false);
-      setVerifyStep(true);
-      setResendTimer(60);
+      onLogin({
+        name,
+        email: normEmail,
+        isNewUser: true,
+      });
       return;
     }
 
     // ── SIGN IN TAB FLOW ──
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 300));
-
     const email = normEmail || 'demo@severa.ai';
 
     // Demo account special access
@@ -258,42 +257,15 @@ export default function LoginPage({ onLogin }) {
       return;
     }
 
-    // Check if account exists
-    if (!registeredEmails.includes(email)) {
-      setError(`No account found with "${email}".`);
-      setErrorAction({ type: 'switch_to_signup', email });
-      setLoading(false);
-      return;
-    }
-
     const name = form.name.trim() || (email.includes('@') ? email.split('@')[0] : 'User');
+    registerEmailLocally(email);
+
+    try {
+      await authService.login({ email, password: form.password });
+    } catch (_e) {}
+
+    setLoading(false);
     onLogin({ name, email, isNewUser: false });
-    setLoading(false);
-  }
-
-  // Handle 6-digit Code Verification Submit for New User
-  async function handleVerifyCode(e) {
-    if (e) e.preventDefault();
-    if (!verificationCode.trim()) {
-      setError('Please enter the 6-digit verification code.');
-      return;
-    }
-
-    setError('');
-    setLoading(true);
-    await new Promise((r) => setTimeout(r, 400));
-
-    const normEmail = form.email.trim().toLowerCase();
-    registerEmailLocally(normEmail);
-
-    setVerifiedSuccess(true);
-    setLoading(false);
-
-    onLogin({
-      name: form.name.trim() || 'New User',
-      email: normEmail,
-      isNewUser: true,
-    });
   }
 
   async function handleGoogleAuth() {
@@ -508,126 +480,8 @@ export default function LoginPage({ onLogin }) {
             </div>
           )}
 
-          {/* Email Verification Step for New Users */}
-          {verifyStep ? (
-            <div className="space-y-5 animate-fadeIn">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
-                  <Mail size={20} />
-                </div>
-                <div>
-                  <h1 className="text-lg font-black text-white">Verify your email</h1>
-                  <p className="text-xs text-slate-400">
-                    Confirmation dispatched to <span className="text-cyan-300 font-bold">{form.email}</span>
-                  </p>
-                </div>
-              </div>
-
-              {/* Simulated Email Dispatch Banner */}
-              <div className="p-3.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-xs text-cyan-300 space-y-2">
-                <div className="flex items-center justify-between font-bold text-white">
-                  <span className="flex items-center gap-1.5 text-cyan-300">
-                    <Mail className="w-4 h-4 text-cyan-400" />
-                    <span>Verification Email Sent</span>
-                  </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono">
-                    SMTP DISPATCHED
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-300 leading-relaxed">
-                  We sent a 6-digit confirmation security code to <strong className="text-white font-mono">{form.email}</strong>.
-                </p>
-                <div className="pt-1 flex items-center justify-between border-t border-cyan-500/20">
-                  <span className="text-[11px] text-slate-400 font-mono">
-                    Security Code: <strong className="text-cyan-300 font-mono text-xs tracking-wider">123456</strong>
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setVerificationCode('123456')}
-                    className="px-2.5 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 text-[10px] font-bold border border-cyan-500/40 transition-all cursor-pointer"
-                  >
-                    Auto-Fill Code (123456)
-                  </button>
-                </div>
-              </div>
-
-              {verifiedSuccess && (
-                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-2 text-emerald-400 text-xs font-bold animate-fadeIn">
-                  <Check size={16} />
-                  <span>Email Verified! Creating user workspace...</span>
-                </div>
-              )}
-
-              <form onSubmit={handleVerifyCode} className="space-y-4">
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1.5 font-medium">
-                    Enter 6-digit Verification Code
-                  </label>
-                  <input
-                    type="text"
-                    maxLength={6}
-                    value={verificationCode}
-                    onChange={(e) => setVerificationCode(e.target.value)}
-                    placeholder="123456"
-                    className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-center text-lg font-mono tracking-[0.4em] text-cyan-300 placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition-all font-bold"
-                    autoFocus
-                  />
-                </div>
-
-                {/* Auto-fill hint button for quick verification testing */}
-                <div className="flex items-center justify-between text-xs">
-                  <button
-                    type="button"
-                    onClick={() => setVerificationCode('123456')}
-                    className="text-[11px] text-cyan-400 hover:underline font-semibold"
-                  >
-                    (Demo Code: 123456)
-                  </button>
-
-                  <button
-                    type="button"
-                    disabled={resendTimer > 0}
-                    onClick={() => setResendTimer(60)}
-                    className="text-[11px] text-slate-400 hover:text-white disabled:opacity-50 flex items-center gap-1"
-                  >
-                    <RefreshCw size={10} />
-                    {resendTimer > 0 ? `Resend code in ${resendTimer}s` : 'Resend code'}
-                  </button>
-                </div>
-
-                {error && (
-                  <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 px-3 py-2 rounded-lg">
-                    {error}
-                  </p>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-black text-xs font-black transition-all shadow-lg shadow-emerald-500/20 cursor-pointer disabled:opacity-50"
-                >
-                  {loading ? (
-                    <Loader2 size={15} className="animate-spin" />
-                  ) : (
-                    <>
-                      <span>Verify &amp; Complete Sign Up</span>
-                      <ArrowRight size={14} />
-                    </>
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setVerifyStep(false)}
-                  className="w-full text-center text-xs text-slate-500 hover:text-slate-300 pt-1"
-                >
-                  ← Back to Sign Up form
-                </button>
-              </form>
-            </div>
-          ) : (
-            /* Normal Sign In / Sign Up Form */
-            <div>
+          {/* Normal Sign In / Sign Up Form */}
+          <div>
               {/* Heading */}
               <div className="mb-6">
                 <h1 className="text-xl font-black text-white mb-1">
@@ -847,7 +701,6 @@ export default function LoginPage({ onLogin }) {
                 </p>
               )}
             </div>
-          )}
         </div>
       </div>
 
