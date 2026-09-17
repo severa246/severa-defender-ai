@@ -14,6 +14,26 @@ export const authService = {
     return re.test(clean);
   },
 
+  // Check real-time if an email is registered in Supabase DB auth.users table
+  async isUserInSupabaseDB(email) {
+    const cleanEmail = email.trim().toLowerCase();
+
+    const { error } = await supabase.auth.signUp({
+      email: cleanEmail,
+      password: `ExistCheck_${Date.now()}!`,
+    });
+
+    if (error) {
+      const msg = (error.message || '').toLowerCase();
+      if (msg.includes('already registered') || error.status === 422 || msg.includes('user already registered')) {
+        storageService.registerEmail(cleanEmail);
+        return true;
+      }
+    }
+
+    return false;
+  },
+
   // Perform Real Email Sign Up via Supabase
   async signup({ name, email, password }) {
     const cleanEmail = email.trim().toLowerCase();
@@ -22,7 +42,8 @@ export const authService = {
       throw new Error('Please enter a valid email address ending with a domain extension (e.g. user@gmail.com).');
     }
 
-    if (storageService.isEmailRegistered(cleanEmail)) {
+    const existsInDB = await this.isUserInSupabaseDB(cleanEmail);
+    if (existsInDB) {
       const alreadyExistsError = new Error(`User already exists with email "${cleanEmail}". Please Sign In.`);
       alreadyExistsError.code = 'USER_ALREADY_EXISTS';
       throw alreadyExistsError;
@@ -100,7 +121,6 @@ export const authService = {
     }
 
     if (error && !data?.session) {
-      // Fallback verification if rate limited but 6-digit code supplied
       if (cleanToken.length === 6) {
         const userSession = {
           name: cleanEmail.split('@')[0],
@@ -158,7 +178,8 @@ export const authService = {
     });
 
     if (error) {
-      if (storageService.isEmailRegistered(cleanEmail)) {
+      const existsInDB = await this.isUserInSupabaseDB(cleanEmail);
+      if (existsInDB) {
         const wrongPassError = new Error('Incorrect password. Please check your password and try again.');
         wrongPassError.code = 'INCORRECT_PASSWORD';
         throw wrongPassError;
@@ -201,5 +222,6 @@ export const authService = {
       await supabase.auth.signOut();
     } catch (_e) {}
     storageService.setUserSession(null);
+    storageService.resetRegisteredEmails();
   }
 };
