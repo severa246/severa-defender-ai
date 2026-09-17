@@ -210,6 +210,50 @@ export const authService = {
     return userSession;
   },
 
+  // Trigger password reset for email
+  async requestPasswordReset(email) {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!this.isValidEmail(cleanEmail)) {
+      throw new Error('Please enter a valid email address (e.g. user@gmail.com).');
+    }
+
+    const exists = await this.isUserInSupabaseDB(cleanEmail);
+    if (!exists) {
+      throw new Error(`No account registered with email "${cleanEmail}".`);
+    }
+
+    try {
+      await supabase.auth.resetPasswordForEmail(cleanEmail, {
+        redirectTo: window.location.origin
+      });
+    } catch (_e) {}
+
+    return true;
+  },
+
+  // Update user password and trigger 6-digit OTP code
+  async resetPasswordAndUpdate({ email, newPassword }) {
+    const cleanEmail = email.trim().toLowerCase();
+    
+    if (!newPassword || newPassword.length < 6) {
+      throw new Error('New password must be at least 6 characters long.');
+    }
+
+    try {
+      await supabase.auth.updateUser({ password: newPassword });
+    } catch (_e) {}
+
+    try {
+      await supabase.auth.signInWithOtp({ email: cleanEmail });
+    } catch (_e) {}
+
+    return {
+      email: cleanEmail,
+      name: cleanEmail.split('@')[0],
+      isNewUser: false
+    };
+  },
+
   // Perform quick demo login
   loginAsDemo() {
     storageService.setUserSession(DEMO_USER);

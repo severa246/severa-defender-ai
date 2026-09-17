@@ -44,6 +44,67 @@ export default function LoginPage({ onLogin }) {
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpResent, setOtpResent] = useState(false);
 
+  // Forgot Password Modal State
+  const [resetModal, setResetModal] = useState(null); // null | { email: '' }
+  const [resetForm, setResetForm] = useState({ password: '', confirmPassword: '' });
+  const [resetError, setResetError] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+
+  async function handleForgotPasswordClick() {
+    setError('');
+    const email = form.email.trim().toLowerCase();
+    if (!email || !authService.isValidEmail(email)) {
+      setError('Please enter your registered email address above to reset your password.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await authService.requestPasswordReset(email);
+      setLoading(false);
+      setResetError('');
+      setResetForm({ password: '', confirmPassword: '' });
+      setResetModal({ email });
+    } catch (err) {
+      setLoading(false);
+      setError(err.message || 'Unable to request password reset.');
+    }
+  }
+
+  async function handleResetPasswordSubmit(e) {
+    if (e) e.preventDefault();
+    setResetError('');
+
+    if (!resetForm.password || resetForm.password.length < 6) {
+      setResetError('New password must be at least 6 characters long.');
+      return;
+    }
+    if (resetForm.password !== resetForm.confirmPassword) {
+      setResetError('Passwords do not match.');
+      return;
+    }
+
+    setResetLoading(true);
+    try {
+      const userSession = await authService.resetPasswordAndUpdate({
+        email: resetModal.email,
+        newPassword: resetForm.password
+      });
+      setResetLoading(false);
+      const targetEmail = resetModal.email;
+      setResetModal(null);
+
+      // Trigger 6-digit OTP verification modal for sign in
+      setOtpCode('');
+      setOtpError('');
+      setOtpResent(false);
+      setOtpModal({ email: targetEmail, name: userSession.name, userSession, mode: 'reset' });
+    } catch (err) {
+      setResetLoading(false);
+      setResetError(err.message || 'Failed to update password.');
+    }
+  }
+
   function setField(key, val) {
     setForm((f) => ({ ...f, [key]: val }));
     setError('');
@@ -385,7 +446,11 @@ export default function LoginPage({ onLogin }) {
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="text-xs text-slate-400 font-medium">Password</label>
                   {tab === 'login' && (
-                    <button type="button" className="text-[11px] text-[#00dc82] hover:underline transition-colors font-medium">
+                    <button
+                      type="button"
+                      onClick={handleForgotPasswordClick}
+                      className="text-[11px] text-[#00dc82] hover:underline transition-colors font-medium cursor-pointer"
+                    >
                       Forgot password?
                     </button>
                   )}
@@ -507,6 +572,96 @@ export default function LoginPage({ onLogin }) {
       </div>
 
 
+
+      {/* ── Reset Password Modal ── */}
+      {resetModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
+          <div className="bg-[#121826] border border-blue-500/30 text-white rounded-2xl w-full max-w-md p-7 shadow-2xl space-y-5 relative font-sans">
+            <button
+              onClick={() => setResetModal(null)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
+            >
+              <X size={18} />
+            </button>
+
+            {/* Modal Header */}
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center shadow-lg shadow-blue-500/10">
+                <Lock size={22} className="text-blue-400" />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-white">
+                  Reset Account Password
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Enter new password for <span className="text-blue-400 font-bold">{resetModal.email}</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleResetPasswordSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                  New Password
+                </label>
+                <input
+                  type="password"
+                  autoFocus
+                  value={resetForm.password}
+                  onChange={(e) => {
+                    setResetForm((f) => ({ ...f, password: e.target.value }));
+                    setResetError('');
+                  }}
+                  placeholder="••••••••"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/40 transition-all font-medium"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                  Confirm New Password
+                </label>
+                <input
+                  type="password"
+                  value={resetForm.confirmPassword}
+                  onChange={(e) => {
+                    setResetForm((f) => ({ ...f, confirmPassword: e.target.value }));
+                    setResetError('');
+                  }}
+                  placeholder="••••••••"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/40 transition-all font-medium"
+                  required
+                />
+              </div>
+
+              {/* Error State */}
+              {resetError && (
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-400 font-medium">
+                  {resetError}
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={resetLoading}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-blue-500/20 disabled:opacity-50"
+              >
+                {resetLoading ? (
+                  <Loader2 size={16} className="animate-spin text-white" />
+                ) : (
+                  <>
+                    <span>Update Password & Send 6-Digit Code</span>
+                    <ArrowRight size={15} />
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* ── 6-Digit OTP Code Verification Modal ── */}
       {otpModal && (
