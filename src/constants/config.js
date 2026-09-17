@@ -17,7 +17,5 @@ export const DEMO_USER = {
 };
 
 export const INITIAL_REGISTERED_EMAILS = [
-  'demo@severa.ai',
-  'user@gmail.com',
-  'developer@github.com'
+  'demo@severa.ai'
 ];
