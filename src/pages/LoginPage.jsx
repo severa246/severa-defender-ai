@@ -50,6 +50,12 @@ export default function LoginPage({ onLogin }) {
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
   const [errorAction, setErrorAction] = useState(null); // { type: 'switch_to_login' | 'switch_to_signup', email: '' }
+  const [loading, setLoading] = useState(false);
+
+  // OAuth Modal Prompt State
+  const [oauthModal, setOauthModal] = useState(null); // null | 'google' | 'github'
+  const [oauthEmailInput, setOauthEmailInput] = useState('');
+
   // OTP Verification Modal State
   const [otpModal, setOtpModal] = useState(null); // null | { email: '', name: '', userSession: {} }
   const [otpCode, setOtpCode] = useState('');
