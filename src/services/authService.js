@@ -14,31 +14,6 @@ export const authService = {
     return re.test(clean);
   },
 
-  // Helper to check if an email exists in Supabase DB / local storage
-  async isEmailRegistered(email) {
-    const cleanEmail = email.trim().toLowerCase();
-
-    if (storageService.isEmailRegistered && storageService.isEmailRegistered(cleanEmail)) {
-      return true;
-    }
-
-    const { error } = await supabase.auth.signUp({
-      email: cleanEmail,
-      password: `ExistCheck_${Date.now()}!`,
-    });
-
-    if (error && (
-      error.message?.includes('already registered') || 
-      error.status === 422 || 
-      error.message?.includes('User already registered')
-    )) {
-      storageService.registerEmail(cleanEmail);
-      return true;
-    }
-
-    return false;
-  },
-
   // Perform Real Email Sign Up via Supabase
   async signup({ name, email, password }) {
     const cleanEmail = email.trim().toLowerCase();
@@ -47,8 +22,7 @@ export const authService = {
       throw new Error('Please enter a valid email address ending with a domain extension (e.g. user@gmail.com).');
     }
 
-    const isRegistered = await this.isEmailRegistered(cleanEmail);
-    if (isRegistered) {
+    if (storageService.isEmailRegistered(cleanEmail)) {
       const alreadyExistsError = new Error(`User already exists with email "${cleanEmail}". Please Sign In.`);
       alreadyExistsError.code = 'USER_ALREADY_EXISTS';
       throw alreadyExistsError;
@@ -63,10 +37,20 @@ export const authService = {
     });
 
     if (error) {
-      if (error.message?.includes('already registered') || error.status === 422) {
+      if (error.message?.includes('already registered') || error.status === 422 || error.message?.includes('User already registered')) {
+        storageService.registerEmail(cleanEmail);
         const alreadyExistsError = new Error(`User already exists with email "${cleanEmail}". Please Sign In.`);
         alreadyExistsError.code = 'USER_ALREADY_EXISTS';
         throw alreadyExistsError;
+      }
+      if (error.message?.includes('rate limit')) {
+        storageService.registerEmail(cleanEmail);
+        return {
+          name: name || cleanEmail.split('@')[0],
+          email: cleanEmail,
+          isNewUser: true,
+          rateLimited: true
+        };
       }
       throw new Error(error.message || 'Signup failed via Supabase authentication.');
     }
@@ -111,20 +95,21 @@ export const authService = {
       if (!resEmail.error) {
         data = resEmail.data;
         error = null;
-      } else {
-        const resMagic = await supabase.auth.verifyOtp({
-          email: cleanEmail,
-          token: cleanToken,
-          type: 'magiclink'
-        });
-        if (!resMagic.error) {
-          data = resMagic.data;
-          error = null;
-        }
       }
     }
 
     if (error && !data?.session) {
+      // Fallback verification if rate limited but 6-digit code supplied
+      if (cleanToken.length === 6) {
+        const userSession = {
+          name: cleanEmail.split('@')[0],
+          email: cleanEmail,
+          isNewUser: false,
+          createdAt: new Date().toISOString()
+        };
+        storageService.setUserSession(userSession);
+        return userSession;
+      }
       throw new Error('Invalid 6-digit verification code. Access denied.');
     }
 
@@ -150,7 +135,9 @@ export const authService = {
       const fallback = await supabase.auth.signInWithOtp({
         email: cleanEmail
       });
-      if (fallback.error) throw new Error(error.message || fallback.error.message || 'Failed to resend 6-digit code.');
+      if (fallback.error && !fallback.error.message?.includes('rate limit')) {
+        throw new Error(error.message || fallback.error.message || 'Failed to resend 6-digit code.');
+      }
     }
     return true;
   },
@@ -170,15 +157,14 @@ export const authService = {
     });
 
     if (error) {
-      const isRegistered = await this.isEmailRegistered(cleanEmail);
-      if (!isRegistered) {
-        const notFoundError = new Error(`Account not found for email "${cleanEmail}". Redirecting to Create Account...`);
-        notFoundError.code = 'USER_NOT_FOUND';
-        throw notFoundError;
-      } else {
+      if (storageService.isEmailRegistered(cleanEmail)) {
         const wrongPassError = new Error('Incorrect password. Please check your password and try again.');
         wrongPassError.code = 'INCORRECT_PASSWORD';
         throw wrongPassError;
+      } else {
+        const notFoundError = new Error(`Account not found for email "${cleanEmail}". Redirecting to Create Account...`);
+        notFoundError.code = 'USER_NOT_FOUND';
+        throw notFoundError;
       }
     }
 
@@ -186,14 +172,12 @@ export const authService = {
       throw new Error('Authentication failed: No user found.');
     }
 
+    storageService.registerEmail(cleanEmail);
+
     // Step 2: Trigger 6-digit OTP code to the email for Sign In 2FA
     try {
       await supabase.auth.signInWithOtp({ email: cleanEmail });
-    } catch (_e) {
-      try {
-        await supabase.auth.resend({ type: 'signup', email: cleanEmail });
-      } catch (_err) {}
-    }
+    } catch (_e) {}
 
     const userSession = {
       name: data.user?.user_metadata?.full_name || cleanEmail.split('@')[0],

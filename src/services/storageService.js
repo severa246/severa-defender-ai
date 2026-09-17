@@ -44,6 +44,13 @@ export const storageService = {
     } catch (_e) {}
   },
 
+  isEmailRegistered(email) {
+    if (!email) return false;
+    const cleanEmail = email.trim().toLowerCase();
+    const existing = this.getRegisteredEmails();
+    return existing.includes(cleanEmail);
+  },
+
   unregisterEmail(email) {
     if (!email) return;
     const cleanEmail = email.trim().toLowerCase();
