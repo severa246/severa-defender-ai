@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { useRouter } from '../router/RouterContext';
-import { Shield, Eye, EyeOff, ArrowRight, Loader2, Zap, Lock, Code2, Sparkles } from 'lucide-react';
+import { Shield, Eye, EyeOff, ArrowRight, Loader2, Zap, Lock, Code2, Sparkles, X } from 'lucide-react';
 import { authService } from '../services/authService';
 
 function Orbs() {
@@ -50,6 +50,10 @@ export default function LoginPage({ onLogin }) {
   const [error, setError] = useState('');
   const [errorAction, setErrorAction] = useState(null); // { type: 'switch_to_login' | 'switch_to_signup', email: '' }
   const [loading, setLoading] = useState(false);
+
+  // OAuth Modal Prompt State
+  const [oauthModal, setOauthModal] = useState(null); // null | 'google' | 'github'
+  const [oauthEmailInput, setOauthEmailInput] = useState('');
 
   // Persistent Registered Users list in localStorage
   const [registeredEmails, setRegisteredEmails] = useState(() => {
@@ -137,52 +141,46 @@ export default function LoginPage({ onLogin }) {
     }
   }
 
-  async function handleGoogleAuth() {
+  function handleGoogleAuth() {
     setError('');
     setErrorAction(null);
 
     const email = form.email.trim().toLowerCase();
-    if (!email || !email.includes('@')) {
-      setError('Please enter your Google Email address below to sign in with Google.');
-      if (emailInputRef.current) {
-        emailInputRef.current.focus();
-        emailInputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-      return;
+    if (email && email.includes('@')) {
+      // Direct login if email was pre-entered in the main form
+      performOAuthLogin('google', email);
+    } else {
+      // Open Google OAuth email prompt modal
+      setOauthEmailInput('');
+      setOauthModal('google');
     }
-
-    setLoading(true);
-    const name = form.name.trim() || email.split('@')[0];
-
-    registerEmailLocally(email);
-
-    setTimeout(() => {
-      setLoading(false);
-      onLogin({
-        name,
-        email,
-        isNewUser: false,
-        authProvider: 'google'
-      });
-    }, 300);
   }
 
-  async function handleGithubAuth() {
+  function handleGithubAuth() {
     setError('');
     setErrorAction(null);
 
     const email = form.email.trim().toLowerCase();
+    if (email && email.includes('@')) {
+      // Direct login if email was pre-entered in the main form
+      performOAuthLogin('github', email);
+    } else {
+      // Open GitHub OAuth email prompt modal
+      setOauthEmailInput('');
+      setOauthModal('github');
+    }
+  }
+
+  function performOAuthLogin(provider, emailToUse) {
+    const email = emailToUse.trim().toLowerCase();
     if (!email || !email.includes('@')) {
-      setError('Please enter your GitHub Email address below to sign in with GitHub.');
-      if (emailInputRef.current) {
-        emailInputRef.current.focus();
-        emailInputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+      setError('Please enter a valid email address.');
       return;
     }
 
+    setOauthModal(null);
     setLoading(true);
-    const name = form.name.trim() || email.split('@')[0];
+    const name = email.split('@')[0];
 
     registerEmailLocally(email);
 
@@ -192,9 +190,9 @@ export default function LoginPage({ onLogin }) {
         name,
         email,
         isNewUser: false,
-        authProvider: 'github'
+        authProvider: provider
       });
-    }, 300);
+    }, 350);
   }
 
   return (
@@ -546,6 +544,65 @@ export default function LoginPage({ onLogin }) {
           </div>
         </div>
       </div>
+
+      {/* ── OAuth Email Prompt Modal (for 1-click Google / GitHub Sign In) ── */}
+      {oauthModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-[#121826] border border-slate-800 text-white rounded-2xl w-full max-w-sm p-6 shadow-2xl space-y-4 relative font-sans">
+            <button
+              onClick={() => setOauthModal(null)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center shadow-md">
+                {oauthModal === 'google' ? <GoogleLogo size={20} /> : <GitHubLogo size={20} />}
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white">
+                  Sign in with {oauthModal === 'google' ? 'Google' : 'GitHub'}
+                </h3>
+                <p className="text-[11px] text-slate-400">
+                  Enter your {oauthModal === 'google' ? 'Google' : 'GitHub'} email address
+                </p>
+              </div>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                performOAuthLogin(oauthModal, oauthEmailInput);
+              }}
+              className="space-y-3 pt-1"
+            >
+              <div>
+                <label className="block text-[11px] text-slate-400 mb-1 font-semibold">
+                  {oauthModal === 'google' ? 'Google Email' : 'GitHub Email / Username'}
+                </label>
+                <input
+                  type="email"
+                  autoFocus
+                  value={oauthEmailInput}
+                  onChange={(e) => setOauthEmailInput(e.target.value)}
+                  placeholder={oauthModal === 'google' ? 'you@gmail.com' : 'username@github.com'}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#00dc82] font-medium"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-2.5 rounded-xl bg-[#00dc82] hover:bg-[#00c574] text-black font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#00dc82]/20"
+              >
+                <span>Continue with {oauthModal === 'google' ? 'Google' : 'GitHub'}</span>
+                <ArrowRight size={14} />
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
