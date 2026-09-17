@@ -161,9 +161,10 @@ export default function App({ user, onLogout }) {
     } catch {}
   }, [user?.email]);
 
-  // Persistent Workspace Load across Logins, Logouts, Sessions, & Devices
+  // Persistent Workspace Load across Logins, Logouts, Sessions, & Devices (Strict User Isolation)
   useEffect(() => {
     const userKey = user?.email ? user.email.trim().toLowerCase() : 'guest';
+    setIsWorkspaceLoaded(false);
     
     async function loadWorkspace() {
       try {
@@ -173,9 +174,9 @@ export default function App({ user, onLogout }) {
           saved = await cloudSyncService.fetchUserWorkspace(user.email);
         }
 
-        // Fallback to local device storage
+        // Fallback to strict per-user local device storage (NO shared/latest fallback!)
         if (!saved) {
-          const savedStr = localStorage.getItem(`severa_workspace_${userKey}`) || localStorage.getItem('severa_workspace_latest');
+          const savedStr = localStorage.getItem(`severa_workspace_${userKey}`);
           if (savedStr) saved = JSON.parse(savedStr);
         }
 
@@ -192,22 +193,54 @@ export default function App({ user, onLogout }) {
           if (saved.activeSessionId) setActiveSessionId(saved.activeSessionId);
           if (saved.customRules && Array.isArray(saved.customRules)) setCustomRules(saved.customRules);
 
-          // Restore AI Provider & Model Configuration (API key loaded securely from sessionStorage)
+          // Restore AI Provider & Model Configuration
           if (saved.apiConfig) {
-            if (saved.apiConfig.selectedProvider) {
-              setSelectedProvider(saved.apiConfig.selectedProvider);
-            }
-            if (saved.apiConfig.selectedModel) {
-              setSelectedModel(saved.apiConfig.selectedModel);
-            }
-            if (saved.apiConfig.customEndpoint) {
-              setCustomEndpoint(saved.apiConfig.customEndpoint);
-            }
+            if (saved.apiConfig.selectedProvider) setSelectedProvider(saved.apiConfig.selectedProvider);
+            if (saved.apiConfig.selectedModel) setSelectedModel(saved.apiConfig.selectedModel);
+            if (saved.apiConfig.customEndpoint) setCustomEndpoint(saved.apiConfig.customEndpoint);
           }
           const restoredKey = storageService.getUserApiKey(userKey);
-          if (restoredKey) {
-            setApiKey(restoredKey);
-          }
+          if (restoredKey) setApiKey(restoredKey);
+        } else {
+          // Fresh clean workspace strictly isolated to this new user account
+          const initialCode = isDemoUser 
+            ? CODE_TEMPLATES[0].code 
+            : '# Welcome to Severa AI Security Platform\n# Paste or upload your source code here to analyze with Severa...\n';
+          const initialLang = isDemoUser ? CODE_TEMPLATES[0].language : 'python';
+          const initialProjName = isDemoUser ? 'ai project' : 'my-workspace';
+          const initialFileName = 'main.py';
+
+          const initialFolders = isDemoUser ? [
+            { id: 'p1', name: 'ai project', files: [{ name: 'main.py', templateId: 'py-sqli' }], session: 'Flask SQLi & Secret Audit' },
+            { id: 'p2', name: 'react-frontend-sec', files: [{ name: 'App.jsx', templateId: 'js-xss' }], session: 'React DOM XSS Audit' },
+            { id: 'p3', name: 'node-express-rce', files: [{ name: 'server.js', templateId: 'node-rce' }], session: 'Node Express RCE Audit' },
+            { id: 'p4', name: 'docker-containers', files: [{ name: 'Dockerfile', templateId: 'docker-sec' }], session: 'Dockerfile Root Hardening' },
+            { id: 'p5', name: 'python-deser', files: [{ name: 'deserialize.py', templateId: 'py-deser' }], session: 'Insecure Pickle Deserialization' }
+          ] : [
+            { id: 'p1', name: 'my-workspace', files: [{ name: 'main.py', code: initialCode }], session: 'Fresh Code Audit' }
+          ];
+
+          const initialSessions = isDemoUser ? INITIAL_SESSIONS : [
+            {
+              id: 'sess-new',
+              name: 'Fresh Code Audit',
+              code: initialCode,
+              language: initialLang,
+              findings: [],
+              timeAgo: 'Just now'
+            }
+          ];
+
+          setCode(initialCode);
+          setLanguage(initialLang);
+          setActiveProjectName(initialProjName);
+          setActiveFileName(initialFileName);
+          setActiveFilePath(initialFileName);
+          setProjectFolders(resolveProjectFiles(initialFolders));
+          setProjectFiles([]);
+          setScanSessions(initialSessions);
+          setActiveSessionId(isDemoUser ? 'sess-1' : 'sess-new');
+          setCustomRules([]);
         }
       } catch {
       } finally {
@@ -218,7 +251,7 @@ export default function App({ user, onLogout }) {
     loadWorkspace();
   }, [user?.email]);
 
-  // Auto-Save Workspace Snapshot on any change (Local + Cloud Sync)
+  // Auto-Save Workspace Snapshot on any change (Strict Per-User Storage Only)
   useEffect(() => {
     if (!isWorkspaceLoaded) return; // Prevent wiping storage before load completes!
 
@@ -243,7 +276,6 @@ export default function App({ user, onLogout }) {
       };
       const jsonStr = JSON.stringify(snapshot);
       localStorage.setItem(`severa_workspace_${userKey}`, jsonStr);
-      localStorage.setItem('severa_workspace_latest', jsonStr);
 
       if (user?.email) {
         cloudSyncService.saveUserWorkspace(user.email, snapshot);
