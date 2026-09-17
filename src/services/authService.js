@@ -14,32 +14,29 @@ export const authService = {
     return re.test(clean);
   },
 
-  // Perform Real Google OAuth Sign-In via Supabase
-  async signInWithGoogle() {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.origin,
-        queryParams: {
-          prompt: 'select_account',
-          access_type: 'offline'
-        }
-      }
-    });
-    if (error) throw error;
-    return data;
-  },
+  // Helper to check if an email exists in Supabase DB / local storage
+  async isEmailRegistered(email) {
+    const cleanEmail = email.trim().toLowerCase();
 
-  // Perform Real GitHub OAuth Sign-In via Supabase
-  async signInWithGitHub() {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'github',
-      options: {
-        redirectTo: window.location.origin
-      }
+    if (storageService.isEmailRegistered && storageService.isEmailRegistered(cleanEmail)) {
+      return true;
+    }
+
+    const { error } = await supabase.auth.signUp({
+      email: cleanEmail,
+      password: `ExistCheck_${Date.now()}!`,
     });
-    if (error) throw error;
-    return data;
+
+    if (error && (
+      error.message?.includes('already registered') || 
+      error.status === 422 || 
+      error.message?.includes('User already registered')
+    )) {
+      storageService.registerEmail(cleanEmail);
+      return true;
+    }
+
+    return false;
   },
 
   // Perform Real Email Sign Up via Supabase
@@ -48,6 +45,13 @@ export const authService = {
     
     if (!this.isValidEmail(cleanEmail)) {
       throw new Error('Please enter a valid email address ending with a domain extension (e.g. user@gmail.com).');
+    }
+
+    const isRegistered = await this.isEmailRegistered(cleanEmail);
+    if (isRegistered) {
+      const alreadyExistsError = new Error(`User already exists with email "${cleanEmail}". Please Sign In.`);
+      alreadyExistsError.code = 'USER_ALREADY_EXISTS';
+      throw alreadyExistsError;
     }
 
     const { data, error } = await supabase.auth.signUp({
@@ -60,7 +64,9 @@ export const authService = {
 
     if (error) {
       if (error.message?.includes('already registered') || error.status === 422) {
-        throw new Error(`Account with email "${cleanEmail}" already exists. Please Sign In.`);
+        const alreadyExistsError = new Error(`User already exists with email "${cleanEmail}". Please Sign In.`);
+        alreadyExistsError.code = 'USER_ALREADY_EXISTS';
+        throw alreadyExistsError;
       }
       throw new Error(error.message || 'Signup failed via Supabase authentication.');
     }
@@ -86,7 +92,6 @@ export const authService = {
       throw new Error('Please enter the full 6-digit verification code.');
     }
 
-    // Try type 'signup' first, then 'email', then 'magiclink'
     let data, error;
 
     const resSignup = await supabase.auth.verifyOtp({
@@ -120,7 +125,7 @@ export const authService = {
     }
 
     if (error && !data?.session) {
-      throw new Error(error.message || 'Invalid or expired 6-digit verification code. Please check your inbox.');
+      throw new Error('Invalid 6-digit verification code. Access denied.');
     }
 
     const userSession = {
@@ -165,7 +170,16 @@ export const authService = {
     });
 
     if (error) {
-      throw new Error(error.message || 'Invalid credentials. Please check your email and password.');
+      const isRegistered = await this.isEmailRegistered(cleanEmail);
+      if (!isRegistered) {
+        const notFoundError = new Error(`Account not found for email "${cleanEmail}". Redirecting to Create Account...`);
+        notFoundError.code = 'USER_NOT_FOUND';
+        throw notFoundError;
+      } else {
+        const wrongPassError = new Error('Incorrect password. Please check your password and try again.');
+        wrongPassError.code = 'INCORRECT_PASSWORD';
+        throw wrongPassError;
+      }
     }
 
     if (!data?.user) {
