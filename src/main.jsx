@@ -5,6 +5,7 @@ import { RouterProvider, useRouter } from './router/RouterContext';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import App from './App';
+import { authService } from './services/authService';
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -61,9 +62,12 @@ function Root() {
     navigate('/app');
   }
 
-  function handleLogout() {
+  async function handleLogout() {
+    try {
+      await authService.logout();
+    } catch (_e) {}
     setUser(null);
-    navigate('/');
+    navigate('/login');
   }
 
   if (page === '/login') {
