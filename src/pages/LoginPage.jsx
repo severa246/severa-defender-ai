@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useRouter } from '../router/RouterContext';
 import { Shield, Eye, EyeOff, ArrowRight, Loader2, Zap, Lock, Code2, Sparkles, X } from 'lucide-react';
 import { authService } from '../services/authService';
+import { supabase } from '../services/supabaseClient';
 
 function Orbs() {
   return (
@@ -171,7 +172,7 @@ export default function LoginPage({ onLogin }) {
     }
   }
 
-  function performOAuthLogin(provider, emailToUse) {
+  async function performOAuthLogin(provider, emailToUse) {
     const email = emailToUse.trim().toLowerCase();
     if (!email || !email.includes('@')) {
       setError('Please enter a valid email address.');
@@ -183,6 +184,16 @@ export default function LoginPage({ onLogin }) {
     const name = email.split('@')[0];
 
     registerEmailLocally(email);
+
+    try {
+      await supabase.auth.signUp({
+        email,
+        password: `OAuth_${email.length}_SecKey!`,
+        options: {
+          data: { full_name: name, provider }
+        }
+      });
+    } catch (_e) {}
 
     setTimeout(() => {
       setLoading(false);
