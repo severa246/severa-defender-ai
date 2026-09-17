@@ -55,9 +55,9 @@ export default function LoginPage({ onLogin }) {
   const [registeredEmails, setRegisteredEmails] = useState(() => {
     try {
       const saved = localStorage.getItem('severa_registered_emails');
-      return saved ? JSON.parse(saved) : ['demo@severa.ai', 'mailsumma001@gmail.com', 'developer@github.com'];
+      return saved ? JSON.parse(saved) : ['demo@severa.ai'];
     } catch (_e) {
-      return ['demo@severa.ai', 'mailsumma001@gmail.com', 'developer@github.com'];
+      return ['demo@severa.ai'];
     }
   });
 
@@ -140,10 +140,19 @@ export default function LoginPage({ onLogin }) {
   async function handleGoogleAuth() {
     setError('');
     setErrorAction(null);
-    setLoading(true);
 
-    const email = form.email.trim().toLowerCase() || 'mailsumma001@gmail.com';
-    const name = form.name.trim() || (email.includes('@') ? email.split('@')[0] : 'summa');
+    const email = form.email.trim().toLowerCase();
+    if (!email || !email.includes('@')) {
+      setError('Please enter your Google Email address below to sign in with Google.');
+      if (emailInputRef.current) {
+        emailInputRef.current.focus();
+        emailInputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return;
+    }
+
+    setLoading(true);
+    const name = form.name.trim() || email.split('@')[0];
 
     registerEmailLocally(email);
 
@@ -161,10 +170,19 @@ export default function LoginPage({ onLogin }) {
   async function handleGithubAuth() {
     setError('');
     setErrorAction(null);
-    setLoading(true);
 
-    const email = form.email.trim().toLowerCase() || 'developer@github.com';
-    const name = form.name.trim() || 'GitHub Developer';
+    const email = form.email.trim().toLowerCase();
+    if (!email || !email.includes('@')) {
+      setError('Please enter your GitHub Email address below to sign in with GitHub.');
+      if (emailInputRef.current) {
+        emailInputRef.current.focus();
+        emailInputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return;
+    }
+
+    setLoading(true);
+    const name = form.name.trim() || email.split('@')[0];
 
     registerEmailLocally(email);
 
@@ -280,7 +298,7 @@ export default function LoginPage({ onLogin }) {
 
           {/* High-Converting Sign-In Trigger Banner */}
           <div className="p-4.5 rounded-xl border border-[#00dc82]/40 bg-[#0a1428] relative overflow-hidden shadow-xl shadow-[#00dc82]/15">
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex items-between justify-between gap-4">
               <div className="space-y-1">
                 <div className="flex items-center gap-2 text-sm font-black text-[#00dc82] tracking-wide">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#00dc82] shadow-md shadow-[#00dc82]/50 animate-pulse" />
