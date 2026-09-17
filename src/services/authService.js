@@ -6,15 +6,14 @@ import { storageService } from './storageService';
 import { DEMO_USER } from '../constants/config';
 
 export const authService = {
-  // Check if email already exists locally or in Supabase
-  isEmailRegistered(email) {
+  // Check if email format is valid
+  isValidEmail(email) {
     if (!email) return false;
-    const cleanEmail = email.trim().toLowerCase();
-    const registered = storageService.getRegisteredEmails();
-    return registered.includes(cleanEmail);
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email.trim().toLowerCase());
   },
 
-  // Perform Real Google OAuth Sign-In via Supabase (Force Account Chooser)
+  // Perform Real Google OAuth Sign-In via Supabase
   async signInWithGoogle() {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -45,8 +44,9 @@ export const authService = {
   // Perform Real Email Sign Up via Supabase
   async signup({ name, email, password }) {
     const cleanEmail = email.trim().toLowerCase();
-    if (this.isEmailRegistered(cleanEmail)) {
-      throw new Error(`Account with email "${cleanEmail}" already exists.`);
+    
+    if (!this.isValidEmail(cleanEmail)) {
+      throw new Error('Please enter a valid email address with a domain (e.g. user@gmail.com).');
     }
 
     const { data, error } = await supabase.auth.signUp({
@@ -59,7 +59,7 @@ export const authService = {
 
     if (error) {
       if (error.message?.includes('already registered') || error.status === 422) {
-        throw new Error(`Account with email "${cleanEmail}" already exists.`);
+        throw new Error(`Account with email "${cleanEmail}" already exists. Please Sign In.`);
       }
       throw new Error(error.message || 'Signup failed via Supabase authentication.');
     }
@@ -80,6 +80,10 @@ export const authService = {
   // Perform Real Email Sign In via Supabase
   async login({ email, password }) {
     const cleanEmail = email.trim().toLowerCase();
+
+    if (!this.isValidEmail(cleanEmail)) {
+      throw new Error('Please enter a valid email address (e.g. user@gmail.com).');
+    }
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email: cleanEmail,

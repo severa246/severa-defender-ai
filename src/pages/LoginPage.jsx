@@ -56,31 +56,11 @@ export default function LoginPage({ onLogin }) {
   const [oauthModal, setOauthModal] = useState(null); // null | 'google' | 'github'
   const [oauthEmailInput, setOauthEmailInput] = useState('');
 
-  // Persistent Registered Users list in localStorage
-  const [registeredEmails, setRegisteredEmails] = useState(() => {
-    try {
-      const saved = localStorage.getItem('severa_registered_emails');
-      return saved ? JSON.parse(saved) : ['demo@severa.ai'];
-    } catch (_e) {
-      return ['demo@severa.ai'];
-    }
-  });
-
   function setField(key, val) {
     setForm((f) => ({ ...f, [key]: val }));
     setError('');
     setErrorAction(null);
   }
-
-  // Register email into persistence helper
-  const registerEmailLocally = (emailToAdd) => {
-    const cleanEmail = emailToAdd.trim().toLowerCase();
-    const updated = [...new Set([...registeredEmails, cleanEmail])];
-    setRegisteredEmails(updated);
-    try {
-      localStorage.setItem('severa_registered_emails', JSON.stringify(updated));
-    } catch (_e) {}
-  };
 
   async function handleSubmit(e) {
     if (e) e.preventDefault();
@@ -89,10 +69,14 @@ export default function LoginPage({ onLogin }) {
 
     const normEmail = form.email.trim().toLowerCase();
 
+    if (!authService.isValidEmail(normEmail)) {
+      setError('Please enter a valid email address with a domain (e.g. user@gmail.com).');
+      return;
+    }
+
     // ── CREATE ACCOUNT TAB FLOW ──
     if (tab === 'signup') {
       if (!form.name.trim()) { setError('Please enter your full name.'); return; }
-      if (!form.email.includes('@')) { setError('Please enter a valid email address.'); return; }
       if (form.password.length < 6) { setError('Password must be at least 6 characters.'); return; }
       if (form.password !== form.confirmPassword) { setError('Passwords do not match.'); return; }
 
@@ -105,13 +89,9 @@ export default function LoginPage({ onLogin }) {
         onLogin(userSession);
       } catch (err) {
         setLoading(false);
+        setError(err.message || 'Signup failed.');
         if (err.message && err.message.includes('already exists')) {
-          setError(err.message);
           setErrorAction({ type: 'switch_to_login', email: normEmail });
-        } else {
-          // Direct account creation fallback
-          registerEmailLocally(normEmail);
-          onLogin({ name, email: normEmail, isNewUser: true });
         }
       }
       return;
@@ -128,17 +108,14 @@ export default function LoginPage({ onLogin }) {
       return;
     }
 
-    const name = form.name.trim() || (email.includes('@') ? email.split('@')[0] : 'User');
-    registerEmailLocally(email);
-
     try {
       const userSession = await authService.login({ email, password: form.password });
       setLoading(false);
       onLogin(userSession);
-    } catch (_err) {
+    } catch (err) {
       setLoading(false);
-      // Direct sign in fallback with entered credentials
-      onLogin({ name, email, isNewUser: false });
+      setError(err.message || 'Invalid credentials or user not found. Please check your email or Create an Account.');
+      setErrorAction({ type: 'switch_to_signup', email });
     }
   }
 
@@ -147,11 +124,9 @@ export default function LoginPage({ onLogin }) {
     setErrorAction(null);
 
     const email = form.email.trim().toLowerCase();
-    if (email && email.includes('@')) {
-      // Direct login if email was pre-entered in the main form
+    if (email && authService.isValidEmail(email)) {
       performOAuthLogin('google', email);
     } else {
-      // Open Google OAuth email prompt modal
       setOauthEmailInput('');
       setOauthModal('google');
     }
@@ -162,11 +137,9 @@ export default function LoginPage({ onLogin }) {
     setErrorAction(null);
 
     const email = form.email.trim().toLowerCase();
-    if (email && email.includes('@')) {
-      // Direct login if email was pre-entered in the main form
+    if (email && authService.isValidEmail(email)) {
       performOAuthLogin('github', email);
     } else {
-      // Open GitHub OAuth email prompt modal
       setOauthEmailInput('');
       setOauthModal('github');
     }
@@ -174,8 +147,8 @@ export default function LoginPage({ onLogin }) {
 
   async function performOAuthLogin(provider, emailToUse) {
     const email = emailToUse.trim().toLowerCase();
-    if (!email || !email.includes('@')) {
-      setError('Please enter a valid email address.');
+    if (!authService.isValidEmail(email)) {
+      setError('Please enter a valid email address with a domain (e.g. user@gmail.com).');
       return;
     }
 
@@ -183,9 +156,8 @@ export default function LoginPage({ onLogin }) {
     setLoading(true);
     const name = email.split('@')[0];
 
-    registerEmailLocally(email);
-
     try {
+      // Register account in Supabase auth database table
       await supabase.auth.signUp({
         email,
         password: `OAuth_${email.length}_SecKey!`,
@@ -195,15 +167,13 @@ export default function LoginPage({ onLogin }) {
       });
     } catch (_e) {}
 
-    setTimeout(() => {
-      setLoading(false);
-      onLogin({
-        name,
-        email,
-        isNewUser: false,
-        authProvider: provider
-      });
-    }, 350);
+    setLoading(false);
+    onLogin({
+      name,
+      email,
+      isNewUser: false,
+      authProvider: provider
+    });
   }
 
   return (
@@ -507,6 +477,20 @@ export default function LoginPage({ onLogin }) {
                       className="w-full text-center py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold border border-emerald-500/30 transition-all cursor-pointer"
                     >
                       Switch to Sign In with "{errorAction.email}" →
+                    </button>
+                  )}
+                  {errorAction && errorAction.type === 'switch_to_signup' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTab('signup');
+                        setForm({ name: '', email: errorAction.email, password: '', confirmPassword: '' });
+                        setError('');
+                        setErrorAction(null);
+                      }}
+                      className="w-full text-center py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold border border-emerald-500/30 transition-all cursor-pointer"
+                    >
+                      Create Account with "{errorAction.email}" →
                     </button>
                   )}
                 </div>
