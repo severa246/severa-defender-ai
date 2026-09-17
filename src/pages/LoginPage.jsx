@@ -49,22 +49,43 @@ export default function LoginPage({ onLogin }) {
   const [resetForm, setResetForm] = useState({ password: '', confirmPassword: '' });
   const [resetError, setResetError] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
+  const [forgotSuccess, setForgotSuccess] = useState(null); // null | { email: '' }
+
+  React.useEffect(() => {
+    const checkRecovery = () => {
+      if (window.location.hash.includes('type=recovery') || window.location.hash.includes('reset-password')) {
+        const email = form.email || 'user';
+        setResetModal({ email });
+      }
+    };
+    checkRecovery();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        const userEmail = session?.user?.email || form.email || 'user';
+        setResetModal({ email: userEmail });
+      }
+    });
+
+    return () => {
+      authListener?.subscription?.unsubscribe();
+    };
+  }, []);
 
   async function handleForgotPasswordClick() {
     setError('');
+    setForgotSuccess(null);
     const email = form.email.trim().toLowerCase();
     if (!email || !authService.isValidEmail(email)) {
-      setError('Please enter your registered email address above to reset your password.');
+      setError('Please enter your registered email address above first to receive password reset link.');
       return;
     }
 
     setLoading(true);
     try {
-      await authService.requestPasswordReset(email);
+      const res = await authService.requestPasswordReset(email);
       setLoading(false);
-      setResetError('');
-      setResetForm({ password: '', confirmPassword: '' });
-      setResetModal({ email });
+      setForgotSuccess({ email });
     } catch (err) {
       setLoading(false);
       setError(err.message || 'Unable to request password reset.');
@@ -489,6 +510,25 @@ export default function LoginPage({ onLogin }) {
                       required
                     />
                   </div>
+                </div>
+              )}
+
+              {/* Password Reset Sent Banner */}
+              {forgotSuccess && (
+                <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-2">
+                  <p className="text-emerald-400 font-bold">
+                    ✓ Password reset link sent to <span className="text-white underline">{forgotSuccess.email}</span>!
+                  </p>
+                  <p className="text-[11px] text-slate-400 leading-relaxed">
+                    Please check your email inbox to click the reset link, or click below to enter your new password.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setResetModal({ email: forgotSuccess.email })}
+                    className="w-full text-center py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-black text-[11px] border border-emerald-500/30 transition-all cursor-pointer"
+                  >
+                    Enter New Password Now →
+                  </button>
                 </div>
               )}
 

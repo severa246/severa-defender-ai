@@ -210,25 +210,31 @@ export const authService = {
     return userSession;
   },
 
-  // Trigger password reset for email
+  // Trigger password reset email via Supabase Auth
   async requestPasswordReset(email) {
     const cleanEmail = email.trim().toLowerCase();
     if (!this.isValidEmail(cleanEmail)) {
-      throw new Error('Please enter a valid email address (e.g. user@gmail.com).');
+      throw new Error('Please enter a valid email address ending with a domain extension (e.g. user@gmail.com).');
     }
 
     const exists = await this.isUserInSupabaseDB(cleanEmail);
     if (!exists) {
-      throw new Error(`No account registered with email "${cleanEmail}".`);
+      throw new Error(`No account registered with email "${cleanEmail}". Please check your email or Create an Account.`);
     }
 
-    try {
-      await supabase.auth.resetPasswordForEmail(cleanEmail, {
-        redirectTo: window.location.origin
-      });
-    } catch (_e) {}
+    const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+      redirectTo: `${window.location.origin}/#reset-password`
+    });
 
-    return true;
+    if (error) {
+      const msg = (error.message || '').toLowerCase();
+      if (msg.includes('rate limit') || msg.includes('exceeded')) {
+        return { success: true, email: cleanEmail, rateLimited: true };
+      }
+      throw new Error(error.message || 'Failed to send password reset email.');
+    }
+
+    return { success: true, email: cleanEmail };
   },
 
   // Update user password and trigger 6-digit OTP code
