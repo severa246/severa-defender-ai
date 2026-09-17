@@ -34,7 +34,7 @@ function GitHubLogo({ size = 15 }) {
 }
 
 function GoogleOAuthModal({ isOpen, onClose, onSelectAccount, defaultEmail = '' }) {
-  const [customEmail, setCustomEmail] = useState(defaultEmail || 'gomathisankarn.al24@bitsathy.ac.in');
+  const [customEmail, setCustomEmail] = useState(defaultEmail || 'mailsumma001@gmail.com');
 
   if (!isOpen) return null;
   return (
@@ -56,15 +56,15 @@ function GoogleOAuthModal({ isOpen, onClose, onSelectAccount, defaultEmail = '' 
           {/* Active User Account Choice */}
           <button
             type="button"
-            onClick={() => onSelectAccount('Gomathi Sankar N', customEmail || 'gomathisankarn.al24@bitsathy.ac.in')}
+            onClick={() => onSelectAccount('summa', customEmail || 'mailsumma001@gmail.com')}
             className="w-full flex items-center gap-3 p-3 rounded-xl border border-blue-200 bg-blue-50/50 hover:bg-blue-100/50 transition-all text-left group cursor-pointer"
           >
-            <div className="w-9 h-9 rounded-full bg-blue-600 text-white font-black flex items-center justify-center text-sm shadow-sm">
-              GS
+            <div className="w-9 h-9 rounded-full bg-emerald-600 text-white font-black flex items-center justify-center text-sm shadow-sm">
+              S
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-slate-900 truncate">Gomathi Sankar N</p>
-              <p className="text-[11px] text-blue-700 font-semibold truncate">{customEmail || 'gomathisankarn.al24@bitsathy.ac.in'}</p>
+              <p className="text-xs font-bold text-slate-900 truncate">summa</p>
+              <p className="text-[11px] text-blue-700 font-semibold truncate">{customEmail || 'mailsumma001@gmail.com'}</p>
             </div>
             <ArrowRight size={14} className="text-blue-600 group-hover:translate-x-0.5 transition-transform" />
           </button>
@@ -268,26 +268,14 @@ export default function LoginPage({ onLogin }) {
     onLogin({ name, email, isNewUser: false });
   }
 
-  async function handleGoogleAuth() {
+  function handleGoogleAuth() {
     setError('');
-    setLoading(true);
-    try {
-      await authService.signInWithGoogle();
-    } catch (_err) {
-      setShowGoogleModal(true);
-      setLoading(false);
-    }
+    setShowGoogleModal(true);
   }
 
-  async function handleGithubAuth() {
+  function handleGithubAuth() {
     setError('');
-    setLoading(true);
-    try {
-      await authService.signInWithGitHub();
-    } catch (_err) {
-      setShowGithubModal(true);
-      setLoading(false);
-    }
+    setShowGithubModal(true);
   }
 
   function handleOAuthSelect(name, email) {
