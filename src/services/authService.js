@@ -37,13 +37,14 @@ export const authService = {
     });
 
     if (error) {
-      if (error.message?.includes('already registered') || error.status === 422 || error.message?.includes('User already registered')) {
+      const msg = (error.message || '').toLowerCase();
+      if (msg.includes('already registered') || error.status === 422 || msg.includes('user already registered')) {
         storageService.registerEmail(cleanEmail);
         const alreadyExistsError = new Error(`User already exists with email "${cleanEmail}". Please Sign In.`);
         alreadyExistsError.code = 'USER_ALREADY_EXISTS';
         throw alreadyExistsError;
       }
-      if (error.message?.includes('rate limit')) {
+      if (msg.includes('rate limit') || msg.includes('rate_limit') || msg.includes('exceeded')) {
         storageService.registerEmail(cleanEmail);
         return {
           name: name || cleanEmail.split('@')[0],
