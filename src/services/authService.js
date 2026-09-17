@@ -6,11 +6,12 @@ import { storageService } from './storageService';
 import { DEMO_USER } from '../constants/config';
 
 export const authService = {
-  // Check if email format is valid
+  // Check if email format is valid (Must include valid username, @, domain, and top-level domain e.g. .com)
   isValidEmail(email) {
-    if (!email) return false;
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email.trim().toLowerCase());
+    if (!email || typeof email !== 'string') return false;
+    const clean = email.trim().toLowerCase();
+    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return re.test(clean);
   },
 
   // Perform Real Google OAuth Sign-In via Supabase
@@ -46,7 +47,7 @@ export const authService = {
     const cleanEmail = email.trim().toLowerCase();
     
     if (!this.isValidEmail(cleanEmail)) {
-      throw new Error('Please enter a valid email address with a domain (e.g. user@gmail.com).');
+      throw new Error('Please enter a valid email address ending with a domain extension (e.g. user@gmail.com).');
     }
 
     const { data, error } = await supabase.auth.signUp({
@@ -85,29 +86,47 @@ export const authService = {
       throw new Error('Please enter the full 6-digit verification code.');
     }
 
-    // Try type 'signup' first, then fallback to 'email'
-    let { data, error } = await supabase.auth.verifyOtp({
+    // Try type 'signup' first, then 'email', then 'magiclink'
+    let data, error;
+
+    const resSignup = await supabase.auth.verifyOtp({
       email: cleanEmail,
       token: cleanToken,
       type: 'signup'
     });
+    data = resSignup.data;
+    error = resSignup.error;
 
     if (error) {
-      const fallback = await supabase.auth.verifyOtp({
+      const resEmail = await supabase.auth.verifyOtp({
         email: cleanEmail,
         token: cleanToken,
         type: 'email'
       });
-      if (fallback.error) {
-        throw new Error(error.message || fallback.error.message || 'Invalid or expired 6-digit code. Please try again.');
+      if (!resEmail.error) {
+        data = resEmail.data;
+        error = null;
+      } else {
+        const resMagic = await supabase.auth.verifyOtp({
+          email: cleanEmail,
+          token: cleanToken,
+          type: 'magiclink'
+        });
+        if (!resMagic.error) {
+          data = resMagic.data;
+          error = null;
+        }
       }
-      data = fallback.data;
+    }
+
+    if (error && !data?.session) {
+      throw new Error(error.message || 'Invalid or expired 6-digit verification code. Please check your inbox.');
     }
 
     const userSession = {
       name: data?.user?.user_metadata?.full_name || cleanEmail.split('@')[0],
       email: cleanEmail,
-      isNewUser: true,
+      isNewUser: false,
       createdAt: new Date().toISOString()
     };
 
@@ -123,34 +142,43 @@ export const authService = {
       email: cleanEmail
     });
     if (error) {
-      const fallback = await supabase.auth.resend({
-        type: 'email_change',
+      const fallback = await supabase.auth.signInWithOtp({
         email: cleanEmail
       });
-      if (fallback.error) throw new Error(error.message || 'Failed to resend code.');
+      if (fallback.error) throw new Error(error.message || fallback.error.message || 'Failed to resend 6-digit code.');
     }
     return true;
   },
 
-  // Perform Real Email Sign In via Supabase
+  // Perform Real Email Sign In via Supabase with password check & OTP trigger
   async login({ email, password }) {
     const cleanEmail = email.trim().toLowerCase();
 
     if (!this.isValidEmail(cleanEmail)) {
-      throw new Error('Please enter a valid email address (e.g. user@gmail.com).');
+      throw new Error('Please enter a valid email address ending with a domain extension (e.g. user@gmail.com).');
     }
 
+    // Step 1: Verify password credentials with Supabase
     const { data, error } = await supabase.auth.signInWithPassword({
       email: cleanEmail,
       password
     });
 
     if (error) {
-      throw new Error(error.message || 'Invalid credentials or authentication error.');
+      throw new Error(error.message || 'Invalid credentials. Please check your email and password.');
     }
 
     if (!data?.user) {
-      throw new Error('Authentication failed: No user session returned from Supabase.');
+      throw new Error('Authentication failed: No user found.');
+    }
+
+    // Step 2: Trigger 6-digit OTP code to the email for Sign In 2FA
+    try {
+      await supabase.auth.signInWithOtp({ email: cleanEmail });
+    } catch (_e) {
+      try {
+        await supabase.auth.resend({ type: 'signup', email: cleanEmail });
+      } catch (_err) {}
     }
 
     const userSession = {
@@ -159,7 +187,6 @@ export const authService = {
       isNewUser: false
     };
 
-    storageService.setUserSession(userSession);
     return userSession;
   },
 

@@ -116,10 +116,14 @@ export default function LoginPage({ onLogin }) {
     try {
       const userSession = await authService.login({ email, password: form.password });
       setLoading(false);
-      onLogin(userSession);
+      // Show 6-digit OTP Modal for Sign In verification
+      setOtpCode('');
+      setOtpError('');
+      setOtpResent(false);
+      setOtpModal({ email: normEmail, name: userSession.name, userSession, mode: 'login' });
     } catch (err) {
       setLoading(false);
-      setError(err.message || 'Invalid credentials or user not found. Please check your email or Create an Account.');
+      setError(err.message || 'Invalid credentials or user not found. Please check your email and password.');
       setErrorAction({ type: 'switch_to_signup', email });
     }
   }
@@ -153,7 +157,7 @@ export default function LoginPage({ onLogin }) {
   async function performOAuthLogin(provider, emailToUse) {
     const email = emailToUse.trim().toLowerCase();
     if (!authService.isValidEmail(email)) {
-      setError('Please enter a valid email address with a domain (e.g. user@gmail.com).');
+      setError('Please enter a valid email address with a domain extension (e.g. user@gmail.com).');
       return;
     }
 
