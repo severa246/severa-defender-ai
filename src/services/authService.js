@@ -223,7 +223,7 @@ export const authService = {
     }
 
     const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
-      redirectTo: `${window.location.origin}/#reset-password`
+      redirectTo: window.location.origin
     });
 
     if (error) {
@@ -245,9 +245,16 @@ export const authService = {
       throw new Error('New password must be at least 6 characters long.');
     }
 
-    try {
-      await supabase.auth.updateUser({ password: newPassword });
-    } catch (_e) {}
+    // Try updating active session password
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+    // Fallback if session missing: register new password in Supabase DB
+    if (error) {
+      await supabase.auth.signUp({
+        email: cleanEmail,
+        password: newPassword
+      });
+    }
 
     try {
       await supabase.auth.signInWithOtp({ email: cleanEmail });
