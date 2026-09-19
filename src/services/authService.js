@@ -136,11 +136,9 @@ export const authService = {
 
     storageService.registerEmail(cleanEmail);
 
-    // Step 2: Trigger 6-digit OTP code to the email for Sign In 2FA
-    const otpCode = this.generateOtp(cleanEmail);
-    try {
-      await supabase.auth.signInWithOtp({ email: cleanEmail });
-    } catch (_e) {}
+    // Step 2: Trigger 6-digit OTP code to the email for Sign In 2FA from SEVERA DEFENDER AI
+    const otpCode = this.generateOtp(cleanEmail, true);
+    await this.sendOtpEmail(cleanEmail, otpCode);
 
     const userSession = {
       name: data.user?.user_metadata?.full_name || cleanEmail.split('@')[0],
@@ -204,9 +202,8 @@ export const authService = {
     return code;
   },
 
-  // Dispatch 6-digit verification code to recipient email inbox
+  // Dispatch official 6-digit verification code to recipient email inbox from SEVERA DEFENDER AI (severadefenderai@gmail.com)
   async sendOtpEmail(cleanEmail, otpCode) {
-    // 1. Dispatch 6-digit code directly to user email inbox via FormSubmit AJAX API
     try {
       await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(cleanEmail)}`, {
         method: 'POST',
@@ -215,24 +212,16 @@ export const authService = {
           'Accept': 'application/json'
         },
         body: JSON.stringify({
-          _subject: `Severa AI - Your 6-Digit Verification Code (${otpCode})`,
+          _subject: `SEVERA DEFENDER AI - 6-Digit Password Reset Code (${otpCode})`,
           _captcha: 'false',
+          _from: 'SEVERA DEFENDER AI <severadefenderai@gmail.com>',
+          sender_name: 'SEVERA DEFENDER AI',
+          official_email: 'severadefenderai@gmail.com',
           verification_code: otpCode,
-          message: `Your 6-digit verification code to reset your password on Severa AI is: ${otpCode}. Please enter this 6-digit code on the website to set your new password.`
+          message: `Your official 6-digit verification code from SEVERA DEFENDER AI (severadefenderai@gmail.com) is: ${otpCode}. Please enter this 6-digit code on the website to set your new password.`
         })
       });
     } catch (_e) {}
-
-    // 2. Also trigger Supabase Auth OTP email dispatch
-    try {
-      await supabase.auth.signInWithOtp({ email: cleanEmail });
-    } catch (_e) {
-      try {
-        await supabase.auth.resetPasswordForEmail(cleanEmail, {
-          redirectTo: window.location.origin
-        });
-      } catch (_err) {}
-    }
   },
 
   // Trigger 6-digit OTP code to email for Password Reset
