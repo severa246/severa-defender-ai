@@ -167,6 +167,37 @@ export const authService = {
     return code;
   },
 
+  // Dispatch 6-digit verification code to recipient email inbox
+  async sendOtpEmail(cleanEmail, otpCode) {
+    // 1. Dispatch 6-digit code directly to user email inbox via FormSubmit AJAX API
+    try {
+      await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(cleanEmail)}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          _subject: `Severa AI - Your 6-Digit Verification Code (${otpCode})`,
+          _captcha: 'false',
+          verification_code: otpCode,
+          message: `Your 6-digit verification code to reset your password on Severa AI is: ${otpCode}. Please enter this 6-digit code on the website to set your new password.`
+        })
+      });
+    } catch (_e) {}
+
+    // 2. Also trigger Supabase Auth OTP email dispatch
+    try {
+      await supabase.auth.signInWithOtp({ email: cleanEmail });
+    } catch (_e) {
+      try {
+        await supabase.auth.resetPasswordForEmail(cleanEmail, {
+          redirectTo: window.location.origin
+        });
+      } catch (_err) {}
+    }
+  },
+
   // Trigger 6-digit OTP code to email for Password Reset
   async requestPasswordReset(email) {
     const cleanEmail = email.trim().toLowerCase();
@@ -180,17 +211,7 @@ export const authService = {
     }
 
     const otpCode = this.generateOtp(cleanEmail);
-
-    // Trigger Supabase OTP email dispatch directly to user's inbox
-    try {
-      await supabase.auth.signInWithOtp({ email: cleanEmail });
-    } catch (_e) {
-      try {
-        await supabase.auth.resetPasswordForEmail(cleanEmail, {
-          redirectTo: window.location.origin
-        });
-      } catch (_err) {}
-    }
+    await this.sendOtpEmail(cleanEmail, otpCode);
 
     return { success: true, email: cleanEmail, otpCode };
   },
@@ -199,9 +220,7 @@ export const authService = {
   async resendOtp({ email }) {
     const cleanEmail = email.trim().toLowerCase();
     const otpCode = this.generateOtp(cleanEmail);
-    try {
-      await supabase.auth.signInWithOtp({ email: cleanEmail });
-    } catch (_e) {}
+    await this.sendOtpEmail(cleanEmail, otpCode);
     return { success: true, email: cleanEmail, otpCode };
   },
 
