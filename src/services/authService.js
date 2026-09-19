@@ -16,7 +16,13 @@ export const authService = {
 
   // Check real-time if an email is registered in Supabase DB auth.users table
   async isUserInSupabaseDB(email) {
+    if (!email) return false;
     const cleanEmail = email.trim().toLowerCase();
+
+    // Check local storage list first
+    if (storageService.isEmailRegistered(cleanEmail)) {
+      return true;
+    }
 
     const { error } = await supabase.auth.signUp({
       email: cleanEmail,
@@ -118,7 +124,7 @@ export const authService = {
         wrongPassError.code = 'INCORRECT_PASSWORD';
         throw wrongPassError;
       } else {
-        const notFoundError = new Error(`Account not found for email "${cleanEmail}". Redirecting to Create Account...`);
+        const notFoundError = new Error(`Email address "${cleanEmail}" is not registered. Redirecting to Create Account...`);
         notFoundError.code = 'USER_NOT_FOUND';
         throw notFoundError;
       }
@@ -170,12 +176,12 @@ export const authService = {
 
     const exists = await this.isUserInSupabaseDB(cleanEmail);
     if (!exists) {
-      throw new Error(`No account registered with email "${cleanEmail}". Please check your email address or Create an Account.`);
+      throw new Error(`Email address "${cleanEmail}" is not registered. Please check your email or Create an Account.`);
     }
 
     const otpCode = this.generateOtp(cleanEmail);
 
-    // Trigger Supabase OTP email dispatch
+    // Trigger Supabase OTP email dispatch directly to user's inbox
     try {
       await supabase.auth.signInWithOtp({ email: cleanEmail });
     } catch (_e) {
@@ -205,7 +211,7 @@ export const authService = {
     const cleanToken = (token || '').trim();
 
     if (!cleanToken || cleanToken.length < 6) {
-      throw new Error('Please enter the full 6-digit verification code.');
+      throw new Error('Please enter the full 6-digit verification code sent to your email.');
     }
 
     // Check 1: Match against active local 6-digit OTP store
@@ -241,7 +247,7 @@ export const authService = {
     } catch (_err) {}
 
     // Check 3: Reject invalid code
-    throw new Error('Invalid 6-digit verification code. Access denied.');
+    throw new Error('Invalid 6-digit verification code. Please enter the correct code sent to your email.');
   },
 
   // Update user password after 6-digit OTP verification

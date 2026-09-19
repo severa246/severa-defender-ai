@@ -736,15 +736,14 @@ export default function LoginPage({ onLogin }) {
               </div>
             </div>
 
-            {/* OTP Code Notice Banner */}
-            <div className="p-3 rounded-xl bg-[#00dc82]/10 border border-[#00dc82]/30 text-xs text-slate-200 flex items-center justify-between">
-              <div>
-                <span className="font-bold text-[#00dc82] block">6-Digit Verification Code:</span>
-                <span className="text-[11px] text-slate-400">Check email inbox or enter code below</span>
-              </div>
-              <div className="bg-[#050810] text-[#00dc82] font-mono text-lg font-black px-3.5 py-1 rounded-lg border border-[#00dc82]/40 tracking-widest shadow-inner">
-                {otpModal.otpCode || '123456'}
-              </div>
+            {/* Email Inbox Notice Banner */}
+            <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/30 text-xs text-slate-200 space-y-1">
+              <p className="font-bold text-blue-400 flex items-center gap-1.5">
+                <span>📧</span> 6-Digit Code Sent To Email Inbox
+              </p>
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                Please check your email inbox for <span className="text-white font-bold">{otpModal.email}</span> and enter the 6-digit code below to proceed.
+              </p>
             </div>
 
             {/* OTP Code Form */}
