@@ -74,18 +74,21 @@ export default function LoginPage({ onLogin }) {
 
   async function handleForgotPasswordClick() {
     setError('');
-    setForgotSuccess(null);
     const email = form.email.trim().toLowerCase();
     if (!email || !authService.isValidEmail(email)) {
-      setError('Please enter your registered email address above first to receive password reset link.');
+      setError('Please enter your registered email address above first to receive 6-digit reset code.');
       return;
     }
 
     setLoading(true);
     try {
-      const res = await authService.requestPasswordReset(email);
+      await authService.requestPasswordReset(email);
       setLoading(false);
-      setForgotSuccess({ email });
+      // Open 6-digit OTP Modal for Forgot Password Verification
+      setOtpCode('');
+      setOtpError('');
+      setOtpResent(false);
+      setOtpModal({ email, name: email.split('@')[0], mode: 'forgot_password' });
     } catch (err) {
       setLoading(false);
       setError(err.message || 'Unable to request password reset.');
@@ -96,8 +99,8 @@ export default function LoginPage({ onLogin }) {
     if (e) e.preventDefault();
     setResetError('');
 
-    if (!resetForm.password || resetForm.password.length < 6) {
-      setResetError('New password must be at least 6 characters long.');
+    if (!resetForm.password || resetForm.password.length < 8) {
+      setResetError('Password length is too short (minimum 8 characters required).');
       return;
     }
     if (resetForm.password !== resetForm.confirmPassword) {
@@ -112,14 +115,9 @@ export default function LoginPage({ onLogin }) {
         newPassword: resetForm.password
       });
       setResetLoading(false);
-      const targetEmail = resetModal.email;
       setResetModal(null);
-
-      // Trigger 6-digit OTP verification modal for sign in
-      setOtpCode('');
-      setOtpError('');
-      setOtpResent(false);
-      setOtpModal({ email: targetEmail, name: userSession.name, userSession, mode: 'reset' });
+      // Password updated successfully -> Log in to workspace
+      onLogin(userSession);
     } catch (err) {
       setResetLoading(false);
       setResetError(err.message || 'Failed to update password.');
@@ -144,10 +142,14 @@ export default function LoginPage({ onLogin }) {
       return;
     }
 
+    if (!form.password || form.password.length < 8) {
+      setError('Password length is too short (minimum 8 characters required).');
+      return;
+    }
+
     // ── CREATE ACCOUNT TAB FLOW ──
     if (tab === 'signup') {
       if (!form.name.trim()) { setError('Please enter your full name.'); return; }
-      if (form.password.length < 6) { setError('Password must be at least 6 characters.'); return; }
       if (form.password !== form.confirmPassword) { setError('Passwords do not match.'); return; }
 
       setLoading(true);
@@ -228,11 +230,23 @@ export default function LoginPage({ onLogin }) {
         token: otpCode
       });
       setOtpLoading(false);
+
+      // If OTP was for Forgot Password -> Open Reset Password Modal!
+      if (otpModal.mode === 'forgot_password') {
+        const targetEmail = otpModal.email;
+        setOtpModal(null);
+        setResetError('');
+        setResetForm({ password: '', confirmPassword: '' });
+        setResetModal({ email: targetEmail });
+        return;
+      }
+
+      // Standard Login / Signup -> Navigate to Workspace
       setOtpModal(null);
       onLogin(verifiedSession);
     } catch (err) {
       setOtpLoading(false);
-      setOtpError(err.message || 'Verification failed. Please check the code.');
+      setOtpError(err.message || 'Invalid 6-digit verification code. Access denied.');
     }
   }
 

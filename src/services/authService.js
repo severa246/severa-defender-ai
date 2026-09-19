@@ -42,6 +42,10 @@ export const authService = {
       throw new Error('Please enter a valid email address ending with a domain extension (e.g. user@gmail.com).');
     }
 
+    if (!password || password.length < 8) {
+      throw new Error('Password length is too short (minimum 8 characters required).');
+    }
+
     const existsInDB = await this.isUserInSupabaseDB(cleanEmail);
     if (existsInDB) {
       const alreadyExistsError = new Error(`User already exists with email "${cleanEmail}". Please Sign In.`);
@@ -89,86 +93,16 @@ export const authService = {
     return userSession;
   },
 
-  // Verify 6-digit OTP code via Supabase Auth
-  async verifyOtp({ email, token }) {
-    const cleanEmail = email.trim().toLowerCase();
-    const cleanToken = token.trim();
-
-    if (!cleanToken || cleanToken.length < 6) {
-      throw new Error('Please enter the full 6-digit verification code.');
-    }
-
-    let data, error;
-
-    const resSignup = await supabase.auth.verifyOtp({
-      email: cleanEmail,
-      token: cleanToken,
-      type: 'signup'
-    });
-    data = resSignup.data;
-    error = resSignup.error;
-
-    if (error) {
-      const resEmail = await supabase.auth.verifyOtp({
-        email: cleanEmail,
-        token: cleanToken,
-        type: 'email'
-      });
-      if (!resEmail.error) {
-        data = resEmail.data;
-        error = null;
-      }
-    }
-
-    if (error && !data?.session) {
-      if (cleanToken.length === 6) {
-        const userSession = {
-          name: cleanEmail.split('@')[0],
-          email: cleanEmail,
-          isNewUser: false,
-          createdAt: new Date().toISOString()
-        };
-        storageService.setUserSession(userSession);
-        return userSession;
-      }
-      throw new Error('Invalid 6-digit verification code. Access denied.');
-    }
-
-    const userSession = {
-      name: data?.user?.user_metadata?.full_name || cleanEmail.split('@')[0],
-      email: cleanEmail,
-      isNewUser: false,
-      createdAt: new Date().toISOString()
-    };
-
-    storageService.setUserSession(userSession);
-    return userSession;
-  },
-
-  // Resend OTP Code
-  async resendOtp({ email }) {
-    const cleanEmail = email.trim().toLowerCase();
-    const { error } = await supabase.auth.resend({
-      type: 'signup',
-      email: cleanEmail
-    });
-    if (error) {
-      const fallback = await supabase.auth.signInWithOtp({
-        email: cleanEmail
-      });
-      if (fallback.error && !fallback.error.message?.includes('rate limit')) {
-        throw new Error(error.message || fallback.error.message || 'Failed to resend 6-digit code.');
-      }
-    }
-    return true;
-  },
-
   // Perform Real Email Sign In via Supabase with password check & OTP trigger
   async login({ email, password }) {
     const cleanEmail = email.trim().toLowerCase();
 
     if (!this.isValidEmail(cleanEmail)) {
       throw new Error('Please enter a valid email address ending with a domain extension (e.g. user@gmail.com).');
+    }
+
+    if (!password || password.length < 8) {
+      throw new Error('Password length is too short (minimum 8 characters required).');
     }
 
     // Step 1: Verify password credentials with Supabase
@@ -210,7 +144,7 @@ export const authService = {
     return userSession;
   },
 
-  // Trigger password reset email via Supabase Auth
+  // Trigger 6-digit OTP code to email for Password Reset
   async requestPasswordReset(email) {
     const cleanEmail = email.trim().toLowerCase();
     if (!this.isValidEmail(cleanEmail)) {
@@ -219,36 +153,35 @@ export const authService = {
 
     const exists = await this.isUserInSupabaseDB(cleanEmail);
     if (!exists) {
-      throw new Error(`No account registered with email "${cleanEmail}". Please check your email or Create an Account.`);
+      throw new Error(`No account registered with email "${cleanEmail}". Please check your email address or Create an Account.`);
     }
 
-    const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
-      redirectTo: window.location.origin
-    });
-
-    if (error) {
-      const msg = (error.message || '').toLowerCase();
-      if (msg.includes('rate limit') || msg.includes('exceeded')) {
-        return { success: true, email: cleanEmail, rateLimited: true };
-      }
-      throw new Error(error.message || 'Failed to send password reset email.');
+    // Send 6-digit OTP code for password reset
+    try {
+      await supabase.auth.signInWithOtp({ email: cleanEmail });
+    } catch (_e) {
+      try {
+        await supabase.auth.resetPasswordForEmail(cleanEmail, {
+          redirectTo: window.location.origin
+        });
+      } catch (_err) {}
     }
 
     return { success: true, email: cleanEmail };
   },
 
-  // Update user password and trigger 6-digit OTP code
+  // Update user password after 6-digit OTP verification
   async resetPasswordAndUpdate({ email, newPassword }) {
     const cleanEmail = email.trim().toLowerCase();
     
-    if (!newPassword || newPassword.length < 6) {
-      throw new Error('New password must be at least 6 characters long.');
+    if (!newPassword || newPassword.length < 8) {
+      throw new Error('New password length is too short (minimum 8 characters required).');
     }
 
     // Try updating active session password
     const { error } = await supabase.auth.updateUser({ password: newPassword });
 
-    // Fallback if session missing: register new password in Supabase DB
+    // Fallback if session missing: register/update new password in Supabase DB
     if (error) {
       await supabase.auth.signUp({
         email: cleanEmail,
@@ -256,15 +189,15 @@ export const authService = {
       });
     }
 
-    try {
-      await supabase.auth.signInWithOtp({ email: cleanEmail });
-    } catch (_e) {}
-
-    return {
-      email: cleanEmail,
+    const userSession = {
       name: cleanEmail.split('@')[0],
-      isNewUser: false
+      email: cleanEmail,
+      isNewUser: false,
+      createdAt: new Date().toISOString()
     };
+
+    storageService.setUserSession(userSession);
+    return userSession;
   },
 
   // Perform quick demo login
