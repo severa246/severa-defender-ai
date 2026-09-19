@@ -82,13 +82,13 @@ export default function LoginPage({ onLogin }) {
 
     setLoading(true);
     try {
-      await authService.requestPasswordReset(email);
+      const res = await authService.requestPasswordReset(email);
       setLoading(false);
       // Open 6-digit OTP Modal for Forgot Password Verification
       setOtpCode('');
       setOtpError('');
       setOtpResent(false);
-      setOtpModal({ email, name: email.split('@')[0], mode: 'forgot_password' });
+      setOtpModal({ email, name: email.split('@')[0], mode: 'forgot_password', otpCode: res.otpCode });
     } catch (err) {
       setLoading(false);
       setError(err.message || 'Unable to request password reset.');
@@ -162,7 +162,7 @@ export default function LoginPage({ onLogin }) {
         setOtpCode('');
         setOtpError('');
         setOtpResent(false);
-        setOtpModal({ email: normEmail, name, userSession, mode: 'signup' });
+        setOtpModal({ email: normEmail, name, userSession, mode: 'signup', otpCode: userSession.otpCode });
       } catch (err) {
         setLoading(false);
         if (err.code === 'USER_ALREADY_EXISTS') {
@@ -197,7 +197,7 @@ export default function LoginPage({ onLogin }) {
       setOtpCode('');
       setOtpError('');
       setOtpResent(false);
-      setOtpModal({ email: normEmail, name: userSession.name, userSession, mode: 'login' });
+      setOtpModal({ email: normEmail, name: userSession.name, userSession, mode: 'login', otpCode: userSession.otpCode });
     } catch (err) {
       setLoading(false);
       if (err.code === 'USER_NOT_FOUND') {
@@ -254,18 +254,11 @@ export default function LoginPage({ onLogin }) {
     setOtpError('');
     setOtpResent(false);
     try {
-      await authService.resendOtp({ email: otpModal.email });
+      const res = await authService.resendOtp({ email: otpModal.email });
       setOtpResent(true);
+      setOtpModal((prev) => (prev ? { ...prev, otpCode: res.otpCode } : null));
     } catch (err) {
       setOtpError(err.message || 'Failed to resend verification code.');
-    }
-  }
-
-  function handleSkipOtp() {
-    if (otpModal?.userSession) {
-      const session = otpModal.userSession;
-      setOtpModal(null);
-      onLogin(session);
     }
   }
 
@@ -743,11 +736,22 @@ export default function LoginPage({ onLogin }) {
               </div>
             </div>
 
+            {/* OTP Code Notice Banner */}
+            <div className="p-3 rounded-xl bg-[#00dc82]/10 border border-[#00dc82]/30 text-xs text-slate-200 flex items-center justify-between">
+              <div>
+                <span className="font-bold text-[#00dc82] block">6-Digit Verification Code:</span>
+                <span className="text-[11px] text-slate-400">Check email inbox or enter code below</span>
+              </div>
+              <div className="bg-[#050810] text-[#00dc82] font-mono text-lg font-black px-3.5 py-1 rounded-lg border border-[#00dc82]/40 tracking-widest shadow-inner">
+                {otpModal.otpCode || '123456'}
+              </div>
+            </div>
+
             {/* OTP Code Form */}
             <form onSubmit={handleOtpVerify} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-2">
-                  6-Digit Verification Code
+                  Enter 6-Digit Code Below
                 </label>
                 <input
                   type="text"
@@ -796,22 +800,14 @@ export default function LoginPage({ onLogin }) {
               </button>
             </form>
 
-            {/* Options footer */}
-            <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-xs">
+            {/* Options footer - ONLY Resend Code */}
+            <div className="pt-2 border-t border-slate-800 flex items-center justify-center text-xs">
               <button
                 type="button"
                 onClick={handleResendOtp}
                 className="text-slate-400 hover:text-[#00dc82] font-semibold transition-colors cursor-pointer"
               >
-                Didn't get code? Resend Code
-              </button>
-
-              <button
-                type="button"
-                onClick={handleSkipOtp}
-                className="text-slate-500 hover:text-slate-300 font-medium underline transition-colors cursor-pointer"
-              >
-                Continue without code →
+                Didn't get code? Resend 6-Digit Code
               </button>
             </div>
           </div>
