@@ -152,18 +152,55 @@ export const authService = {
     return userSession;
   },
 
-  // OTP code store for active verification sessions
+  // OTP code store with localStorage persistence
   otpStore: {},
 
-  // Generate 6-digit OTP code for an email
-  generateOtp(email) {
+  saveOtpToStorage(email, code) {
     const cleanEmail = email.trim().toLowerCase();
+    const item = { code, createdAt: Date.now(), expiresAt: Date.now() + 15 * 60 * 1000 };
+    this.otpStore[cleanEmail] = item;
+    try {
+      const storedData = JSON.parse(localStorage.getItem('severa_otp_store') || '{}');
+      storedData[cleanEmail] = item;
+      localStorage.setItem('severa_otp_store', JSON.stringify(storedData));
+    } catch (_e) {}
+  },
+
+  getStoredOtp(email) {
+    const cleanEmail = email.trim().toLowerCase();
+    if (this.otpStore[cleanEmail]?.code && this.otpStore[cleanEmail]?.expiresAt > Date.now()) {
+      return this.otpStore[cleanEmail].code;
+    }
+    try {
+      const storedData = JSON.parse(localStorage.getItem('severa_otp_store') || '{}');
+      const item = storedData[cleanEmail];
+      if (item && item.code && item.expiresAt > Date.now()) {
+        this.otpStore[cleanEmail] = item;
+        return item.code;
+      }
+    } catch (_e) {}
+    return null;
+  },
+
+  clearStoredOtp(email) {
+    const cleanEmail = email.trim().toLowerCase();
+    delete this.otpStore[cleanEmail];
+    try {
+      const storedData = JSON.parse(localStorage.getItem('severa_otp_store') || '{}');
+      delete storedData[cleanEmail];
+      localStorage.setItem('severa_otp_store', JSON.stringify(storedData));
+    } catch (_e) {}
+  },
+
+  // Generate 6-digit OTP code for an email
+  generateOtp(email, forceNew = false) {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!forceNew) {
+      const existing = this.getStoredOtp(cleanEmail);
+      if (existing) return existing;
+    }
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    this.otpStore[cleanEmail] = {
-      code,
-      createdAt: Date.now(),
-      expiresAt: Date.now() + 10 * 60 * 1000 // 10 mins
-    };
+    this.saveOtpToStorage(cleanEmail, code);
     return code;
   },
 
@@ -210,7 +247,7 @@ export const authService = {
       throw new Error(`Email address "${cleanEmail}" is not registered. Please check your email or Create an Account.`);
     }
 
-    const otpCode = this.generateOtp(cleanEmail);
+    const otpCode = this.generateOtp(cleanEmail, true);
     await this.sendOtpEmail(cleanEmail, otpCode);
 
     return { success: true, email: cleanEmail, otpCode };
@@ -219,7 +256,7 @@ export const authService = {
   // Resend 6-digit OTP code to email
   async resendOtp({ email }) {
     const cleanEmail = email.trim().toLowerCase();
-    const otpCode = this.generateOtp(cleanEmail);
+    const otpCode = this.generateOtp(cleanEmail, true);
     await this.sendOtpEmail(cleanEmail, otpCode);
     return { success: true, email: cleanEmail, otpCode };
   },
@@ -233,10 +270,10 @@ export const authService = {
       throw new Error('Please enter the full 6-digit verification code sent to your email.');
     }
 
-    // Check 1: Match against active local 6-digit OTP store
-    const stored = this.otpStore[cleanEmail];
-    if (stored && stored.code === cleanToken) {
-      delete this.otpStore[cleanEmail];
+    // Check 1: Match against persistent 6-digit OTP store
+    const activeCode = this.getStoredOtp(cleanEmail);
+    if (activeCode && activeCode === cleanToken) {
+      this.clearStoredOtp(cleanEmail);
       const userSession = {
         name: cleanEmail.split('@')[0],
         email: cleanEmail,
@@ -254,7 +291,7 @@ export const authService = {
         type: 'email'
       });
       if (!error && data?.user) {
-        delete this.otpStore[cleanEmail];
+        this.clearStoredOtp(cleanEmail);
         const userSession = {
           name: data.user.user_metadata?.full_name || cleanEmail.split('@')[0],
           email: cleanEmail,
