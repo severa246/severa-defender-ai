@@ -52,24 +52,12 @@ export default function LoginPage({ onLogin }) {
   const [forgotSuccess, setForgotSuccess] = useState(null); // null | { email: '' }
 
   React.useEffect(() => {
-    const checkRecovery = () => {
-      if (window.location.hash.includes('type=recovery') || window.location.hash.includes('reset-password')) {
-        const email = form.email || 'user';
-        setResetModal({ email });
-      }
-    };
-    checkRecovery();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        const userEmail = session?.user?.email || form.email || 'user';
-        setResetModal({ email: userEmail });
-      }
-    });
-
-    return () => {
-      authListener?.subscription?.unsubscribe();
-    };
+    // Clear any hash tokens from URL so link clicks do not bypass 6-digit code verification
+    if (window.location.hash) {
+      try {
+        window.history.replaceState(null, '', window.location.pathname);
+      } catch (_e) {}
+    }
   }, []);
 
   async function handleForgotPasswordClick() {

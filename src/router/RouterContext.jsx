@@ -38,32 +38,24 @@ export function RouterProvider({ children }) {
     }
   }, []);
 
-  // Listen for Supabase OAuth Callback events (Google / GitHub redirect)
+  // Ensure URL hash tokens or email magic links DO NOT automatically log in without 6-digit OTP verification
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        const loggedUser = {
-          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email.split('@')[0],
-          email: session.user.email,
-          isNewUser: false
-        };
-        setUser(loggedUser);
-        setPage('/app');
-        try { localStorage.setItem('severa_current_page', '/app'); } catch (_e) {}
+    const cleanHash = () => {
+      if (window.location.hash && (window.location.hash.includes('access_token') || window.location.hash.includes('type=magiclink') || window.location.hash.includes('type=recovery'))) {
+        try {
+          window.history.replaceState(null, '', window.location.pathname);
+        } catch (_e) {}
+        try {
+          supabase.auth.signOut();
+        } catch (_e) {}
       }
-    });
+    };
 
+    cleanHash();
+
+    // Do NOT auto-login user from hash/magiclink events. User must enter 6-digit code to log in.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session?.user) {
-        const loggedUser = {
-          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email.split('@')[0],
-          email: session.user.email,
-          isNewUser: false
-        };
-        setUser(loggedUser);
-        setPage('/app');
-        try { localStorage.setItem('severa_current_page', '/app'); } catch (_e) {}
-      } else if (event === 'SIGNED_OUT') {
+      if (event === 'SIGNED_OUT') {
         setUser(null);
         setPage('/');
         try { localStorage.removeItem('severa_current_page'); } catch (_e) {}
