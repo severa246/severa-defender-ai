@@ -212,13 +212,14 @@ export const authService = {
           'Accept': 'application/json'
         },
         body: JSON.stringify({
+          name: 'SEVERA DEFENDER AI',
+          _replyto: 'severadefenderai@gmail.com',
           _subject: `SEVERA DEFENDER AI - 6-Digit Password Reset Code (${otpCode})`,
           _captcha: 'false',
-          _from: 'SEVERA DEFENDER AI <severadefenderai@gmail.com>',
-          sender_name: 'SEVERA DEFENDER AI',
-          official_email: 'severadefenderai@gmail.com',
-          verification_code: otpCode,
-          message: `Your official 6-digit verification code from SEVERA DEFENDER AI (severadefenderai@gmail.com) is: ${otpCode}. Please enter this 6-digit code on the website to set your new password.`
+          'Sender Name': 'SEVERA DEFENDER AI',
+          'Official Email': 'severadefenderai@gmail.com',
+          'Verification Code': otpCode,
+          'Message': `Your official 6-digit verification code from SEVERA DEFENDER AI (severadefenderai@gmail.com) is: ${otpCode}. Please enter this 6-digit code on the website to set your new password.`
         })
       });
     } catch (_e) {}
