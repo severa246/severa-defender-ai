@@ -17,6 +17,7 @@ export default function TopHeaderBar({
   onSelectProjectFile,
   onOpenReport,
   onOpenDefender,
+  onOpenSandbox,
   onScanFullProject,
 }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -291,6 +292,18 @@ export default function TopHeaderBar({
           <ShieldCheck className="w-3.5 h-3.5 text-indigo-100" />
           <span>Severa Defender AI</span>
         </button>
+
+        {/* Attack Payload Sandbox Simulator Button */}
+        {onOpenSandbox && (
+          <button
+            onClick={onOpenSandbox}
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 rounded-lg text-xs font-semibold transition-all cursor-pointer"
+            title="Open Interactive Attack Payload Sandbox Simulator"
+          >
+            <Cloud className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden md:inline">Attack Sandbox</span>
+          </button>
+        )}
 
         {/* Generate Audit Report button */}
         <button

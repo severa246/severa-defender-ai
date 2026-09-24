@@ -11,6 +11,7 @@ import CustomRuleBuilder from './components/CustomRuleBuilder';
 import AuditReportModal from './components/AuditReportModal';
 import ManageModelsModal from './components/ManageModelsModal';
 import SeveraDefenderChat from './components/SeveraDefenderChat';
+import PayloadSandboxModal from './components/PayloadSandboxModal';
 import { Shield, Sparkles } from 'lucide-react';
 
 import { analyzeCode } from './engine/scannerEngine';
@@ -80,6 +81,7 @@ export default function App({ user, onLogout }) {
   const [selectedProvider, setSelectedProvider] = useState('');
   const [selectedModel, setSelectedModel] = useState('');
   const [isModelsModalOpen, setIsModelsModalOpen] = useState(false);
+  const [isSandboxOpen, setIsSandboxOpen] = useState(false);
 
   // Resizable Security Inspector Panel State (280px - 580px)
   const [findingsWidth, setFindingsWidth] = useState(380);
@@ -1476,6 +1478,7 @@ export default function App({ user, onLogout }) {
           onSelectProjectFile={handleSelectProjectFile}
           onOpenReport={() => setIsReportOpen(true)}
           onOpenDefender={() => handleOpenDefenderWithFinding(null)}
+          onOpenSandbox={() => setIsSandboxOpen(true)}
           onScanFullProject={handleScanFullProject}
         />
 
@@ -1683,6 +1686,12 @@ export default function App({ user, onLogout }) {
           </div>
         </div>
       )}
+
+      {/* Interactive Attack Payload Sandbox Simulator Modal */}
+      <PayloadSandboxModal
+        isOpen={isSandboxOpen}
+        onClose={() => setIsSandboxOpen(false)}
+      />
 
       {/* Floating Severa Defender Quick Launcher Trigger Button */}
       <button
