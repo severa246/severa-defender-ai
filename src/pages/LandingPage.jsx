@@ -201,9 +201,16 @@ function DemoTerminal() {
   }, [activeStep]);
 
   useEffect(() => {
-    if (revealedOutput >= step.items.length) return;
-    const t = setTimeout(() => setRevealedOutput(r => r + 1), 600);
-    return () => clearTimeout(t);
+    if (revealedOutput < step.items.length) {
+      const t = setTimeout(() => setRevealedOutput((r) => r + 1), 450);
+      return () => clearTimeout(t);
+    } else {
+      // Once all terminal lines for the current step are revealed, wait 1.8s then auto-advance to next step
+      const loopTimer = setTimeout(() => {
+        setActiveStep((prev) => (prev + 1) % TERMINAL_STEPS.length);
+      }, 1800);
+      return () => clearTimeout(loopTimer);
+    }
   }, [revealedOutput, activeStep, step.items.length]);
 
   return (
