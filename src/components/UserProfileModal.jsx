@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   User, 
   Mail, 
@@ -63,10 +64,16 @@ export default function UserProfileModal({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
-      {/* Modal Container */}
-      <div className="relative w-full max-w-lg bg-[#0c101d] border border-slate-800 rounded-3xl p-6 shadow-2xl shadow-cyan-950/40 text-slate-100 overflow-hidden space-y-6">
+  return createPortal(
+    <div 
+      onClick={onClose}
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn"
+    >
+      {/* Modal Container Centered on Screen */}
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-lg bg-[#0c101d] border border-slate-800 rounded-3xl p-6 shadow-2xl shadow-cyan-950/50 text-slate-100 overflow-hidden space-y-5 max-h-[90vh] overflow-y-auto"
+      >
         
         {/* Ambient Top Glow */}
         <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-72 h-36 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-purple-500/20 blur-3xl rounded-full pointer-events-none" />
@@ -108,7 +115,7 @@ export default function UserProfileModal({
           <div className="flex-1 min-w-0 space-y-1">
             <div className="flex items-center gap-2">
               <h4 className="text-base font-bold text-white truncate">{name}</h4>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1 shrink-0">
                 <CheckCircle2 className="w-3 h-3" /> Verified
               </span>
             </div>
@@ -261,6 +268,7 @@ export default function UserProfileModal({
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
