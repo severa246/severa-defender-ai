@@ -229,6 +229,17 @@ export const authService = {
 
   // Dispatch official 6-digit verification code to recipient email inbox from SEVERA DEFENDER AI (severadefenderai@gmail.com)
   async sendOtpEmail(cleanEmail, otpCode) {
+    // 1. Primary: Serverless Gmail SMTP endpoint (severadefenderai@gmail.com)
+    try {
+      const res = await fetch('/api/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanEmail, otpCode })
+      });
+      if (res.ok) return;
+    } catch (_e) {}
+
+    // 2. Fallback: FormSubmit Ajax dispatch
     try {
       const params = new URLSearchParams();
       params.append('name', 'SEVERA DEFENDER AI');
@@ -249,7 +260,7 @@ export const authService = {
         },
         body: params.toString()
       });
-    } catch (_e) {}
+    } catch (_e2) {}
   },
 
   // Trigger 6-digit OTP code to email for Password Reset
