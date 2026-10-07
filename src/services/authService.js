@@ -108,7 +108,7 @@ export const authService = {
     this.saveUserPassword(cleanEmail, password);
 
     const otpCode = this.generateOtp(cleanEmail, true);
-    await this.sendOtpEmail(cleanEmail, otpCode);
+    await this.sendOtpEmail(cleanEmail, otpCode, 'signup');
 
     const userSession = {
       name: name || data?.user?.user_metadata?.full_name || cleanEmail.split('@')[0],
@@ -193,7 +193,7 @@ export const authService = {
 
     // Step 2: Trigger 6-digit OTP code to the email for Sign In 2FA from SEVERA DEFENDER AI
     const otpCode = this.generateOtp(cleanEmail, true);
-    await this.sendOtpEmail(cleanEmail, otpCode);
+    await this.sendOtpEmail(cleanEmail, otpCode, 'login');
 
     const userSession = {
       name: data?.user?.user_metadata?.full_name || cleanEmail.split('@')[0],
@@ -258,7 +258,7 @@ export const authService = {
   },
 
   // Dispatch official 6-digit verification code to recipient email inbox from SEVERA DEFENDER AI (severadefenderai@gmail.com)
-  async sendOtpEmail(cleanEmail, otpCode) {
+  async sendOtpEmail(cleanEmail, otpCode, purpose = 'verification') {
     // 1. Primary: Serverless Gmail SMTP endpoint (severadefenderai@gmail.com)
     try {
       const controller = new AbortController();
@@ -266,7 +266,7 @@ export const authService = {
       const res = await fetch('/api/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: cleanEmail, otpCode }),
+        body: JSON.stringify({ email: cleanEmail, otpCode, purpose }),
         signal: controller.signal
       });
       clearTimeout(timeoutId);
@@ -286,7 +286,8 @@ export const authService = {
       params.append('Sender Name', 'SEVERA DEFENDER AI');
       params.append('Official Email', 'severadefenderai@gmail.com');
       params.append('Verification Code', otpCode);
-      params.append('Message', `Your official 6-digit verification code from SEVERA DEFENDER AI is: ${otpCode}. Please enter this 6-digit code on the website to set your password or verify your account.`);
+      params.append('Purpose', purpose);
+      params.append('Message', `Your official 6-digit verification code from SEVERA DEFENDER AI is: ${otpCode}. Please enter this 6-digit code on the website.`);
 
       await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(cleanEmail)}`, {
         method: 'POST',
@@ -314,16 +315,16 @@ export const authService = {
     }
 
     const otpCode = this.generateOtp(cleanEmail, true);
-    await this.sendOtpEmail(cleanEmail, otpCode);
+    await this.sendOtpEmail(cleanEmail, otpCode, 'reset_password');
 
     return { success: true, email: cleanEmail, otpCode };
   },
 
   // Resend 6-digit OTP code to email
-  async resendOtp({ email }) {
+  async resendOtp({ email, purpose = 'verification' }) {
     const cleanEmail = email.trim().toLowerCase();
     const otpCode = this.generateOtp(cleanEmail, true);
-    await this.sendOtpEmail(cleanEmail, otpCode);
+    await this.sendOtpEmail(cleanEmail, otpCode, purpose);
     return { success: true, email: cleanEmail, otpCode };
   },
 

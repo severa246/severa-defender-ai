@@ -778,20 +778,29 @@ export default function LoginPage({ onLogin }) {
               <X size={18} />
             </button>
 
-            {/* Header & email notification text */}
+            {/* Context-aware Title & Subtext */}
             <div className="text-center space-y-1.5 pt-1">
-              <h3 className="text-lg font-bold text-white">
-                Verify 6-Digit Code
+              <h3 className="text-base font-bold text-white">
+                {otpModal.mode === 'forgot_password'
+                  ? 'Enter Code for Resetting Password'
+                  : otpModal.mode === 'signup'
+                  ? 'Enter Code for Creating Account'
+                  : 'Enter Code for Sign In'}
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed px-2">
-                A 6-digit code has been sent to <br />
+                {otpModal.mode === 'forgot_password'
+                  ? 'A 6-digit code for resetting your password has been sent to'
+                  : otpModal.mode === 'signup'
+                  ? 'A 6-digit code for creating your account has been sent to'
+                  : 'A 6-digit code for signing in has been sent to'}{' '}
+                <br />
                 <span className="text-[#00dc82] font-semibold">{otpModal.email}</span>
               </p>
             </div>
 
-            {/* OTP Code Input Form */}
+            {/* OTP Code Form */}
             <form onSubmit={handleOtpVerify} className="space-y-4">
-              <div>
+              <div className="space-y-2">
                 <input
                   type="text"
                   maxLength={6}
@@ -806,6 +815,28 @@ export default function LoginPage({ onLogin }) {
                   className="w-full bg-slate-900 border border-slate-700 focus:border-[#00dc82] rounded-xl px-4 py-3.5 text-center text-2xl tracking-[0.4em] font-mono text-[#00dc82] placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-[#00dc82]/30 transition-all font-bold"
                   required
                 />
+
+                {/* Paste Code Button */}
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const text = await navigator.clipboard.readText();
+                        const clean = text.replace(/\D/g, '').slice(0, 6);
+                        if (clean) {
+                          setOtpCode(clean);
+                          setOtpError('');
+                        }
+                      } catch (_err) {
+                        setOtpError('Clipboard permission denied. Please enter the 6-digit code manually.');
+                      }
+                    }}
+                    className="text-[11px] font-semibold text-slate-400 hover:text-[#00dc82] transition-colors flex items-center gap-1 cursor-pointer bg-slate-900/60 border border-slate-800 px-2.5 py-1 rounded-lg"
+                  >
+                    <span>📋 Paste Code</span>
+                  </button>
+                </div>
               </div>
 
               {/* Error message */}
