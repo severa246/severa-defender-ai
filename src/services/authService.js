@@ -231,16 +231,22 @@ export const authService = {
   async sendOtpEmail(cleanEmail, otpCode) {
     // 1. Primary: Serverless Gmail SMTP endpoint (severadefenderai@gmail.com)
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
       const res = await fetch('/api/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: cleanEmail, otpCode })
+        body: JSON.stringify({ email: cleanEmail, otpCode }),
+        signal: controller.signal
       });
+      clearTimeout(timeoutId);
       if (res.ok) return;
     } catch (_e) {}
 
     // 2. Fallback: FormSubmit Ajax dispatch
     try {
+      const controller2 = new AbortController();
+      const timeoutId2 = setTimeout(() => controller2.abort(), 3500);
       const params = new URLSearchParams();
       params.append('name', 'SEVERA DEFENDER AI');
       params.append('email', cleanEmail);
@@ -258,8 +264,10 @@ export const authService = {
           'Content-Type': 'application/x-www-form-urlencoded',
           'Accept': 'application/json'
         },
-        body: params.toString()
+        body: params.toString(),
+        signal: controller2.signal
       });
+      clearTimeout(timeoutId2);
     } catch (_e2) {}
   },
 
