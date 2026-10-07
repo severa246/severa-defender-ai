@@ -97,11 +97,11 @@ export default async function handler(req, res) {
                 <span style="font-size: 42px; font-weight: 900; color: #00dc82; font-family: monospace, Courier, sans-serif; letter-spacing: 4px; user-select: all; -webkit-user-select: all;">${otpCode}</span>
               </div>
 
-              <!-- Dedicated Copy Code Badge -->
-              <div style="margin-top: 12px; text-align: center;">
-                <span style="display: inline-block; padding: 8px 18px; background-color: rgba(0, 220, 130, 0.15); border: 1px solid #00dc82; color: #00dc82; font-weight: 800; font-size: 13px; border-radius: 8px; font-family: monospace; user-select: all; -webkit-user-select: all;">
-                  📋 Copy Code: ${otpCode}
-                </span>
+              <!-- Dedicated Click to Copy & Auto-Fill Link Badge -->
+              <div style="margin-top: 14px; text-align: center;">
+                <a href="${autoFillUrl}" target="_blank" style="display: inline-block; padding: 10px 20px; background-color: rgba(0, 220, 130, 0.15); border: 1.5px solid #00dc82; color: #00dc82; font-weight: 800; font-size: 13px; border-radius: 8px; font-family: monospace, Courier, sans-serif; text-decoration: none; box-shadow: 0 2px 8px rgba(0,220,130,0.2);">
+                  📋 Click to Copy & Auto-Fill Code: ${otpCode} →
+                </a>
               </div>
 
               <p style="color: #94a3b8; font-size: 12px; margin-top: 14px; leading-relaxed: 1.5;">${purposeDesc}</p>

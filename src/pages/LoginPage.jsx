@@ -801,7 +801,7 @@ export default function LoginPage({ onLogin }) {
       {/* ── 6-Digit OTP Code Verification Modal ── */}
       {otpModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
-          <div className="bg-[#121826] border border-slate-700/60 text-white rounded-2xl w-full max-w-sm p-6 shadow-2xl space-y-5 relative font-sans">
+          <div className="bg-[#121826] border border-slate-700/60 text-white rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-5 relative font-sans">
             <button
               onClick={() => setOtpModal(null)}
               className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors cursor-pointer"
@@ -853,16 +853,17 @@ export default function LoginPage({ onLogin }) {
                       }
                     }}
                     placeholder="------"
-                    className="flex-1 bg-slate-900 border border-slate-700 focus:border-[#00dc82] rounded-xl px-3 py-3.5 text-center text-2xl tracking-[0.3em] font-mono text-[#00dc82] placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-[#00dc82]/30 transition-all font-bold"
+                    className="flex-1 min-w-0 bg-slate-900 border border-slate-700 focus:border-[#00dc82] rounded-xl px-3 py-3.5 text-center text-2xl tracking-[0.3em] font-mono text-[#00dc82] placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-[#00dc82]/30 transition-all font-bold"
                     required
                   />
                   <button
                     type="button"
                     onClick={async () => {
-                      const codeToCopy = otpCode || otpModal?.otpCode;
+                      const codeToCopy = otpCode || otpModal?.otpCode || authService.getStoredOtp(otpModal?.email);
                       if (codeToCopy) {
                         try {
                           await navigator.clipboard.writeText(codeToCopy);
+                          if (!otpCode) setOtpCode(codeToCopy);
                           setCopySuccess(true);
                           setTimeout(() => setCopySuccess(false), 2000);
                         } catch (_e) {}
@@ -893,7 +894,13 @@ export default function LoginPage({ onLogin }) {
                           setOtpCode(clean);
                           setOtpError('');
                         }
-                      } catch (_e) {}
+                      } catch (_e) {
+                        const fallback = otpModal?.otpCode || authService.getStoredOtp(otpModal?.email);
+                        if (fallback) {
+                          setOtpCode(fallback);
+                          setOtpError('');
+                        }
+                      }
                     }}
                     className="text-[11px] font-bold text-[#00dc82] hover:underline transition-all cursor-pointer"
                   >
