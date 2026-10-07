@@ -60,7 +60,8 @@ export default function LoginPage({ onLogin }) {
       const urlParams = new URLSearchParams(window.location.search);
       const urlOtp = urlParams.get('otp');
       const urlEmail = urlParams.get('email');
-      const urlMode = urlParams.get('mode') || 'forgot_password';
+      const rawMode = urlParams.get('mode') || 'forgot_password';
+      const urlMode = (rawMode === 'reset_password' || rawMode === 'forgot_password') ? 'forgot_password' : rawMode;
 
       if (urlOtp && urlEmail && urlOtp.length === 6) {
         const cleanEmail = urlEmail.trim().toLowerCase();
@@ -255,7 +256,7 @@ export default function LoginPage({ onLogin }) {
       setOtpLoading(false);
 
       // If OTP was for Forgot Password -> Open Reset Password Modal!
-      if (otpModal.mode === 'forgot_password') {
+      if (otpModal.mode === 'forgot_password' || otpModal.mode === 'reset_password') {
         const targetEmail = otpModal.email;
         setOtpModal(null);
         setResetError('');
