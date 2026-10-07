@@ -30,20 +30,20 @@ export default async function handler(req, res) {
 
   let subjectText = `${otpCode} is your Severa AI verification code`;
   let purposeBadge = `🔐 Purpose: Verification Code`;
-  let purposeDesc = `Copy the 6-digit code above and enter it manually on the website to verify.`;
+  let purposeDesc = `Double-click or select the 6-digit code above to copy it, then enter it on the website.`;
 
   if (purpose === 'reset_password' || purpose === 'forgot_password') {
     subjectText = `${otpCode} is your Severa AI password reset code`;
     purposeBadge = `🔑 Purpose: Password Reset Verification`;
-    purposeDesc = `Copy the 6-digit code above and enter it on the website to reset your password.`;
+    purposeDesc = `Double-click or select the 6-digit code above to copy it, then enter it on the website to reset your password.`;
   } else if (purpose === 'signup') {
     subjectText = `${otpCode} is your Severa AI account verification code`;
     purposeBadge = `✨ Purpose: New Account Registration`;
-    purposeDesc = `Copy the 6-digit code above and enter it on the website to complete registration.`;
+    purposeDesc = `Double-click or select the 6-digit code above to copy it, then enter it on the website to complete registration.`;
   } else if (purpose === 'login') {
     subjectText = `${otpCode} is your Severa AI sign-in code`;
     purposeBadge = `🛡️ Purpose: Sign In Verification`;
-    purposeDesc = `Copy the 6-digit code above and enter it on the website to sign in.`;
+    purposeDesc = `Double-click or select the 6-digit code above to copy it, then enter it on the website to sign in.`;
   }
 
   try {
@@ -64,7 +64,7 @@ export default async function handler(req, res) {
       from: '"Severa AI" <severadefenderai@gmail.com>',
       to: email,
       subject: subjectText,
-      text: `Your Severa AI verification code is: ${otpCode}. Enter it at: ${siteUrl}`,
+      text: `Your Severa AI verification code is: ${otpCode}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -93,18 +93,11 @@ export default async function handler(req, res) {
               <p style="color: #cbd5e1; font-size: 14px; margin-bottom: 12px; font-weight: 600;">Your 6-digit verification code is:</p>
 
               <!-- Single clean code box for copying -->
-              <div style="margin: 18px 0; padding: 18px; background-color: #050810; border-radius: 12px; border: 2px solid #00dc82; text-align: center;">
+              <div style="margin: 18px 0; padding: 20px; background-color: #050810; border-radius: 12px; border: 2px solid #00dc82; text-align: center;">
                 <span style="font-size: 44px; font-weight: 900; color: #00dc82; font-family: monospace, Courier, sans-serif; letter-spacing: 6px; user-select: all; -webkit-user-select: all;">${otpCode}</span>
               </div>
 
-              <p style="color: #94a3b8; font-size: 12px; margin-top: 14px; leading-relaxed: 1.5;">${purposeDesc}</p>
-
-              <!-- Open Website Link -->
-              <div style="margin-top: 20px;">
-                <a href="${siteUrl}" target="_blank" style="display: inline-block; padding: 14px 28px; background-color: #00dc82; color: #000000; font-weight: 900; font-size: 13px; border-radius: 10px; text-decoration: none; font-family: sans-serif; box-shadow: 0 4px 12px rgba(0,220,130,0.3);">
-                  Open Severa AI to Enter Code →
-                </a>
-              </div>
+              <p style="color: #94a3b8; font-size: 12px; margin-top: 14px; line-height: 1.6;">${purposeDesc}</p>
             </div>
 
             <div style="text-align: center; margin-top: 24px; font-size: 11px; color: #64748b;">
