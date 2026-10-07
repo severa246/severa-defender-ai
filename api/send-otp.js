@@ -26,20 +26,21 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Email and OTP code are required.' });
   }
 
-  let subjectText = `SEVERA DEFENDER AI - Verification Code: ${otpCode}`;
+  // Format subject and text to trigger Gmail's native OTP banner & "Copy code" button
+  let subjectText = `${otpCode} is your Severa AI verification code`;
   let purposeBadge = `🔐 Purpose: Verification Code`;
   let purposeDesc = `Please enter this 6-digit code on the website.`;
 
   if (purpose === 'reset_password' || purpose === 'forgot_password') {
-    subjectText = `SEVERA DEFENDER AI - Password Reset Code: ${otpCode}`;
+    subjectText = `${otpCode} is your Severa AI password reset code`;
     purposeBadge = `🔑 Purpose: Password Reset Verification`;
     purposeDesc = `Please enter this 6-digit code on the website to reset your password.`;
   } else if (purpose === 'signup') {
-    subjectText = `SEVERA DEFENDER AI - Account Creation Code: ${otpCode}`;
+    subjectText = `${otpCode} is your Severa AI account verification code`;
     purposeBadge = `✨ Purpose: New Account Registration`;
     purposeDesc = `Please enter this 6-digit code on the website to complete creating your account.`;
   } else if (purpose === 'login') {
-    subjectText = `SEVERA DEFENDER AI - Sign In Security Code: ${otpCode}`;
+    subjectText = `${otpCode} is your Severa AI sign-in code`;
     purposeBadge = `🛡️ Purpose: Sign In Verification`;
     purposeDesc = `Please enter this 6-digit code on the website to complete your sign in.`;
   }
@@ -59,42 +60,58 @@ export default async function handler(req, res) {
     });
 
     await transporter.sendMail({
-      from: '"SEVERA DEFENDER AI" <severadefenderai@gmail.com>',
+      from: '"Severa AI" <severadefenderai@gmail.com>',
       to: email,
       subject: subjectText,
+      // Plain text version is crucial for Gmail's native OTP parser to render the "Copy code" banner!
+      text: `Your Severa AI verification code is: ${otpCode}. ${purposeDesc}`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; background-color: #0b1120; color: #ffffff; border-radius: 16px; border: 1px solid #1e293b;">
-          <div style="text-align: center; margin-bottom: 20px;">
-            <h1 style="color: #00dc82; font-size: 24px; font-weight: 900; margin: 0;">Severa AI</h1>
-            <p style="color: #94a3b8; font-size: 12px; margin-top: 4px;">Autonomous Code Security Platform</p>
-          </div>
-
-          <div style="background-color: #121826; padding: 24px; border-radius: 12px; border: 1px solid #334155; text-align: center;">
-            <div style="display: inline-block; padding: 4px 12px; background-color: rgba(0, 220, 130, 0.12); border: 1px solid rgba(0, 220, 130, 0.3); color: #00dc82; font-size: 12px; font-weight: 700; border-radius: 20px; margin-bottom: 16px;">
-              ${purposeBadge}
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <script type="application/ld+json">
+          {
+            "@context": "http://schema.org",
+            "@type": "EmailMessage",
+            "description": "Your Severa AI verification code is ${otpCode}"
+          }
+          </script>
+        </head>
+        <body style="font-family: Arial, sans-serif; background-color: #0b1120; color: #ffffff; margin: 0; padding: 24px;">
+          <div style="max-width: 480px; margin: 0 auto; background-color: #0b1120; padding: 24px; border-radius: 16px; border: 1px solid #1e293b;">
+            <div style="text-align: center; margin-bottom: 20px;">
+              <h1 style="color: #00dc82; font-size: 24px; font-weight: 900; margin: 0;">Severa AI</h1>
+              <p style="color: #94a3b8; font-size: 12px; margin-top: 4px;">Autonomous Code Security Platform</p>
             </div>
 
-            <p style="color: #cbd5e1; font-size: 13px; margin-bottom: 14px; font-weight: 600;">Your 6-digit verification code is:</p>
+            <div style="background-color: #121826; padding: 24px; border-radius: 12px; border: 1px solid #334155; text-align: center;">
+              <div style="display: inline-block; padding: 4px 12px; background-color: rgba(0, 220, 130, 0.12); border: 1px solid rgba(0, 220, 130, 0.3); color: #00dc82; font-size: 12px; font-weight: 700; border-radius: 20px; margin-bottom: 16px;">
+                ${purposeBadge}
+              </div>
 
-            <!-- Continuous selectable code block -->
-            <div style="margin: 16px 0; padding: 18px; background-color: #050810; border-radius: 10px; border: 2px solid #00dc82; text-align: center;">
-              <span style="font-size: 40px; font-weight: 900; color: #00dc82; font-family: monospace, Courier, sans-serif; letter-spacing: 4px;">${otpCode}</span>
+              <p style="color: #cbd5e1; font-size: 14px; margin-bottom: 12px; font-weight: 600;">Your verification code is:</p>
+
+              <!-- Single clean code box formatted for Gmail OTP parser -->
+              <div style="margin: 16px 0; padding: 18px; background-color: #050810; border-radius: 10px; border: 2px solid #00dc82; text-align: center;">
+                <span style="font-size: 42px; font-weight: 900; color: #00dc82; font-family: monospace, Courier, sans-serif; letter-spacing: 4px;">${otpCode}</span>
+              </div>
+
+              <p style="color: #94a3b8; font-size: 12px; margin-top: 14px; leading-relaxed: 1.5;">${purposeDesc}</p>
+
+              <div style="margin-top: 20px;">
+                <a href="https://severa-defender-ai.vercel.app/" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: #00dc82; color: #000000; font-weight: 900; font-size: 13px; border-radius: 10px; text-decoration: none; font-family: sans-serif;">
+                  Open Severa AI to Enter Code →
+                </a>
+              </div>
             </div>
 
-            <p style="color: #94a3b8; font-size: 12px; margin-top: 14px; leading-relaxed: 1.5;">${purposeDesc}</p>
-
-            <!-- Real working button to open website -->
-            <div style="margin-top: 20px;">
-              <a href="https://severa-defender-ai.vercel.app/" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: #00dc82; color: #000000; font-weight: 900; font-size: 13px; border-radius: 10px; text-decoration: none; font-family: sans-serif;">
-                Open Severa AI to Enter Code →
-              </a>
+            <div style="text-align: center; margin-top: 24px; font-size: 11px; color: #64748b;">
+              Sent automatically from SEVERA DEFENDER AI (<a href="mailto:severadefenderai@gmail.com" style="color: #00dc82; text-decoration: none;">severadefenderai@gmail.com</a>).
             </div>
           </div>
-
-          <div style="text-align: center; margin-top: 24px; font-size: 11px; color: #64748b;">
-            Sent automatically from SEVERA DEFENDER AI (<a href="mailto:severadefenderai@gmail.com" style="color: #00dc82; text-decoration: none;">severadefenderai@gmail.com</a>).
-          </div>
-        </div>
+        </body>
+        </html>
       `
     });
 
