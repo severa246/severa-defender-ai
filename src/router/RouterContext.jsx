@@ -21,6 +21,7 @@ export function RouterProvider({ children }) {
       const savedUser = localStorage.getItem('severa_user');
       const savedPage = localStorage.getItem('severa_current_page');
       if (savedUser) return savedPage || '/app';
+      if (savedPage) return savedPage;
       return '/';
     } catch (_e) {
       return '/';

@@ -297,14 +297,27 @@ export default function LoginPage({ onLogin }) {
           }}
         />
 
-        {/* Logo */}
-        <div className="relative flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#00dc82] to-emerald-600 flex items-center justify-center shadow-lg shadow-[#00dc82]/25">
-            <Shield size={18} className="text-black font-black" />
-          </div>
-          <span className="text-lg font-black text-white tracking-tight">
-            Severa<span className="text-[#00dc82]">.</span>
-          </span>
+        {/* Logo & Back to Home */}
+        <div className="relative flex items-center justify-between mb-2">
+          <button
+            type="button"
+            onClick={() => _navigate('/')}
+            className="flex items-center gap-3 group cursor-pointer text-left focus:outline-none"
+          >
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#00dc82] to-emerald-600 flex items-center justify-center shadow-lg shadow-[#00dc82]/25 group-hover:scale-105 transition-transform">
+              <Shield size={18} className="text-black font-black" />
+            </div>
+            <span className="text-lg font-black text-white tracking-tight">
+              Severa<span className="text-[#00dc82]">.</span>
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => _navigate('/')}
+            className="text-xs font-semibold text-slate-400 hover:text-[#00dc82] bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 px-3.5 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+          >
+            ← Back to Home
+          </button>
         </div>
 
         {/* Center content */}
@@ -415,12 +428,25 @@ export default function LoginPage({ onLogin }) {
         <Orbs />
         <div className="relative w-full max-w-[380px]">
 
-          {/* Mobile logo */}
-          <div className="lg:hidden flex items-center gap-2.5 justify-center mb-8">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#00dc82] to-emerald-600 flex items-center justify-center shadow-lg shadow-[#00dc82]/25">
-              <Shield size={15} className="text-black font-black" />
-            </div>
-            <span className="text-base font-black text-white">Severa<span className="text-[#00dc82]">.</span></span>
+          {/* Mobile logo & Back to Home */}
+          <div className="lg:hidden flex items-center justify-between mb-8">
+            <button
+              type="button"
+              onClick={() => _navigate('/')}
+              className="flex items-center gap-2.5 cursor-pointer text-left"
+            >
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#00dc82] to-emerald-600 flex items-center justify-center shadow-lg shadow-[#00dc82]/25">
+                <Shield size={15} className="text-black font-black" />
+              </div>
+              <span className="text-base font-black text-white">Severa<span className="text-[#00dc82]">.</span></span>
+            </button>
+            <button
+              type="button"
+              onClick={() => _navigate('/')}
+              className="text-xs font-semibold text-slate-400 hover:text-[#00dc82] bg-white/[0.04] border border-white/10 px-3 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1"
+            >
+              ← Back to Home
+            </button>
           </div>
 
           {/* Tab switcher */}

@@ -323,16 +323,19 @@ export default function LandingPage() {
   const DOCKER_CMD = 'docker run -d -p 3000:3000 severaai/severa:latest';
 
   return (
-    <div className="min-h-screen bg-[#0d0f18] text-white font-sans overflow-x-hidden">
+    <div className="min-h-screen bg-[#0d0f18] text-white font-sans overflow-x-hidden relative">
+      {/* Seamless fixed background grid design throughout the home page */}
+      <div
+        className="fixed inset-0 pointer-events-none z-0"
+        style={{
+          backgroundImage: 'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)',
+          backgroundSize: '48px 48px',
+        }}
+      />
       <Navbar navigate={navigate} />
 
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
-      <section className="relative pt-28 pb-20">
-        {/* subtle grid */}
-        <div className="absolute inset-0 pointer-events-none" style={{
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)',
-          backgroundSize: '48px 48px',
-        }} />
+      <section className="relative z-10 pt-28 pb-20">
 
         <div className="relative max-w-7xl mx-auto px-5 grid lg:grid-cols-2 gap-12 items-center">
           {/* Left */}
@@ -397,7 +400,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── WORKFLOW PIPELINE ─────────────────────────────────────────────── */}
-      <section id="features" className="py-20 border-t border-white/5">
+      <section id="features" className="relative z-10 py-20 border-t border-white/5">
         <div className="max-w-7xl mx-auto px-5">
           <div className="text-center mb-12">
             <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 text-[11px] font-semibold mb-4">
@@ -442,7 +445,7 @@ export default function LandingPage() {
 
 
       {/* ── CTA / QUICK START ─────────────────────────────────────────────── */}
-      <section id="quickstart" className="py-24 border-t border-white/5">
+      <section id="quickstart" className="relative z-10 py-24 border-t border-white/5">
         <div className="max-w-2xl mx-auto px-5 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 text-xs font-semibold mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -496,7 +499,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── FOOTER ────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-white/5 py-10">
+      <footer className="relative z-10 border-t border-white/5 py-10">
         <div className="max-w-7xl mx-auto px-5 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
             <div className="w-6 h-6 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
