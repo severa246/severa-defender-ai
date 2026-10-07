@@ -56,37 +56,26 @@ export default function LoginPage({ onLogin }) {
   const [successMessage, setSuccessMessage] = useState('');
 
   React.useEffect(() => {
-    // Check if OTP code and email are passed in URL params from email link click
     try {
       const urlParams = new URLSearchParams(window.location.search);
-      const urlOtp = urlParams.get('otp');
       const urlEmail = urlParams.get('email');
-      const rawMode = urlParams.get('mode') || 'forgot_password';
-      const urlMode = (rawMode === 'reset_password' || rawMode === 'forgot_password') ? 'forgot_password' : rawMode;
+      const rawMode = urlParams.get('mode');
 
-      if (urlOtp && urlEmail && urlOtp.length === 6) {
+      if (urlEmail && rawMode) {
         const cleanEmail = urlEmail.trim().toLowerCase();
-        setOtpCode(urlOtp);
+        const urlMode = (rawMode === 'reset_password' || rawMode === 'forgot_password') ? 'forgot_password' : rawMode;
+        setOtpCode('');
         setOtpError('');
         setOtpResent(false);
-        if (urlMode === 'forgot_password') {
-          setOtpModal(null);
-          setResetError('');
-          setResetForm({ password: '', confirmPassword: '' });
-          setResetModal({ email: cleanEmail });
-        } else {
-          setOtpModal({
-            email: cleanEmail,
-            name: cleanEmail.split('@')[0],
-            mode: urlMode,
-            otpCode: urlOtp
-          });
-        }
+        setOtpModal({
+          email: cleanEmail,
+          name: cleanEmail.split('@')[0],
+          mode: urlMode
+        });
         window.history.replaceState(null, '', window.location.pathname);
       }
     } catch (_e) {}
 
-    // Clear any hash tokens from URL so link clicks do not bypass 6-digit code verification
     if (window.location.hash) {
       try {
         window.history.replaceState(null, '', window.location.pathname);
@@ -801,7 +790,7 @@ export default function LoginPage({ onLogin }) {
       {/* ── 6-Digit OTP Code Verification Modal ── */}
       {otpModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
-          <div className="bg-[#121826] border border-slate-700/60 text-white rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-5 relative font-sans">
+          <div className="bg-[#121826] border border-slate-700/60 text-white rounded-2xl w-full max-w-sm p-6 shadow-2xl space-y-5 relative font-sans">
             <button
               onClick={() => setOtpModal(null)}
               className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors cursor-pointer"
@@ -832,53 +821,29 @@ export default function LoginPage({ onLogin }) {
             {/* OTP Code Form */}
             <form onSubmit={handleOtpVerify} className="space-y-4">
               <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    maxLength={6}
-                    autoFocus
-                    value={otpCode}
-                    onChange={(e) => {
-                      const val = e.target.value.replace(/\D/g, ''); // Numbers only
-                      setOtpCode(val);
+                <input
+                  type="text"
+                  maxLength={6}
+                  autoFocus
+                  value={otpCode}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, ''); // Numbers only
+                    setOtpCode(val);
+                    setOtpError('');
+                  }}
+                  onPaste={(e) => {
+                    e.preventDefault();
+                    const pastedText = e.clipboardData ? e.clipboardData.getData('text') : '';
+                    const cleanValue = pastedText.replace(/\D/g, '').slice(0, 6);
+                    if (cleanValue) {
+                      setOtpCode(cleanValue);
                       setOtpError('');
-                    }}
-                    onPaste={(e) => {
-                      e.preventDefault();
-                      const pastedText = e.clipboardData ? e.clipboardData.getData('text') : '';
-                      const cleanValue = pastedText.replace(/\D/g, '').slice(0, 6);
-                      if (cleanValue) {
-                        setOtpCode(cleanValue);
-                        setOtpError('');
-                      }
-                    }}
-                    placeholder="------"
-                    className="flex-1 min-w-0 bg-slate-900 border border-slate-700 focus:border-[#00dc82] rounded-xl px-3 py-3.5 text-center text-2xl tracking-[0.3em] font-mono text-[#00dc82] placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-[#00dc82]/30 transition-all font-bold"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      const codeToCopy = otpCode || otpModal?.otpCode || authService.getStoredOtp(otpModal?.email);
-                      if (codeToCopy) {
-                        try {
-                          await navigator.clipboard.writeText(codeToCopy);
-                          if (!otpCode) setOtpCode(codeToCopy);
-                          setCopySuccess(true);
-                          setTimeout(() => setCopySuccess(false), 2000);
-                        } catch (_e) {}
-                      }
-                    }}
-                    title="Click to copy 6-digit code"
-                    className="shrink-0 h-[54px] px-3.5 bg-[#00dc82]/15 hover:bg-[#00dc82]/25 border border-[#00dc82]/40 hover:border-[#00dc82] text-[#00dc82] font-black text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-[#00dc82]/10 active:scale-95"
-                  >
-                    {copySuccess ? (
-                      <span className="text-emerald-400 font-bold whitespace-nowrap">✓ Code Copied!</span>
-                    ) : (
-                      <span className="flex items-center gap-1 whitespace-nowrap">📋 Copy Code</span>
-                    )}
-                  </button>
-                </div>
+                    }
+                  }}
+                  placeholder="------"
+                  className="w-full bg-slate-900 border border-slate-700 focus:border-[#00dc82] rounded-xl px-4 py-3.5 text-center text-2xl tracking-[0.4em] font-mono text-[#00dc82] placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-[#00dc82]/30 transition-all font-bold"
+                  required
+                />
 
                 <div className="flex items-center justify-between px-0.5 pt-0.5">
                   <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1">
@@ -894,13 +859,7 @@ export default function LoginPage({ onLogin }) {
                           setOtpCode(clean);
                           setOtpError('');
                         }
-                      } catch (_e) {
-                        const fallback = otpModal?.otpCode || authService.getStoredOtp(otpModal?.email);
-                        if (fallback) {
-                          setOtpCode(fallback);
-                          setOtpError('');
-                        }
-                      }
+                      } catch (_e) {}
                     }}
                     className="text-[11px] font-bold text-[#00dc82] hover:underline transition-all cursor-pointer"
                   >

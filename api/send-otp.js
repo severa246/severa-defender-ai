@@ -26,24 +26,24 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Email and OTP code are required.' });
   }
 
-  const autoFillUrl = `https://severa-defender-ai.vercel.app/?otp=${encodeURIComponent(otpCode)}&email=${encodeURIComponent(email)}&mode=${encodeURIComponent(purpose)}`;
+  const siteUrl = 'https://severa-defender-ai.vercel.app/';
 
   let subjectText = `${otpCode} is your Severa AI verification code`;
   let purposeBadge = `🔐 Purpose: Verification Code`;
-  let purposeDesc = `Click below to auto-fill code or enter it manually on the website.`;
+  let purposeDesc = `Copy the 6-digit code above and enter it manually on the website to verify.`;
 
   if (purpose === 'reset_password' || purpose === 'forgot_password') {
     subjectText = `${otpCode} is your Severa AI password reset code`;
     purposeBadge = `🔑 Purpose: Password Reset Verification`;
-    purposeDesc = `Click below to auto-fill code or enter it manually on the website.`;
+    purposeDesc = `Copy the 6-digit code above and enter it on the website to reset your password.`;
   } else if (purpose === 'signup') {
     subjectText = `${otpCode} is your Severa AI account verification code`;
     purposeBadge = `✨ Purpose: New Account Registration`;
-    purposeDesc = `Click below to auto-fill code or enter it manually on the website.`;
+    purposeDesc = `Copy the 6-digit code above and enter it on the website to complete registration.`;
   } else if (purpose === 'login') {
     subjectText = `${otpCode} is your Severa AI sign-in code`;
     purposeBadge = `🛡️ Purpose: Sign In Verification`;
-    purposeDesc = `Click below to auto-fill code or enter it manually on the website.`;
+    purposeDesc = `Copy the 6-digit code above and enter it on the website to sign in.`;
   }
 
   try {
@@ -64,7 +64,7 @@ export default async function handler(req, res) {
       from: '"Severa AI" <severadefenderai@gmail.com>',
       to: email,
       subject: subjectText,
-      text: `Your Severa AI verification code is: ${otpCode}. Direct link to verify: ${autoFillUrl}`,
+      text: `Your Severa AI verification code is: ${otpCode}. Enter it at: ${siteUrl}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -92,24 +92,17 @@ export default async function handler(req, res) {
 
               <p style="color: #cbd5e1; font-size: 14px; margin-bottom: 12px; font-weight: 600;">Your 6-digit verification code is:</p>
 
-              <!-- Single clean code box -->
-              <div style="margin: 16px 0; padding: 18px; background-color: #050810; border-radius: 10px; border: 2px solid #00dc82; text-align: center;">
-                <span style="font-size: 42px; font-weight: 900; color: #00dc82; font-family: monospace, Courier, sans-serif; letter-spacing: 4px; user-select: all; -webkit-user-select: all;">${otpCode}</span>
-              </div>
-
-              <!-- Dedicated Click to Copy & Auto-Fill Link Badge -->
-              <div style="margin-top: 14px; text-align: center;">
-                <a href="${autoFillUrl}" target="_blank" style="display: inline-block; padding: 10px 20px; background-color: rgba(0, 220, 130, 0.15); border: 1.5px solid #00dc82; color: #00dc82; font-weight: 800; font-size: 13px; border-radius: 8px; font-family: monospace, Courier, sans-serif; text-decoration: none; box-shadow: 0 2px 8px rgba(0,220,130,0.2);">
-                  📋 Click to Copy & Auto-Fill Code: ${otpCode} →
-                </a>
+              <!-- Single clean code box for copying -->
+              <div style="margin: 18px 0; padding: 18px; background-color: #050810; border-radius: 12px; border: 2px solid #00dc82; text-align: center;">
+                <span style="font-size: 44px; font-weight: 900; color: #00dc82; font-family: monospace, Courier, sans-serif; letter-spacing: 6px; user-select: all; -webkit-user-select: all;">${otpCode}</span>
               </div>
 
               <p style="color: #94a3b8; font-size: 12px; margin-top: 14px; leading-relaxed: 1.5;">${purposeDesc}</p>
 
-              <!-- Working Auto-Fill & Verify Button -->
-              <div style="margin-top: 18px;">
-                <a href="${autoFillUrl}" target="_blank" style="display: inline-block; padding: 14px 26px; background-color: #00dc82; color: #000000; font-weight: 900; font-size: 13px; border-radius: 10px; text-decoration: none; font-family: sans-serif; box-shadow: 0 4px 12px rgba(0,220,130,0.3);">
-                  ⚡ Auto-Fill 6-Digit Code on Severa AI →
+              <!-- Open Website Link -->
+              <div style="margin-top: 20px;">
+                <a href="${siteUrl}" target="_blank" style="display: inline-block; padding: 14px 28px; background-color: #00dc82; color: #000000; font-weight: 900; font-size: 13px; border-radius: 10px; text-decoration: none; font-family: sans-serif; box-shadow: 0 4px 12px rgba(0,220,130,0.3);">
+                  Open Severa AI to Enter Code →
                 </a>
               </div>
             </div>
