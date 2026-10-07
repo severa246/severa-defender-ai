@@ -27,6 +27,7 @@ import {
   LogOut
 } from 'lucide-react';
 import UploadChoiceModal from './UploadChoiceModal';
+import UserProfileModal from './UserProfileModal';
 import { buildFileTree } from '../utils/fileTreeBuilder';
 
 function ProjectTreeNode({
@@ -248,6 +249,9 @@ export default function Sidebar({
   // Upload Choice Modal State (Upload Files vs Upload Folder)
   const [isUploadChoiceOpen, setIsUploadChoiceOpen] = useState(false);
   const [targetUploadProj, setTargetUploadProj] = useState(null);
+
+  // User Profile Modal State
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   const fileInputRef = useRef(null);
   const folderInputRef = useRef(null);
@@ -1125,36 +1129,40 @@ export default function Sidebar({
           );
         })()}
 
-        {/* User info card with logout */}
+        {/* User info card with click to open profile modal */}
         {user && (
           isCollapsed ? (
             <div className="flex flex-col items-center gap-1.5 py-1">
               <button
                 type="button"
-                onClick={onLogout}
-                title={`Sign out (${user.email || 'User'})`}
+                onClick={() => setIsProfileModalOpen(true)}
+                title={`User Profile (${user.name || 'User'})`}
                 className="relative group/user p-1 rounded-xl hover:bg-slate-900 transition-all cursor-pointer"
               >
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-[10px] font-black text-white shadow-md">
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-[10px] font-black text-white shadow-md group-hover/user:scale-105 transition-transform">
                   {(user.name || 'User').split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U'}
-                </div>
-                <div className="absolute inset-0 bg-red-600/80 rounded-full opacity-0 group-hover/user:opacity-100 flex items-center justify-center transition-opacity">
-                  <LogOut className="w-3.5 h-3.5 text-white" />
                 </div>
               </button>
             </div>
           ) : (
-            <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-900 border border-slate-800">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-[10px] font-black text-white shrink-0 shadow-md">
+            <div 
+              onClick={() => setIsProfileModalOpen(true)}
+              className="flex items-center gap-2 p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 hover:bg-slate-800/80 transition-all cursor-pointer group/usercard"
+              title="Click to view Account & Security Profile"
+            >
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-[10px] font-black text-white shrink-0 shadow-md group-hover/usercard:scale-105 transition-transform">
                 {(user.name || 'User').split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U'}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-semibold text-slate-200 truncate">{user.name || 'User'}</p>
+                <p className="text-[11px] font-semibold text-slate-200 truncate group-hover/usercard:text-cyan-300 transition-colors">{user.name || 'User'}</p>
                 <p className="text-[9px] text-slate-500 truncate">{user.email || ''}</p>
               </div>
               <button
                 type="button"
-                onClick={onLogout}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onLogout();
+                }}
                 title="Sign out"
                 className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800 transition-colors rounded-lg cursor-pointer shrink-0"
               >
@@ -1164,6 +1172,18 @@ export default function Sidebar({
           )
         )}
       </div>
+
+      {/* User Profile & Account Security Modal */}
+      <UserProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        user={user}
+        onLogout={onLogout}
+        onOpenModelsModal={onOpenModelsModal}
+        selectedProvider={selectedProvider}
+        selectedModel={selectedModel}
+        scanMetrics={scanMetrics}
+      />
 
     </aside>
   );
