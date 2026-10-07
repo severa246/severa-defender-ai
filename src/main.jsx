@@ -70,7 +70,7 @@ function Root() {
     navigate('/login');
   }
 
-  if (page === '/login') {
+  if (page === '/login' || (typeof window !== 'undefined' && window.location.search && window.location.search.includes('otp='))) {
     return <LoginPage onLogin={handleLogin} />;
   }
 

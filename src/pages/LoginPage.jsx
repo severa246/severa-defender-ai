@@ -68,12 +68,19 @@ export default function LoginPage({ onLogin }) {
         setOtpCode(urlOtp);
         setOtpError('');
         setOtpResent(false);
-        setOtpModal({
-          email: cleanEmail,
-          name: cleanEmail.split('@')[0],
-          mode: urlMode,
-          otpCode: urlOtp
-        });
+        if (urlMode === 'forgot_password') {
+          setOtpModal(null);
+          setResetError('');
+          setResetForm({ password: '', confirmPassword: '' });
+          setResetModal({ email: cleanEmail });
+        } else {
+          setOtpModal({
+            email: cleanEmail,
+            name: cleanEmail.split('@')[0],
+            mode: urlMode,
+            otpCode: urlOtp
+          });
+        }
         window.history.replaceState(null, '', window.location.pathname);
       }
     } catch (_e) {}

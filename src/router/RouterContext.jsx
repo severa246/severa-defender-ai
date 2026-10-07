@@ -15,6 +15,9 @@ export function RouterProvider({ children }) {
 
   const [page, setPage] = useState(() => {
     try {
+      if (typeof window !== 'undefined' && window.location.search && (window.location.search.includes('otp=') || window.location.search.includes('mode='))) {
+        return '/login';
+      }
       const savedUser = localStorage.getItem('severa_user');
       const savedPage = localStorage.getItem('severa_current_page');
       if (savedUser) return savedPage || '/app';
