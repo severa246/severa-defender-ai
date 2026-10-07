@@ -48,6 +48,7 @@ export default function LoginPage({ onLogin }) {
   const [resetModal, setResetModal] = useState(null); // null | { email: '' }
   const [resetForm, setResetForm] = useState({ password: '', confirmPassword: '' });
   const [resetError, setResetError] = useState('');
+  const [showResetPass, setShowResetPass] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
   const [forgotPromptOpen, setForgotPromptOpen] = useState(false);
   const [forgotEmailInput, setForgotEmailInput] = useState('');
@@ -641,35 +642,53 @@ export default function LoginPage({ onLogin }) {
                 <label className="block text-xs font-medium text-slate-300 mb-1.5">
                   New Password
                 </label>
-                <input
-                  type="password"
-                  autoFocus
-                  value={resetForm.password}
-                  onChange={(e) => {
-                    setResetForm((f) => ({ ...f, password: e.target.value }));
-                    setResetError('');
-                  }}
-                  placeholder="••••••••"
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/40 transition-all font-medium"
-                  required
-                />
+                <div className="relative">
+                  <input
+                    type={showResetPass ? 'text' : 'password'}
+                    autoFocus
+                    value={resetForm.password}
+                    onChange={(e) => {
+                      setResetForm((f) => ({ ...f, password: e.target.value }));
+                      setResetError('');
+                    }}
+                    placeholder="••••••••"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/40 transition-all font-medium pr-10"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowResetPass(!showResetPass)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                  >
+                    {showResetPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
 
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1.5">
                   Confirm New Password
                 </label>
-                <input
-                  type="password"
-                  value={resetForm.confirmPassword}
-                  onChange={(e) => {
-                    setResetForm((f) => ({ ...f, confirmPassword: e.target.value }));
-                    setResetError('');
-                  }}
-                  placeholder="••••••••"
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/40 transition-all font-medium"
-                  required
-                />
+                <div className="relative">
+                  <input
+                    type={showResetPass ? 'text' : 'password'}
+                    value={resetForm.confirmPassword}
+                    onChange={(e) => {
+                      setResetForm((f) => ({ ...f, confirmPassword: e.target.value }));
+                      setResetError('');
+                    }}
+                    placeholder="••••••••"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/40 transition-all font-medium pr-10"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowResetPass(!showResetPass)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                  >
+                    {showResetPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
 
               {/* Error State */}

@@ -105,6 +105,7 @@ export const authService = {
     }
 
     storageService.registerEmail(cleanEmail);
+    this.saveUserPassword(cleanEmail, password);
 
     const otpCode = this.generateOtp(cleanEmail, true);
     await this.sendOtpEmail(cleanEmail, otpCode);
@@ -120,6 +121,27 @@ export const authService = {
     return userSession;
   },
 
+  saveUserPassword(email, password) {
+    if (!email || !password) return;
+    const cleanEmail = email.trim().toLowerCase();
+    try {
+      const stored = JSON.parse(localStorage.getItem('severa_user_passwords') || '{}');
+      stored[cleanEmail] = password;
+      localStorage.setItem('severa_user_passwords', JSON.stringify(stored));
+    } catch (_e) {}
+  },
+
+  getUserPassword(email) {
+    if (!email) return null;
+    const cleanEmail = email.trim().toLowerCase();
+    try {
+      const stored = JSON.parse(localStorage.getItem('severa_user_passwords') || '{}');
+      return stored[cleanEmail] || null;
+    } catch (_e) {
+      return null;
+    }
+  },
+
   // Perform Real Email Sign In via Supabase with password check & OTP trigger
   async login({ email, password }) {
     const cleanEmail = email.trim().toLowerCase();
@@ -132,30 +154,38 @@ export const authService = {
       throw new Error('Password length is too short (minimum 8 characters required).');
     }
 
+    const savedPassword = this.getUserPassword(cleanEmail);
+
     let data = null;
     let error = null;
 
-    try {
-      const res = await supabase.auth.signInWithPassword({
-        email: cleanEmail,
-        password
-      });
-      data = res.data;
-      error = res.error;
-    } catch (_fetchErr) {
-      // Supabase network error / Failed to fetch - fallback to local session
-    }
-
-    if (error) {
-      const existsInDB = await this.isUserInSupabaseDB(cleanEmail);
-      if (existsInDB) {
+    if (savedPassword) {
+      if (savedPassword !== password) {
         const wrongPassError = new Error('Incorrect password. Please check your password and try again.');
         wrongPassError.code = 'INCORRECT_PASSWORD';
         throw wrongPassError;
-      } else {
-        const notFoundError = new Error(`Email address "${cleanEmail}" is not registered. Redirecting to Create Account...`);
-        notFoundError.code = 'USER_NOT_FOUND';
-        throw notFoundError;
+      }
+    } else {
+      try {
+        const res = await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password
+        });
+        data = res.data;
+        error = res.error;
+      } catch (_fetchErr) {}
+
+      if (error) {
+        const existsInDB = await this.isUserInSupabaseDB(cleanEmail);
+        if (existsInDB) {
+          const wrongPassError = new Error('Incorrect password. Please check your password and try again.');
+          wrongPassError.code = 'INCORRECT_PASSWORD';
+          throw wrongPassError;
+        } else {
+          const notFoundError = new Error(`Email address "${cleanEmail}" is not registered. Redirecting to Create Account...`);
+          notFoundError.code = 'USER_NOT_FOUND';
+          throw notFoundError;
+        }
       }
     }
 
@@ -350,16 +380,12 @@ export const authService = {
       throw new Error('New password length is too short (minimum 8 characters required).');
     }
 
-    // Try updating active session password
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    // Save updated password in local store so user can sign in immediately
+    this.saveUserPassword(cleanEmail, newPassword);
 
-    // Fallback if session missing: register/update new password in Supabase DB
-    if (error) {
-      await supabase.auth.signUp({
-        email: cleanEmail,
-        password: newPassword
-      });
-    }
+    try {
+      await supabase.auth.updateUser({ password: newPassword });
+    } catch (_e) {}
 
     const userSession = {
       name: cleanEmail.split('@')[0],
