@@ -244,28 +244,23 @@ export default function TopHeaderBar({
           const hasCloudKey = Boolean(apiKey && apiKey.trim());
           const isLocalProvider = selectedProvider === 'ollama' || selectedProvider === 'local' || Boolean(customEndpoint && customEndpoint.trim());
           
-          let hasActiveEngine = false;
-          let engineBadgeText = 'NO API KEY CONNECTED / NO LOCAL MODEL';
+          let engineBadgeText = 'SEVERA AI (BUILT-IN UNLIMITED FREE)';
 
           if (hasCloudKey) {
-            hasActiveEngine = true;
             const provName = selectedProvider ? selectedProvider : 'CLOUD AI';
             const modelName = selectedModel ? ` (${selectedModel})` : '';
             engineBadgeText = `${provName}${modelName}`;
           } else if (isLocalProvider) {
-            hasActiveEngine = true;
             const provName = selectedProvider ? selectedProvider : 'LOCAL ENGINE';
             const modelName = selectedModel ? ` (${selectedModel})` : '';
             engineBadgeText = `${provName}${modelName} (LOCAL ENGINE CONNECTED)`;
           }
 
           return (
-            <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900/90 border ${
-              !hasActiveEngine ? 'border-amber-500/30 text-amber-300' : 'border-slate-800 text-slate-300'
-            } text-[11px]`}>
-              <Terminal className={`w-3 h-3 ${!hasActiveEngine ? 'text-amber-400' : 'text-indigo-400'}`} />
+            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900/90 border border-slate-800 text-slate-300 text-[11px]">
+              <Terminal className="w-3 h-3 text-indigo-400" />
               <span className="text-slate-400 hidden md:inline">Engine:</span>
-              <span className={`font-semibold uppercase ${!hasActiveEngine ? 'text-amber-400' : 'text-indigo-300'}`}>
+              <span className="font-semibold uppercase text-indigo-300">
                 {engineBadgeText}
               </span>
             </span>

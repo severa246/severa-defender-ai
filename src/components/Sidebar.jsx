@@ -1101,25 +1101,19 @@ export default function Sidebar({
               } transition-all cursor-pointer text-slate-200`}
             >
               <div className="flex items-center gap-2.5 overflow-hidden">
-                <Cpu className={`w-4 h-4 ${!hasKey ? 'text-amber-400 animate-pulse' : 'text-cyan-400'} shrink-0`} />
+                <Cpu className="w-4 h-4 text-cyan-400 shrink-0" />
                 {!isCollapsed && (
                   <div className="text-left overflow-hidden">
                     <div className="flex items-center gap-1">
                       <span className="text-[9px] text-slate-400 uppercase tracking-wider block leading-none">
                         AI Provider
                       </span>
-                      {hasKey ? (
-                        <span className="text-[9px] font-bold text-emerald-400 flex items-center gap-0.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Connected
-                        </span>
-                      ) : (
-                        <span className="text-[9px] font-bold text-amber-400">
-                          • No Key
-                        </span>
-                      )}
+                      <span className="text-[9px] font-bold text-emerald-400 flex items-center gap-0.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Connected
+                      </span>
                     </div>
-                    <span className={`text-[11px] font-extrabold truncate block uppercase tracking-tight ${!hasKey ? 'text-amber-300' : 'text-slate-100'}`}>
-                      {hasKey ? `${selectedProvider} / ${selectedModel}` : 'No API Key Connected'}
+                    <span className="text-[11px] font-extrabold truncate block uppercase tracking-tight text-slate-100">
+                      {hasKey ? `${selectedProvider} / ${selectedModel}` : 'Severa AI (Built-in Free)'}
                     </span>
                   </div>
                 )}

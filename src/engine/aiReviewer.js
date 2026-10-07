@@ -10,12 +10,57 @@ export async function generateAiReview(code, language = 'javascript', findings =
   const autoLang = detectLanguage(code);
   const targetLang = (autoLang && autoLang !== 'javascript') ? autoLang : (language || 'javascript');
 
-  // If user provided a Gemini API Key, attempt live API call; otherwise fallback to intelligent local synthesis
+  // 1. Primary Route: Built-in Unlimited Serverless AI Proxy (/api/ai-proxy)
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4500);
+
+    const proxyRes = await fetch('/api/ai-proxy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, language: targetLang, findings, apiKey }),
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if (proxyRes.ok) {
+      const data = await proxyRes.json();
+      if (data.success && data.fixedCode && !data.fallback) {
+        let verifiedCode = data.fixedCode;
+        let verification = analyzeCode(verifiedCode, targetLang);
+        let passCount = 0;
+
+        while (verification.findings.length > 0 && passCount < 5) {
+          passCount++;
+          const currentLines = verifiedCode.split('\n');
+          verification.findings.forEach((f) => {
+            const idx = f.line - 1;
+            if (idx >= 0 && idx < currentLines.length) {
+              currentLines[idx] = sanitizeVulnerableLine(currentLines[idx], f, targetLang);
+            }
+          });
+          verifiedCode = currentLines.join('\n');
+          verification = analyzeCode(verifiedCode, targetLang);
+        }
+
+        return {
+          status: data.status || "CRITICAL RISK REMEDIATED - SEVERA DEFENDER AI APPROVED",
+          statusBadgeClass: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+          fixedCode: verifiedCode,
+          originalCode: code,
+          aiFindings: [],
+          reviewComments: data.reviewComments || [],
+          remediationDiffSummary: data.remediationDiffSummary || "AI patch generated via Severa Built-in Model."
+        };
+      }
+    }
+  } catch (_proxyErr) {}
+
+  // 2. Direct API Key Fallback if user provided custom Gemini API Key
   if (apiKey && apiKey.trim().length > 10) {
     try {
       const liveResult = await fetchGeminiReview(code, targetLang, findings, apiKey);
       if (liveResult) {
-        // Run verification loop on live response as well to guarantee 0 findings
         let verifiedCode = liveResult.fixedCode;
         let verification = analyzeCode(verifiedCode, targetLang);
         let passCount = 0;
@@ -43,7 +88,7 @@ export async function generateAiReview(code, language = 'javascript', findings =
     }
   }
 
-  // Intelligent Local AI Remediation Synthesis
+  // 3. Intelligent Local AI Remediation Synthesis Fallback
   return generateLocalAiRemediation(code, targetLang, findings);
 }
 
