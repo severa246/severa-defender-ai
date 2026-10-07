@@ -1182,6 +1182,8 @@ export default function Sidebar({
         onOpenModelsModal={onOpenModelsModal}
         selectedProvider={selectedProvider}
         selectedModel={selectedModel}
+        apiKey={apiKey}
+        customEndpoint={customEndpoint}
         scanMetrics={scanMetrics}
       />
 

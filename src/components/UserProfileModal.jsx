@@ -27,12 +27,16 @@ export default function UserProfileModal({
   onOpenModelsModal,
   selectedProvider = 'Gemini',
   selectedModel = 'gemini-2.5-flash',
+  apiKey = '',
+  customEndpoint = '',
   scanMetrics = {}
 }) {
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [resetStatus, setResetStatus] = useState({ loading: false, success: false, error: null });
 
   if (!isOpen || !user) return null;
+
+  const hasKey = Boolean(apiKey || (selectedProvider === 'ollama' && customEndpoint));
 
   const email = user.email || 'user@example.com';
   const name = user.name || email.split('@')[0] || 'User';
@@ -133,11 +137,10 @@ export default function UserProfileModal({
             </div>
 
             <div className="pt-1 flex items-center gap-2 text-[11px] text-slate-400">
-              <span className="px-2 py-0.5 rounded-lg bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 font-medium">
-                🛡️ Enterprise Security Pro
+              <span className="text-slate-400 font-medium flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Zero-Trust Workspace
               </span>
-              <span className="text-slate-500">•</span>
-              <span className="text-slate-400">Zero-Trust Account</span>
             </div>
           </div>
         </div>
@@ -162,13 +165,17 @@ export default function UserProfileModal({
           <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-1.5">
             <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
               <div className="flex items-center gap-1.5">
-                <Cpu className="w-4 h-4 text-cyan-400" />
+                <Cpu className={`w-4 h-4 ${hasKey ? 'text-cyan-400' : 'text-amber-400'}`} />
                 <span>AI Engine</span>
               </div>
-              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+              {hasKey ? (
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" title="Connected" />
+              ) : (
+                <span className="w-2 h-2 rounded-full bg-amber-400" title="No API Key" />
+              )}
             </div>
-            <p className="text-xs font-bold text-cyan-200 truncate uppercase tracking-tight">
-              {selectedProvider} / {selectedModel}
+            <p className={`text-xs font-bold truncate uppercase tracking-tight ${hasKey ? 'text-cyan-200' : 'text-amber-300'}`}>
+              {hasKey ? `${selectedProvider} / ${selectedModel}` : 'No API Key Connected'}
             </p>
             <button
               onClick={() => {
@@ -177,7 +184,7 @@ export default function UserProfileModal({
               }}
               className="text-[10px] font-bold text-cyan-400 hover:text-cyan-300 hover:underline flex items-center gap-1 cursor-pointer pt-0.5"
             >
-              <span>Manage Models</span> &rarr;
+              <span>{hasKey ? 'Manage Models' : 'Connect API Key'}</span> &rarr;
             </button>
           </div>
         </div>
