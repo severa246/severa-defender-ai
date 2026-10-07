@@ -107,7 +107,7 @@ export const authService = {
     storageService.registerEmail(cleanEmail);
 
     const otpCode = this.generateOtp(cleanEmail, true);
-    this.sendOtpEmail(cleanEmail, otpCode).catch(() => {});
+    await this.sendOtpEmail(cleanEmail, otpCode);
 
     const userSession = {
       name: name || data?.user?.user_metadata?.full_name || cleanEmail.split('@')[0],
@@ -163,7 +163,7 @@ export const authService = {
 
     // Step 2: Trigger 6-digit OTP code to the email for Sign In 2FA from SEVERA DEFENDER AI
     const otpCode = this.generateOtp(cleanEmail, true);
-    this.sendOtpEmail(cleanEmail, otpCode).catch(() => {});
+    await this.sendOtpEmail(cleanEmail, otpCode);
 
     const userSession = {
       name: data?.user?.user_metadata?.full_name || cleanEmail.split('@')[0],
@@ -229,25 +229,38 @@ export const authService = {
 
   // Dispatch official 6-digit verification code to recipient email inbox from SEVERA DEFENDER AI (severadefenderai@gmail.com)
   async sendOtpEmail(cleanEmail, otpCode) {
+    // 1. Dispatch via FormSubmit with application/x-www-form-urlencoded format
     try {
+      const params = new URLSearchParams();
+      params.append('name', 'SEVERA DEFENDER AI');
+      params.append('email', cleanEmail);
+      params.append('_replyto', 'severadefenderai@gmail.com');
+      params.append('_subject', `SEVERA DEFENDER AI - 6-Digit Verification Code (${otpCode})`);
+      params.append('_captcha', 'false');
+      params.append('Sender Name', 'SEVERA DEFENDER AI');
+      params.append('Official Email', 'severadefenderai@gmail.com');
+      params.append('Verification Code', otpCode);
+      params.append('Message', `Your official 6-digit verification code from SEVERA DEFENDER AI (severadefenderai@gmail.com) is: ${otpCode}. Please enter this 6-digit code on the website to verify your account or reset your password.`);
+
       await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(cleanEmail)}`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
           'Accept': 'application/json'
         },
-        body: JSON.stringify({
-          name: 'SEVERA DEFENDER AI',
-          _replyto: 'severadefenderai@gmail.com',
-          _subject: `SEVERA DEFENDER AI - 6-Digit Password Reset Code (${otpCode})`,
-          _captcha: 'false',
-          'Sender Name': 'SEVERA DEFENDER AI',
-          'Official Email': 'severadefenderai@gmail.com',
-          'Verification Code': otpCode,
-          'Message': `Your official 6-digit verification code from SEVERA DEFENDER AI (severadefenderai@gmail.com) is: ${otpCode}. Please enter this 6-digit code on the website to set your new password.`
-        })
+        body: params.toString()
       });
     } catch (_e) {}
+
+    // 2. Dispatch via Supabase Auth OTP trigger
+    try {
+      await supabase.auth.signInWithOtp({
+        email: cleanEmail,
+        options: {
+          emailRedirectTo: typeof window !== 'undefined' ? window.location.origin : undefined
+        }
+      });
+    } catch (_e2) {}
   },
 
   // Trigger 6-digit OTP code to email for Password Reset
