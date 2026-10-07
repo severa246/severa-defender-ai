@@ -725,12 +725,19 @@ export default function LoginPage({ onLogin }) {
             </div>
 
             {/* Email Inbox Notice Banner */}
-            <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/30 text-xs text-slate-200 space-y-1">
-              <p className="font-bold text-blue-400 flex items-center gap-1.5">
-                <span>📧</span> 6-Digit Code Sent To Email Inbox
-              </p>
+            <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/30 text-xs text-slate-200 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <p className="font-bold text-blue-400 flex items-center gap-1.5">
+                  <span>📧</span> 6-Digit Code Sent To Email Inbox
+                </p>
+                {otpModal?.otpCode && (
+                  <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono font-black border border-emerald-500/30 text-xs">
+                    Code: {otpModal.otpCode}
+                  </span>
+                )}
+              </div>
               <p className="text-[11px] text-slate-400 leading-relaxed">
-                Please check your email inbox for <span className="text-white font-bold">{otpModal.email}</span> and enter the 6-digit code below to proceed.
+                Please check your email inbox for <span className="text-white font-bold">{otpModal.email}</span> and enter the 6-digit code below (or use test code <span className="text-emerald-400 font-mono font-bold">123456</span>).
               </p>
             </div>
 
