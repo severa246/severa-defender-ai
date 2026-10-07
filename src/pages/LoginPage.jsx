@@ -770,45 +770,28 @@ export default function LoginPage({ onLogin }) {
       {/* ── 6-Digit OTP Code Verification Modal ── */}
       {otpModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
-          <div className="bg-[#121826] border border-emerald-500/30 text-white rounded-2xl w-full max-w-md p-7 shadow-2xl space-y-5 relative font-sans">
+          <div className="bg-[#121826] border border-slate-700/60 text-white rounded-2xl w-full max-w-sm p-6 shadow-2xl space-y-5 relative font-sans">
             <button
               onClick={() => setOtpModal(null)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
+              className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors cursor-pointer"
             >
               <X size={18} />
             </button>
 
-            {/* Modal Header */}
-            <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-[#00dc82]/10 border border-[#00dc82]/30 flex items-center justify-center shadow-lg shadow-[#00dc82]/10">
-                <Shield size={22} className="text-[#00dc82]" />
-              </div>
-              <div>
-                <h3 className="text-base font-black text-white">
-                  Verify Your Account
-                </h3>
-                <p className="text-xs text-slate-400">
-                  Enter the 6-digit code sent to <span className="text-emerald-400 font-bold">{otpModal.email}</span>
-                </p>
-              </div>
-            </div>
-
-            {/* Email Inbox Notice Banner */}
-            <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/30 text-xs text-slate-200 space-y-1">
-              <p className="font-bold text-blue-400 flex items-center gap-1.5">
-                <span>📧</span> 6-Digit Code Sent To Email Inbox
-              </p>
-              <p className="text-[11px] text-slate-400 leading-relaxed">
-                Please check your email inbox for <span className="text-white font-bold">{otpModal.email}</span> and enter the 6-digit code sent to your email.
+            {/* Header & email notification text */}
+            <div className="text-center space-y-1.5 pt-1">
+              <h3 className="text-lg font-bold text-white">
+                Verify 6-Digit Code
+              </h3>
+              <p className="text-xs text-slate-400 leading-relaxed px-2">
+                A 6-digit code has been sent to <br />
+                <span className="text-[#00dc82] font-semibold">{otpModal.email}</span>
               </p>
             </div>
 
-            {/* OTP Code Form */}
+            {/* OTP Code Input Form */}
             <form onSubmit={handleOtpVerify} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-2">
-                  Enter 6-Digit Code Below
-                </label>
                 <input
                   type="text"
                   maxLength={6}
@@ -819,15 +802,15 @@ export default function LoginPage({ onLogin }) {
                     setOtpCode(val);
                     setOtpError('');
                   }}
-                  placeholder="123456"
-                  className="w-full bg-slate-900 border border-slate-700 focus:border-[#00dc82] rounded-xl px-4 py-3 text-center text-2xl tracking-[0.5em] font-mono text-[#00dc82] placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-[#00dc82]/30 transition-all font-bold"
+                  placeholder="------"
+                  className="w-full bg-slate-900 border border-slate-700 focus:border-[#00dc82] rounded-xl px-4 py-3.5 text-center text-2xl tracking-[0.4em] font-mono text-[#00dc82] placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-[#00dc82]/30 transition-all font-bold"
                   required
                 />
               </div>
 
-              {/* Error state */}
+              {/* Error message */}
               {otpError && (
-                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-400 font-medium">
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-400 font-medium text-center">
                   {otpError}
                 </div>
               )}
@@ -839,31 +822,28 @@ export default function LoginPage({ onLogin }) {
                 </div>
               )}
 
-              {/* Submit Action */}
+              {/* Verify Button */}
               <button
                 type="submit"
                 disabled={otpLoading || otpCode.length < 6}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-[#00dc82] to-emerald-500 hover:from-[#00c574] hover:to-emerald-400 text-black font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#00dc82]/25 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-3 rounded-xl bg-[#00dc82] hover:bg-[#00c574] text-black font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#00dc82]/20 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {otpLoading ? (
                   <Loader2 size={16} className="animate-spin text-black" />
                 ) : (
-                  <>
-                    <span>Verify & Continue to Severa AI</span>
-                    <ArrowRight size={15} />
-                  </>
+                  <span>Verify Code →</span>
                 )}
               </button>
             </form>
 
-            {/* Options footer - ONLY Resend Code */}
-            <div className="pt-2 border-t border-slate-800 flex items-center justify-center text-xs">
+            {/* Options footer - Resend Code */}
+            <div className="pt-2 border-t border-slate-800/80 flex items-center justify-center text-xs">
               <button
                 type="button"
                 onClick={handleResendOtp}
-                className="text-slate-400 hover:text-[#00dc82] font-semibold transition-colors cursor-pointer"
+                className="text-slate-400 hover:text-[#00dc82] transition-colors cursor-pointer"
               >
-                Didn't get code? Resend 6-Digit Code
+                Resend Code
               </button>
             </div>
           </div>

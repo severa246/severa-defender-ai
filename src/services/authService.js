@@ -318,7 +318,7 @@ export const authService = {
     } catch (_err) {}
 
     // Check 3: Reject invalid code
-    throw new Error('Invalid 6-digit verification code. Please enter the correct code sent to your email.');
+    throw new Error('Incorrect code. Please enter the 6-digit code sent to your email.');
   },
 
   // Update user password after 6-digit OTP verification
