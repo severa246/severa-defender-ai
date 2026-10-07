@@ -520,25 +520,6 @@ export default function LoginPage({ onLogin }) {
                 </div>
               )}
 
-              {/* Password Reset Sent Banner */}
-              {forgotSuccess && (
-                <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-2">
-                  <p className="text-emerald-400 font-bold">
-                    ✓ Password reset link sent to <span className="text-white underline">{forgotSuccess.email}</span>!
-                  </p>
-                  <p className="text-[11px] text-slate-400 leading-relaxed">
-                    Please check your email inbox to click the reset link, or click below to enter your new password.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setResetModal({ email: forgotSuccess.email })}
-                    className="w-full text-center py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-black text-[11px] border border-emerald-500/30 transition-all cursor-pointer"
-                  >
-                    Enter New Password Now →
-                  </button>
-                </div>
-              )}
-
               {/* Success State */}
               {successMessage && (
                 <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-400 font-bold flex items-center justify-between animate-fadeIn">
