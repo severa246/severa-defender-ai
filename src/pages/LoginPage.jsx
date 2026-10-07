@@ -831,34 +831,31 @@ export default function LoginPage({ onLogin }) {
 
             {/* OTP Code Form */}
             <form onSubmit={handleOtpVerify} className="space-y-4">
-              <div className="space-y-1.5">
-                <input
-                  type="text"
-                  maxLength={6}
-                  autoFocus
-                  value={otpCode}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/\D/g, ''); // Numbers only
-                    setOtpCode(val);
-                    setOtpError('');
-                  }}
-                  onPaste={(e) => {
-                    e.preventDefault();
-                    const pastedText = e.clipboardData ? e.clipboardData.getData('text') : '';
-                    const cleanValue = pastedText.replace(/\D/g, '').slice(0, 6);
-                    if (cleanValue) {
-                      setOtpCode(cleanValue);
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    maxLength={6}
+                    autoFocus
+                    value={otpCode}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, ''); // Numbers only
+                      setOtpCode(val);
                       setOtpError('');
-                    }
-                  }}
-                  placeholder="------"
-                  className="w-full bg-slate-900 border border-slate-700 focus:border-[#00dc82] rounded-xl px-4 py-3.5 text-center text-2xl tracking-[0.4em] font-mono text-[#00dc82] placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-[#00dc82]/30 transition-all font-bold"
-                  required
-                />
-                <div className="flex items-center justify-between pt-1">
-                  <span className="text-[11px] text-slate-400 font-medium">
-                    💡 Press <kbd className="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-white font-mono text-[10px]">Ctrl+V</kbd> to paste
-                  </span>
+                    }}
+                    onPaste={(e) => {
+                      e.preventDefault();
+                      const pastedText = e.clipboardData ? e.clipboardData.getData('text') : '';
+                      const cleanValue = pastedText.replace(/\D/g, '').slice(0, 6);
+                      if (cleanValue) {
+                        setOtpCode(cleanValue);
+                        setOtpError('');
+                      }
+                    }}
+                    placeholder="------"
+                    className="flex-1 bg-slate-900 border border-slate-700 focus:border-[#00dc82] rounded-xl px-3 py-3.5 text-center text-2xl tracking-[0.3em] font-mono text-[#00dc82] placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-[#00dc82]/30 transition-all font-bold"
+                    required
+                  />
                   <button
                     type="button"
                     onClick={async () => {
@@ -871,9 +868,36 @@ export default function LoginPage({ onLogin }) {
                         } catch (_e) {}
                       }
                     }}
-                    className="text-[11px] font-bold text-[#00dc82] hover:text-emerald-300 transition-all flex items-center gap-1 cursor-pointer bg-[#00dc82]/10 hover:bg-[#00dc82]/20 border border-[#00dc82]/30 px-2.5 py-1 rounded-lg"
+                    title="Click to copy 6-digit code"
+                    className="shrink-0 h-[54px] px-3.5 bg-[#00dc82]/15 hover:bg-[#00dc82]/25 border border-[#00dc82]/40 hover:border-[#00dc82] text-[#00dc82] font-black text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-[#00dc82]/10 active:scale-95"
                   >
-                    {copySuccess ? <span>✓ Code Copied!</span> : <span>📋 Copy Code</span>}
+                    {copySuccess ? (
+                      <span className="text-emerald-400 font-bold whitespace-nowrap">✓ Code Copied!</span>
+                    ) : (
+                      <span className="flex items-center gap-1 whitespace-nowrap">📋 Copy Code</span>
+                    )}
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between px-0.5 pt-0.5">
+                  <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1">
+                    💡 Press <kbd className="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-white font-mono text-[10px]">Ctrl+V</kbd> to paste
+                  </span>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const text = await navigator.clipboard.readText();
+                        const clean = text.replace(/\D/g, '').slice(0, 6);
+                        if (clean) {
+                          setOtpCode(clean);
+                          setOtpError('');
+                        }
+                      } catch (_e) {}
+                    }}
+                    className="text-[11px] font-bold text-[#00dc82] hover:underline transition-all cursor-pointer"
+                  >
+                    📋 Paste Code
                   </button>
                 </div>
               </div>

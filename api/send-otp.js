@@ -30,7 +30,7 @@ export default async function handler(req, res) {
 
   let subjectText = `${otpCode} is your Severa AI verification code`;
   let purposeBadge = `🔐 Purpose: Verification Code`;
-  let purposeDesc = `Please enter this 6-digit code on the website.`;
+  let purposeDesc = `Click below to auto-fill code or enter it manually on the website.`;
 
   if (purpose === 'reset_password' || purpose === 'forgot_password') {
     subjectText = `${otpCode} is your Severa AI password reset code`;
@@ -94,13 +94,20 @@ export default async function handler(req, res) {
 
               <!-- Single clean code box -->
               <div style="margin: 16px 0; padding: 18px; background-color: #050810; border-radius: 10px; border: 2px solid #00dc82; text-align: center;">
-                <span style="font-size: 42px; font-weight: 900; color: #00dc82; font-family: monospace, Courier, sans-serif; letter-spacing: 4px;">${otpCode}</span>
+                <span style="font-size: 42px; font-weight: 900; color: #00dc82; font-family: monospace, Courier, sans-serif; letter-spacing: 4px; user-select: all; -webkit-user-select: all;">${otpCode}</span>
+              </div>
+
+              <!-- Dedicated Copy Code Badge -->
+              <div style="margin-top: 12px; text-align: center;">
+                <span style="display: inline-block; padding: 8px 18px; background-color: rgba(0, 220, 130, 0.15); border: 1px solid #00dc82; color: #00dc82; font-weight: 800; font-size: 13px; border-radius: 8px; font-family: monospace; user-select: all; -webkit-user-select: all;">
+                  📋 Copy Code: ${otpCode}
+                </span>
               </div>
 
               <p style="color: #94a3b8; font-size: 12px; margin-top: 14px; leading-relaxed: 1.5;">${purposeDesc}</p>
 
               <!-- Working Auto-Fill & Verify Button -->
-              <div style="margin-top: 20px;">
+              <div style="margin-top: 18px;">
                 <a href="${autoFillUrl}" target="_blank" style="display: inline-block; padding: 14px 26px; background-color: #00dc82; color: #000000; font-weight: 900; font-size: 13px; border-radius: 10px; text-decoration: none; font-family: sans-serif; box-shadow: 0 4px 12px rgba(0,220,130,0.3);">
                   ⚡ Auto-Fill 6-Digit Code on Severa AI →
                 </a>
