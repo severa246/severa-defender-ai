@@ -76,13 +76,13 @@ export default async function handler(req, res) {
 
             <p style="color: #cbd5e1; font-size: 13px; margin-bottom: 14px; font-weight: 600;">Your official 6-digit verification code is:</p>
 
-            <div style="font-size: 36px; font-weight: 900; letter-spacing: 8px; color: #00dc82; font-family: monospace; margin: 14px 0; padding: 14px; background-color: #050810; border-radius: 10px; border: 1px solid #00dc82; user-select: all; -webkit-user-select: all;">
-              ${otpCode}
+            <div style="margin: 16px 0; padding: 16px; background-color: #050810; border-radius: 10px; border: 1px solid #00dc82;">
+              <code style="font-size: 38px; font-weight: 900; letter-spacing: 10px; color: #00dc82; font-family: monospace, Courier, sans-serif;">${otpCode}</code>
             </div>
 
             <div style="margin-top: 14px; text-align: center;">
-              <span style="display: inline-block; padding: 10px 20px; background-color: #00dc82; color: #000000; font-weight: 800; font-size: 13px; border-radius: 8px; font-family: sans-serif; user-select: all; -webkit-user-select: all;">
-                📋 Click Here to Copy Code: ${otpCode}
+              <span style="display: inline-block; padding: 8px 16px; background-color: rgba(0, 220, 130, 0.15); border: 1px solid #00dc82; color: #00dc82; font-weight: 700; font-size: 13px; border-radius: 8px; font-family: monospace;">
+                📋 Code: ${otpCode}
               </span>
             </div>
 
