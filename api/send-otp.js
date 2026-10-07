@@ -65,7 +65,7 @@ export default async function handler(req, res) {
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; background-color: #0b1120; color: #ffffff; border-radius: 16px; border: 1px solid #1e293b;">
           <div style="text-align: center; margin-bottom: 20px;">
-            <h1 style="color: #00dc82; font-size: 24px; font-weight: 900; margin: 0; tracking-tight: -0.05em;">Severa AI</h1>
+            <h1 style="color: #00dc82; font-size: 24px; font-weight: 900; margin: 0;">Severa AI</h1>
             <p style="color: #94a3b8; font-size: 12px; margin-top: 4px;">Autonomous Code Security Platform</p>
           </div>
 
@@ -74,19 +74,21 @@ export default async function handler(req, res) {
               ${purposeBadge}
             </div>
 
-            <p style="color: #cbd5e1; font-size: 13px; margin-bottom: 14px; font-weight: 600;">Your official 6-digit verification code is:</p>
+            <p style="color: #cbd5e1; font-size: 13px; margin-bottom: 14px; font-weight: 600;">Your 6-digit verification code is:</p>
 
-            <div style="margin: 16px 0; padding: 16px; background-color: #050810; border-radius: 10px; border: 1px solid #00dc82;">
-              <code style="font-size: 38px; font-weight: 900; letter-spacing: 10px; color: #00dc82; font-family: monospace, Courier, sans-serif;">${otpCode}</code>
+            <!-- Continuous selectable code block -->
+            <div style="margin: 16px 0; padding: 18px; background-color: #050810; border-radius: 10px; border: 2px solid #00dc82; text-align: center;">
+              <span style="font-size: 40px; font-weight: 900; color: #00dc82; font-family: monospace, Courier, sans-serif; letter-spacing: 4px;">${otpCode}</span>
             </div>
 
-            <div style="margin-top: 14px; text-align: center;">
-              <span style="display: inline-block; padding: 8px 16px; background-color: rgba(0, 220, 130, 0.15); border: 1px solid #00dc82; color: #00dc82; font-weight: 700; font-size: 13px; border-radius: 8px; font-family: monospace;">
-                📋 Code: ${otpCode}
-              </span>
-            </div>
+            <p style="color: #94a3b8; font-size: 12px; margin-top: 14px; leading-relaxed: 1.5;">${purposeDesc}</p>
 
-            <p style="color: #94a3b8; font-size: 12px; margin-top: 16px; leading-relaxed: 1.5;">${purposeDesc}</p>
+            <!-- Real working button to open website -->
+            <div style="margin-top: 20px;">
+              <a href="https://severa-defender-ai.vercel.app/" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: #00dc82; color: #000000; font-weight: 900; font-size: 13px; border-radius: 10px; text-decoration: none; font-family: sans-serif;">
+                Open Severa AI to Enter Code →
+              </a>
+            </div>
           </div>
 
           <div style="text-align: center; margin-top: 24px; font-size: 11px; color: #64748b;">
