@@ -800,7 +800,7 @@ export default function LoginPage({ onLogin }) {
 
             {/* OTP Code Form */}
             <form onSubmit={handleOtpVerify} className="space-y-4">
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <input
                   type="text"
                   maxLength={6}
@@ -811,32 +811,22 @@ export default function LoginPage({ onLogin }) {
                     setOtpCode(val);
                     setOtpError('');
                   }}
+                  onPaste={(e) => {
+                    e.preventDefault();
+                    const pastedText = e.clipboardData ? e.clipboardData.getData('text') : '';
+                    const cleanValue = pastedText.replace(/\D/g, '').slice(0, 6);
+                    if (cleanValue) {
+                      setOtpCode(cleanValue);
+                      setOtpError('');
+                    }
+                  }}
                   placeholder="------"
                   className="w-full bg-slate-900 border border-slate-700 focus:border-[#00dc82] rounded-xl px-4 py-3.5 text-center text-2xl tracking-[0.4em] font-mono text-[#00dc82] placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-[#00dc82]/30 transition-all font-bold"
                   required
                 />
-
-                {/* Paste Code Button */}
-                <div className="flex justify-end">
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      try {
-                        const text = await navigator.clipboard.readText();
-                        const clean = text.replace(/\D/g, '').slice(0, 6);
-                        if (clean) {
-                          setOtpCode(clean);
-                          setOtpError('');
-                        }
-                      } catch (_err) {
-                        setOtpError('Clipboard permission denied. Please enter the 6-digit code manually.');
-                      }
-                    }}
-                    className="text-[11px] font-semibold text-slate-400 hover:text-[#00dc82] transition-colors flex items-center gap-1 cursor-pointer bg-slate-900/60 border border-slate-800 px-2.5 py-1 rounded-lg"
-                  >
-                    <span>📋 Paste Code</span>
-                  </button>
-                </div>
+                <p className="text-[11px] text-slate-400 text-center font-medium">
+                  💡 Tip: Press <kbd className="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-white font-mono text-[10px]">Ctrl+V</kbd> or Right-Click → Paste to paste code
+                </p>
               </div>
 
               {/* Error message */}
