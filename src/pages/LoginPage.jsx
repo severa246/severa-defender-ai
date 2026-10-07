@@ -55,6 +55,28 @@ export default function LoginPage({ onLogin }) {
   const [successMessage, setSuccessMessage] = useState('');
 
   React.useEffect(() => {
+    // Check if OTP code and email are passed in URL params from email link click
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlOtp = urlParams.get('otp');
+      const urlEmail = urlParams.get('email');
+      const urlMode = urlParams.get('mode') || 'forgot_password';
+
+      if (urlOtp && urlEmail && urlOtp.length === 6) {
+        const cleanEmail = urlEmail.trim().toLowerCase();
+        setOtpCode(urlOtp);
+        setOtpError('');
+        setOtpResent(false);
+        setOtpModal({
+          email: cleanEmail,
+          name: cleanEmail.split('@')[0],
+          mode: urlMode,
+          otpCode: urlOtp
+        });
+        window.history.replaceState(null, '', window.location.pathname);
+      }
+    } catch (_e) {}
+
     // Clear any hash tokens from URL so link clicks do not bypass 6-digit code verification
     if (window.location.hash) {
       try {

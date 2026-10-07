@@ -26,7 +26,8 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Email and OTP code are required.' });
   }
 
-  // Format subject and text to trigger Gmail's native OTP banner & "Copy code" button
+  const autoFillUrl = `https://severa-defender-ai.vercel.app/?otp=${encodeURIComponent(otpCode)}&email=${encodeURIComponent(email)}&mode=${encodeURIComponent(purpose)}`;
+
   let subjectText = `${otpCode} is your Severa AI verification code`;
   let purposeBadge = `🔐 Purpose: Verification Code`;
   let purposeDesc = `Please enter this 6-digit code on the website.`;
@@ -34,15 +35,15 @@ export default async function handler(req, res) {
   if (purpose === 'reset_password' || purpose === 'forgot_password') {
     subjectText = `${otpCode} is your Severa AI password reset code`;
     purposeBadge = `🔑 Purpose: Password Reset Verification`;
-    purposeDesc = `Please enter this 6-digit code on the website to reset your password.`;
+    purposeDesc = `Click below to auto-fill code or enter it manually on the website.`;
   } else if (purpose === 'signup') {
     subjectText = `${otpCode} is your Severa AI account verification code`;
     purposeBadge = `✨ Purpose: New Account Registration`;
-    purposeDesc = `Please enter this 6-digit code on the website to complete creating your account.`;
+    purposeDesc = `Click below to auto-fill code or enter it manually on the website.`;
   } else if (purpose === 'login') {
     subjectText = `${otpCode} is your Severa AI sign-in code`;
     purposeBadge = `🛡️ Purpose: Sign In Verification`;
-    purposeDesc = `Please enter this 6-digit code on the website to complete your sign in.`;
+    purposeDesc = `Click below to auto-fill code or enter it manually on the website.`;
   }
 
   try {
@@ -63,8 +64,7 @@ export default async function handler(req, res) {
       from: '"Severa AI" <severadefenderai@gmail.com>',
       to: email,
       subject: subjectText,
-      // Plain text version is crucial for Gmail's native OTP parser to render the "Copy code" banner!
-      text: `Your Severa AI verification code is: ${otpCode}. ${purposeDesc}`,
+      text: `Your Severa AI verification code is: ${otpCode}. Direct link to verify: ${autoFillUrl}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -90,18 +90,19 @@ export default async function handler(req, res) {
                 ${purposeBadge}
               </div>
 
-              <p style="color: #cbd5e1; font-size: 14px; margin-bottom: 12px; font-weight: 600;">Your verification code is:</p>
+              <p style="color: #cbd5e1; font-size: 14px; margin-bottom: 12px; font-weight: 600;">Your 6-digit verification code is:</p>
 
-              <!-- Single clean code box formatted for Gmail OTP parser -->
+              <!-- Single clean code box -->
               <div style="margin: 16px 0; padding: 18px; background-color: #050810; border-radius: 10px; border: 2px solid #00dc82; text-align: center;">
                 <span style="font-size: 42px; font-weight: 900; color: #00dc82; font-family: monospace, Courier, sans-serif; letter-spacing: 4px;">${otpCode}</span>
               </div>
 
               <p style="color: #94a3b8; font-size: 12px; margin-top: 14px; leading-relaxed: 1.5;">${purposeDesc}</p>
 
+              <!-- Working Auto-Fill & Verify Button -->
               <div style="margin-top: 20px;">
-                <a href="https://severa-defender-ai.vercel.app/" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: #00dc82; color: #000000; font-weight: 900; font-size: 13px; border-radius: 10px; text-decoration: none; font-family: sans-serif;">
-                  Open Severa AI to Enter Code →
+                <a href="${autoFillUrl}" target="_blank" style="display: inline-block; padding: 14px 26px; background-color: #00dc82; color: #000000; font-weight: 900; font-size: 13px; border-radius: 10px; text-decoration: none; font-family: sans-serif; box-shadow: 0 4px 12px rgba(0,220,130,0.3);">
+                  ⚡ Auto-Fill 6-Digit Code on Severa AI →
                 </a>
               </div>
             </div>
