@@ -43,6 +43,7 @@ export default function LoginPage({ onLogin }) {
   const [otpError, setOtpError] = useState('');
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpResent, setOtpResent] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   // Forgot Password Modal State
   const [resetModal, setResetModal] = useState(null); // null | { email: '' }
@@ -854,9 +855,27 @@ export default function LoginPage({ onLogin }) {
                   className="w-full bg-slate-900 border border-slate-700 focus:border-[#00dc82] rounded-xl px-4 py-3.5 text-center text-2xl tracking-[0.4em] font-mono text-[#00dc82] placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-[#00dc82]/30 transition-all font-bold"
                   required
                 />
-                <p className="text-[11px] text-slate-400 text-center font-medium">
-                  💡 Tip: Press <kbd className="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-white font-mono text-[10px]">Ctrl+V</kbd> or Right-Click → Paste to paste code
-                </p>
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[11px] text-slate-400 font-medium">
+                    💡 Press <kbd className="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-white font-mono text-[10px]">Ctrl+V</kbd> to paste
+                  </span>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const codeToCopy = otpCode || otpModal?.otpCode;
+                      if (codeToCopy) {
+                        try {
+                          await navigator.clipboard.writeText(codeToCopy);
+                          setCopySuccess(true);
+                          setTimeout(() => setCopySuccess(false), 2000);
+                        } catch (_e) {}
+                      }
+                    }}
+                    className="text-[11px] font-bold text-[#00dc82] hover:text-emerald-300 transition-all flex items-center gap-1 cursor-pointer bg-[#00dc82]/10 hover:bg-[#00dc82]/20 border border-[#00dc82]/30 px-2.5 py-1 rounded-lg"
+                  >
+                    {copySuccess ? <span>✓ Code Copied!</span> : <span>📋 Copy Code</span>}
+                  </button>
+                </div>
               </div>
 
               {/* Error message */}
