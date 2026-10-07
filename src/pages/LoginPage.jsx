@@ -49,7 +49,9 @@ export default function LoginPage({ onLogin }) {
   const [resetForm, setResetForm] = useState({ password: '', confirmPassword: '' });
   const [resetError, setResetError] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
-  const [forgotSuccess, setForgotSuccess] = useState(null); // null | { email: '' }
+  const [forgotPromptOpen, setForgotPromptOpen] = useState(false);
+  const [forgotEmailInput, setForgotEmailInput] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   React.useEffect(() => {
     // Clear any hash tokens from URL so link clicks do not bypass 6-digit code verification
@@ -60,23 +62,28 @@ export default function LoginPage({ onLogin }) {
     }
   }, []);
 
-  async function handleForgotPasswordClick() {
+  async function handleForgotPasswordClick(overrideEmail) {
     setError('');
-    const email = form.email.trim().toLowerCase();
-    if (!email || !authService.isValidEmail(email)) {
-      setError('Please enter your registered email address above first to receive 6-digit reset code.');
+    const targetEmail = (typeof overrideEmail === 'string' && overrideEmail)
+      ? overrideEmail.trim().toLowerCase()
+      : form.email.trim().toLowerCase();
+
+    if (!targetEmail || !authService.isValidEmail(targetEmail)) {
+      setForgotEmailInput(targetEmail || '');
+      setForgotPromptOpen(true);
       return;
     }
 
     setLoading(true);
     try {
-      const res = await authService.requestPasswordReset(email);
+      const res = await authService.requestPasswordReset(targetEmail);
       setLoading(false);
+      setForgotPromptOpen(false);
       // Open 6-digit OTP Modal for Forgot Password Verification
       setOtpCode('');
       setOtpError('');
       setOtpResent(false);
-      setOtpModal({ email, name: email.split('@')[0], mode: 'forgot_password', otpCode: res.otpCode });
+      setOtpModal({ email: targetEmail, name: targetEmail.split('@')[0], mode: 'forgot_password', otpCode: res.otpCode });
     } catch (err) {
       setLoading(false);
       setError(err.message || 'Unable to request password reset.');
@@ -92,20 +99,25 @@ export default function LoginPage({ onLogin }) {
       return;
     }
     if (resetForm.password !== resetForm.confirmPassword) {
-      setResetError('Passwords do not match.');
+      setResetError('Passwords do not match. Please re-enter both passwords.');
       return;
     }
 
     setResetLoading(true);
     try {
-      const userSession = await authService.resetPasswordAndUpdate({
+      await authService.resetPasswordAndUpdate({
         email: resetModal.email,
         newPassword: resetForm.password
       });
       setResetLoading(false);
+      const targetEmail = resetModal.email;
       setResetModal(null);
-      // Password updated successfully -> Log in to workspace
-      onLogin(userSession);
+      
+      // Redirect to Sign In with success message!
+      setTab('login');
+      setForm((f) => ({ ...f, email: targetEmail, password: '', confirmPassword: '' }));
+      setError('');
+      setSuccessMessage('Password changed successfully! Please Sign In with your new password.');
     } catch (err) {
       setResetLoading(false);
       setResetError(err.message || 'Failed to update password.');
@@ -527,6 +539,14 @@ export default function LoginPage({ onLogin }) {
                 </div>
               )}
 
+              {/* Success State */}
+              {successMessage && (
+                <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-400 font-bold flex items-center justify-between animate-fadeIn">
+                  <span>✓ {successMessage}</span>
+                  <button onClick={() => setSuccessMessage('')} className="text-emerald-400 hover:text-white text-xs cursor-pointer ml-2">✕</button>
+                </div>
+              )}
+
               {/* Error State */}
               {error && (
                 <div className="space-y-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs">
@@ -682,16 +702,65 @@ export default function LoginPage({ onLogin }) {
               <button
                 type="submit"
                 disabled={resetLoading}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-blue-500/20 disabled:opacity-50"
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-black font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-500/20 disabled:opacity-50"
               >
                 {resetLoading ? (
-                  <Loader2 size={16} className="animate-spin text-white" />
+                  <Loader2 size={16} className="animate-spin text-black" />
                 ) : (
-                  <>
-                    <span>Update Password & Send 6-Digit Code</span>
-                    <ArrowRight size={15} />
-                  </>
+                  <span>Change Password & Proceed to Sign In →</span>
                 )}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Forgot Password Email Prompt Modal ── */}
+      {forgotPromptOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
+          <div className="bg-[#121826] border border-blue-500/30 text-white rounded-2xl w-full max-w-md p-7 shadow-2xl space-y-5 relative font-sans">
+            <button
+              onClick={() => setForgotPromptOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center shadow-lg shadow-blue-500/10">
+                <Lock size={22} className="text-blue-400" />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-white">Reset Your Password</h3>
+                <p className="text-xs text-slate-400">Enter your registered email address to receive a 6-digit code</p>
+              </div>
+            </div>
+
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              handleForgotPasswordClick(forgotEmailInput);
+            }} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-2">
+                  Registered Email Address
+                </label>
+                <input
+                  type="email"
+                  autoFocus
+                  value={forgotEmailInput}
+                  onChange={(e) => setForgotEmailInput(e.target.value)}
+                  placeholder="user@example.com"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/40 transition-all font-medium"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-blue-500/20 disabled:opacity-50"
+              >
+                {loading ? <Loader2 size={16} className="animate-spin text-white" /> : <span>Send 6-Digit Reset Code →</span>}
               </button>
             </form>
           </div>
