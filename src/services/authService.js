@@ -285,9 +285,9 @@ export const authService = {
       throw new Error('Please enter the full 6-digit verification code sent to your email.');
     }
 
-    // Check 1: Match against persistent 6-digit OTP store or test bypass code (123456)
+    // Strict Check: Match ONLY against the exact 6-digit random OTP code sent to user email
     const activeCode = this.getStoredOtp(cleanEmail);
-    if (cleanToken === '123456' || (activeCode && activeCode === cleanToken)) {
+    if (activeCode && activeCode === cleanToken) {
       this.clearStoredOtp(cleanEmail);
       const userSession = {
         name: cleanEmail.split('@')[0],
