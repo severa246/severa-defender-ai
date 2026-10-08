@@ -50,7 +50,10 @@ export async function generateAiReview(code, language = 'javascript', findings =
           originalCode: code,
           aiFindings: [],
           reviewComments: data.reviewComments || [],
-          remediationDiffSummary: data.remediationDiffSummary || "AI patch generated via Severa Built-in Model."
+          remediationDiffSummary: data.remediationDiffSummary || "AI patch generated via Severa Built-in Model.",
+          provider: data.provider || "Hugging Face (Qwen 2.5 Coder 32B)",
+          model: data.model || "Qwen/Qwen2.5-Coder-32B-Instruct",
+          isLiveAi: true
         };
       }
     }
@@ -80,7 +83,10 @@ export async function generateAiReview(code, language = 'javascript', findings =
 
         return {
           ...liveResult,
-          fixedCode: verifiedCode
+          fixedCode: verifiedCode,
+          provider: "Google Gemini API (Custom Key)",
+          model: "gemini-1.5-flash",
+          isLiveAi: true
         };
       }
     } catch (err) {
@@ -89,7 +95,13 @@ export async function generateAiReview(code, language = 'javascript', findings =
   }
 
   // 3. Intelligent Local AI Remediation Synthesis Fallback
-  return generateLocalAiRemediation(code, targetLang, findings);
+  const localRes = generateLocalAiRemediation(code, targetLang, findings);
+  return {
+    ...localRes,
+    provider: "Severa AI AST Engine (Offline Fallback)",
+    model: "AST Pattern Engine",
+    isLiveAi: false
+  };
 }
 
 function generateLocalAiRemediation(code, language, findings) {

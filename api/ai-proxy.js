@@ -103,6 +103,8 @@ Return a single JSON object:
               return res.status(200).json({
                 success: true,
                 provider: 'Hugging Face Router (Qwen 2.5 Coder 32B)',
+                model: 'Qwen/Qwen2.5-Coder-32B-Instruct',
+                fallback: false,
                 fixedCode: parsed.fixedCode,
                 status: parsed.status || 'AI SECURITY FIX APPLIED',
                 reviewComments: parsed.reviewComments || [],
@@ -143,6 +145,8 @@ Return a single JSON object:
               return res.status(200).json({
                 success: true,
                 provider: 'Hugging Face Direct (Qwen 2.5 Coder 32B)',
+                model: 'Qwen/Qwen2.5-Coder-32B-Instruct',
+                fallback: false,
                 fixedCode: parsed.fixedCode,
                 status: parsed.status || 'AI SECURITY FIX APPLIED',
                 reviewComments: parsed.reviewComments || [],
@@ -188,7 +192,9 @@ Return a single JSON object:
           if (parsed.fixedCode) {
             return res.status(200).json({
               success: true,
-              provider: 'OpenRouter (Qwen 2.5 Coder Unlimited Free)',
+              provider: 'OpenRouter (Qwen 2.5 Coder 32B Free)',
+              model: 'qwen/qwen-2.5-coder-32b:free',
+              fallback: false,
               fixedCode: parsed.fixedCode,
               status: parsed.status || 'AI SECURITY FIX APPLIED',
               reviewComments: parsed.reviewComments || [],
@@ -202,16 +208,19 @@ Return a single JSON object:
     // 3. Fallback: Synthesized Local Security Remediation Guardrail
     return res.status(200).json({
       success: true,
-      provider: 'Severa AI Local Security Engine',
+      provider: 'Severa AI AST Engine (Offline Fallback)',
+      model: 'AST Rules Engine',
       fallback: true
     });
   } catch (globalErr) {
     console.error("Global AI Proxy Catch:", globalErr);
     return res.status(200).json({
       success: true,
-      provider: 'Severa AI Local Security Engine',
+      provider: 'Severa AI AST Engine (Offline Fallback)',
+      model: 'AST Rules Engine',
       fallback: true,
       error: globalErr.message || 'Serverless Proxy Fallback'
     });
+  }
   }
 }

@@ -33,6 +33,19 @@ export default function DiffViewer({ aiReviewData, onApplyFix, onClose }) {
               )}
             </h3>
             <p className="text-xs text-slate-400">{remediationDiffSummary}</p>
+            {aiReviewData?.provider && (
+              <div className="flex items-center gap-2 text-[11px] font-mono pt-1">
+                <span className="text-slate-500">Execution Route:</span>
+                <span className={`px-2 py-0.5 rounded font-semibold ${aiReviewData.isLiveAi ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/10 text-amber-300 border border-amber-500/30'}`}>
+                  {aiReviewData.isLiveAi ? '🟢 ' : '⚡ '}{aiReviewData.provider}
+                </span>
+                {aiReviewData.model && (
+                  <span className="text-slate-400 text-[10px] bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">
+                    Model: {aiReviewData.model}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
