@@ -561,7 +561,7 @@ export default function App({ user, onLogout }) {
 
     // 3. Sync active scanSession (Conversation History)
     setScanSessions((prev) =>
-      prev.map((s) => (s.id === activeSessionId ? { ...s, findings: finalFindings, code: activeCode, language: activeLang } : s))
+      prev.map((s) => (s.id === activeSessionId ? { ...s, findings: finalFindings, code: activeCode, language: activeLang, timeAgo: 'Just now', updatedAt: Date.now() } : s))
     );
 
     setProjectScanToast((prev) => ({
@@ -1273,6 +1273,14 @@ export default function App({ user, onLogout }) {
     setAiReviewData((prev) => (prev ? { ...prev, applied: true } : null));
     setFixedLineNumbers(remediatedLines);
     setIsApplyFixModalOpen(false);
+
+    setScanSessions((prev) =>
+      prev.map((s) =>
+        s.id === activeSessionId
+          ? { ...s, code: targetCode, timeAgo: 'Just now', updatedAt: Date.now() }
+          : s
+      )
+    );
   };
 
   // Apply AI Security Fix / Remediation to ALL files in the active project folder (Fast Parallel Execution)
@@ -1380,7 +1388,7 @@ export default function App({ user, onLogout }) {
       setScanSessions((prev) =>
         prev.map((s) =>
           s.id === activeSessionId
-            ? { ...s, code: activeFileUpdated.code, findings: activeFileUpdated.findings }
+            ? { ...s, code: activeFileUpdated.code, findings: activeFileUpdated.findings, timeAgo: 'Just now', updatedAt: Date.now() }
             : s
         )
       );

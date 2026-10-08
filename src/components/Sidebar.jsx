@@ -27,8 +27,20 @@ import {
   LogOut
 } from 'lucide-react';
 import UploadChoiceModal from './UploadChoiceModal';
-import UserProfileModal from './UserProfileModal';
-import { buildFileTree } from '../utils/fileTreeBuilder';
+function formatSessionTimeAgo(session) {
+  if (!session) return 'Just now';
+  if (session.updatedAt) {
+    const elapsedSec = Math.floor((Date.now() - session.updatedAt) / 1000);
+    if (elapsedSec < 60) return 'Just now';
+    const elapsedMin = Math.floor(elapsedSec / 60);
+    if (elapsedMin < 60) return `${elapsedMin}m ago`;
+    const elapsedHr = Math.floor(elapsedMin / 60);
+    if (elapsedHr < 24) return `${elapsedHr}h ago`;
+    const elapsedDays = Math.floor(elapsedHr / 24);
+    return `${elapsedDays}d ago`;
+  }
+  return session.timeAgo || 'Just now';
+}
 
 function ProjectTreeNode({
   node,
@@ -1046,7 +1058,7 @@ export default function Sidebar({
 
                         <div className="flex items-center gap-1 shrink-0">
                           <span className="text-[9px] text-slate-500 font-mono">
-                            {session.timeAgo || '8h'}
+                            {formatSessionTimeAgo(session)}
                           </span>
 
                           <button
