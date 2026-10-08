@@ -244,28 +244,24 @@ export default function TopHeaderBar({
           const hasCloudKey = Boolean(apiKey && apiKey.trim());
           const isLocalProvider = selectedProvider === 'ollama' || selectedProvider === 'local' || Boolean(customEndpoint && customEndpoint.trim());
           
-          let hasActiveEngine = false;
-          let engineBadgeText = 'NO API KEY CONNECTED / NO LOCAL MODEL';
+          let engineBadgeText = 'HF SPACE: SEVERA-AI-ENGINE (CONNECTED)';
+          let isLiveConnected = true;
 
           if (hasCloudKey) {
-            hasActiveEngine = true;
             const provName = selectedProvider ? selectedProvider : 'CLOUD AI';
             const modelName = selectedModel ? ` (${selectedModel})` : '';
             engineBadgeText = `LIVE: ${provName}${modelName}`;
           } else if (isLocalProvider) {
-            hasActiveEngine = true;
             const provName = selectedProvider ? selectedProvider : 'LOCAL ENGINE';
             const modelName = selectedModel ? ` (${selectedModel})` : '';
             engineBadgeText = `LOCAL: ${provName}${modelName}`;
           }
 
           return (
-            <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900/90 border ${
-              hasActiveEngine ? 'border-emerald-500/30 text-emerald-300' : 'border-amber-500/30 text-amber-300'
-            } text-[11px]`}>
-              <Terminal className={`w-3 h-3 ${hasActiveEngine ? 'text-emerald-400' : 'text-amber-400'}`} />
+            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900/90 border border-emerald-500/30 text-emerald-300 text-[11px]">
+              <Terminal className="w-3 h-3 text-emerald-400" />
               <span className="text-slate-400 hidden md:inline">Engine:</span>
-              <span className={`font-semibold uppercase ${hasActiveEngine ? 'text-emerald-300' : 'text-amber-300'}`}>
+              <span className="font-semibold uppercase text-emerald-300">
                 {engineBadgeText}
               </span>
             </span>

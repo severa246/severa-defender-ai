@@ -63,21 +63,47 @@ Return a single JSON object:
 }
 `;
 
-  // 1. Primary Route: Custom Hugging Face Space Endpoint (severadefenderai/severa-ai-engine)
-  try {
-    const controller0 = new AbortController();
-    const timeoutId0 = setTimeout(() => controller0.abort(), 3500);
+  // 1. Primary Route: Hugging Face Inference API with User Access Token (hf_...)
+  if (apiKey && apiKey.startsWith('hf_')) {
+    try {
+      const controller0 = new AbortController();
+      const timeoutId0 = setTimeout(() => controller0.abort(), 4500);
 
-    const hfRes = await fetch('https://severadefenderai-severa-ai-engine.hf.space', {
-      method: 'GET',
-      signal: controller0.signal
-    });
-    clearTimeout(timeoutId0);
+      const hfRes = await fetch('https://api-inference.huggingface.co/models/Qwen/Qwen2.5-Coder-32B-Instruct', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          inputs: `${masterSystemPrompt}\n\n${userPrompt}`,
+          parameters: { max_new_tokens: 500, temperature: 0.2 }
+        }),
+        signal: controller0.signal
+      });
+      clearTimeout(timeoutId0);
 
-    if (hfRes.ok) {
-      // Hugging Face Space Endpoint is active!
-    }
-  } catch (_hfErr) {}
+      if (hfRes.ok) {
+        const data = await hfRes.json();
+        const content = Array.isArray(data) ? data[0]?.generated_text || '' : data.generated_text || '';
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          if (parsed.fixedCode) {
+            return res.status(200).json({
+              success: true,
+              provider: 'Hugging Face (Qwen 2.5 Coder 32B)',
+              fixedCode: parsed.fixedCode,
+              status: parsed.status || 'AI SECURITY FIX APPLIED',
+              reviewComments: parsed.reviewComments || [],
+              remediationDiffSummary: parsed.remediationDiffSummary || 'Code remediated via Hugging Face Qwen 2.5 Coder 32B.'
+            });
+          }
+        }
+      }
+    } catch (_hfErr) {}
+  }
 
   // 2. OpenRouter Free Unlimited Model API (qwen/qwen-2.5-coder-32b:free)
   try {
