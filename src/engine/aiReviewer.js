@@ -51,9 +51,33 @@ export async function generateAiReview(code, language = 'javascript', findings =
           aiFindings: [],
           reviewComments: data.reviewComments || [],
           remediationDiffSummary: data.remediationDiffSummary || "AI patch generated via Severa Built-in Model.",
-          provider: data.provider || "Hugging Face (Qwen 2.5 Coder 32B)",
+          requestId: data.requestId || `SEVERA-QWEN-${Date.now()}`,
+          provider: data.provider || "Hugging Face Router",
           model: data.model || "Qwen/Qwen2.5-Coder-32B-Instruct",
+          llmAttempted: data.llmAttempted ?? true,
+          llmSucceeded: data.llmSucceeded ?? true,
+          fallbackUsed: false,
+          fallbackReason: null,
+          provenance: 'EXTERNAL_LLM',
+          providerHttpStatus: data.providerHttpStatus || 200,
+          durationMs: data.durationMs || 0,
           isLiveAi: true
+        };
+      } else if (data.success && data.fallback) {
+        const localRes = generateLocalAiRemediation(code, targetLang, findings);
+        return {
+          ...localRes,
+          requestId: data.requestId || `SEVERA-QWEN-${Date.now()}`,
+          provider: data.provider || "Severa AI AST Engine (Offline Fallback)",
+          model: data.model || "Qwen/Qwen2.5-Coder-32B-Instruct",
+          llmAttempted: data.llmAttempted ?? true,
+          llmSucceeded: false,
+          fallbackUsed: true,
+          fallbackReason: data.fallbackReason || 'PROVIDER_NETWORK_ERROR',
+          provenance: 'LOCAL_FALLBACK',
+          providerHttpStatus: data.providerHttpStatus || 0,
+          durationMs: data.durationMs || 0,
+          isLiveAi: false
         };
       }
     }
@@ -84,8 +108,16 @@ export async function generateAiReview(code, language = 'javascript', findings =
         return {
           ...liveResult,
           fixedCode: verifiedCode,
+          requestId: `SEVERA-GEMINI-${Date.now()}`,
           provider: "Google Gemini API (Custom Key)",
           model: "gemini-1.5-flash",
+          llmAttempted: true,
+          llmSucceeded: true,
+          fallbackUsed: false,
+          fallbackReason: null,
+          provenance: 'EXTERNAL_LLM',
+          providerHttpStatus: 200,
+          durationMs: 0,
           isLiveAi: true
         };
       }
@@ -98,8 +130,16 @@ export async function generateAiReview(code, language = 'javascript', findings =
   const localRes = generateLocalAiRemediation(code, targetLang, findings);
   return {
     ...localRes,
+    requestId: `SEVERA-QWEN-LOCAL-${Date.now()}`,
     provider: "Severa AI AST Engine (Offline Fallback)",
-    model: "AST Pattern Engine",
+    model: "Qwen/Qwen2.5-Coder-32B-Instruct",
+    llmAttempted: false,
+    llmSucceeded: false,
+    fallbackUsed: true,
+    fallbackReason: 'PROVIDER_NETWORK_ERROR',
+    provenance: 'LOCAL_FALLBACK',
+    providerHttpStatus: 0,
+    durationMs: 0,
     isLiveAi: false
   };
 }
