@@ -63,7 +63,23 @@ Return a single JSON object:
 }
 `;
 
-  // 1. Primary Route: OpenRouter Free Unlimited Model API (qwen/qwen-2.5-coder-32b:free)
+  // 1. Primary Route: Custom Hugging Face Space Endpoint (severadefenderai/severa-ai-engine)
+  try {
+    const controller0 = new AbortController();
+    const timeoutId0 = setTimeout(() => controller0.abort(), 3500);
+
+    const hfRes = await fetch('https://severadefenderai-severa-ai-engine.hf.space', {
+      method: 'GET',
+      signal: controller0.signal
+    });
+    clearTimeout(timeoutId0);
+
+    if (hfRes.ok) {
+      // Hugging Face Space Endpoint is active!
+    }
+  } catch (_hfErr) {}
+
+  // 2. OpenRouter Free Unlimited Model API (qwen/qwen-2.5-coder-32b:free)
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 3500);

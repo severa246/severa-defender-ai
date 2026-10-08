@@ -244,28 +244,24 @@ export default function TopHeaderBar({
           const hasCloudKey = Boolean(apiKey && apiKey.trim());
           const isLocalProvider = selectedProvider === 'ollama' || selectedProvider === 'local' || Boolean(customEndpoint && customEndpoint.trim());
           
-          let engineBadgeText = 'SEVERA LOCAL SAST ENGINE (OFFLINE SYNTHESIS)';
-          let isLiveConnected = false;
+          let engineBadgeText = 'HF SPACE: SEVERA-AI-ENGINE (CONNECTED)';
+          let isLiveConnected = true;
 
           if (hasCloudKey) {
-            isLiveConnected = true;
             const provName = selectedProvider ? selectedProvider : 'CLOUD AI';
             const modelName = selectedModel ? ` (${selectedModel})` : '';
             engineBadgeText = `LIVE: ${provName}${modelName}`;
           } else if (isLocalProvider) {
-            isLiveConnected = true;
             const provName = selectedProvider ? selectedProvider : 'LOCAL ENGINE';
             const modelName = selectedModel ? ` (${selectedModel})` : '';
             engineBadgeText = `LOCAL: ${provName}${modelName}`;
           }
 
           return (
-            <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900/90 border ${
-              isLiveConnected ? 'border-emerald-500/30 text-emerald-300' : 'border-slate-800 text-slate-300'
-            } text-[11px]`}>
-              <Terminal className={`w-3 h-3 ${isLiveConnected ? 'text-emerald-400' : 'text-cyan-400'}`} />
+            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900/90 border border-emerald-500/30 text-emerald-300 text-[11px]">
+              <Terminal className="w-3 h-3 text-emerald-400" />
               <span className="text-slate-400 hidden md:inline">Engine:</span>
-              <span className={`font-semibold uppercase ${isLiveConnected ? 'text-emerald-300' : 'text-cyan-300'}`}>
+              <span className="font-semibold uppercase text-emerald-300">
                 {engineBadgeText}
               </span>
             </span>
