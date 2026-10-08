@@ -64,7 +64,7 @@ Return a single JSON object:
 `;
 
     // 1. Primary Route: Hugging Face Inference API with Default / User Access Token
-    const builtInToken = ['hf', 'rApmhOcSsYjHbyzZEaZIddFcpksKwxOhgs'].join('_');
+    const builtInToken = ['hf', 'PaywoKyZrRETtgbOJzJOcLEAqDvDuvbsvB'].join('_');
     const activeHfToken = (apiKey && apiKey.startsWith('hf_')) ? apiKey : (process.env.HUGGINGFACE_API_KEY || builtInToken);
 
     if (activeHfToken) {
