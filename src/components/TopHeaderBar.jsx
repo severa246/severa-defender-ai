@@ -244,8 +244,7 @@ export default function TopHeaderBar({
           const hasCloudKey = Boolean(apiKey && apiKey.trim());
           const isLocalProvider = selectedProvider === 'ollama' || selectedProvider === 'local' || Boolean(customEndpoint && customEndpoint.trim());
           
-          let engineBadgeText = 'HF SPACE: SEVERA-AI-ENGINE (CONNECTED)';
-          let isLiveConnected = true;
+          let engineBadgeText = 'HUGGING FACE: QWEN 2.5 CODER 32B (DEFAULT FREE)';
 
           if (hasCloudKey) {
             const provName = selectedProvider ? selectedProvider : 'CLOUD AI';

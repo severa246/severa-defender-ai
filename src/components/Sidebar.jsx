@@ -1109,11 +1109,11 @@ export default function Sidebar({
                         AI Provider
                       </span>
                       <span className="text-[9px] font-bold text-emerald-400 flex items-center gap-0.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> HF Space Connected
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Live HF Connected
                       </span>
                     </div>
                     <span className="text-[11px] font-extrabold truncate block uppercase tracking-tight text-slate-100">
-                      {hasKey ? `${selectedProvider} / ${selectedModel}` : 'HF Space: severa-ai-engine'}
+                      {hasKey ? `${selectedProvider} / ${selectedModel}` : 'Hugging Face (Qwen 2.5 32B)'}
                     </span>
                   </div>
                 )}

@@ -168,10 +168,10 @@ export default function UserProfileModal({
                 <Cpu className="w-4 h-4 text-emerald-400" />
                 <span>AI Engine</span>
               </div>
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" title="HF Space Connected" />
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" title="Live HF Connected" />
             </div>
             <p className="text-xs font-bold text-emerald-300 truncate uppercase tracking-tight">
-              {hasKey ? `${selectedProvider} / ${selectedModel}` : 'HF Space: severa-ai-engine'}
+              {hasKey ? `${selectedProvider} / ${selectedModel}` : 'Hugging Face (Qwen 2.5 32B)'}
             </p>
             <button
               onClick={() => {
