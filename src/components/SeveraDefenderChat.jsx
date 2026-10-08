@@ -99,36 +99,57 @@ export default function SeveraDefenderChat({
 
     try {
       let responseText = '';
-      const hasKey = Boolean(apiKey && apiKey.trim().length > 5) || selectedProvider === 'ollama' || Boolean(customEndpoint && customEndpoint.trim());
 
-      if (hasKey) {
-        try {
-          // Live API Call to active provider (Gemini, OpenAI, Anthropic, Groq, Ollama)
-          const liveAiRes = await fetchLiveAiDefenderResponse({
-            prompt: textToSend,
-            findings,
-            targetFinding,
-            fileName: activeFileName,
-            code,
+      // 1. Send query to Severa Serverless AI Proxy (/api/ai-proxy -> Hugging Face Qwen 2.5 Coder 32B / Gemini)
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4500);
+
+        const proxyRes = await fetch('/api/ai-proxy', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            code: `User Question: ${textToSend}\n\nCode Context (${activeFileName}):\n${code}`,
             language,
-            apiKey,
-            selectedProvider,
-            selectedModel,
-            customEndpoint
-          });
+            findings,
+            apiKey
+          }),
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
 
-          if (liveAiRes && liveAiRes.trim()) {
-            responseText = liveAiRes;
-          } else {
-            responseText = generateDefenderResponse(textToSend, findings, activeFileName, code, language, targetFinding);
+        if (proxyRes.ok) {
+          const data = await proxyRes.json();
+          if (data.success && data.fixedCode && !data.fallback) {
+            responseText = data.fixedCode;
+          } else if (data.remediationDiffSummary) {
+            responseText = `${data.remediationDiffSummary}\n\n` + generateDefenderResponse(textToSend, findings, activeFileName, code, language, targetFinding);
           }
-        } catch (apiErr) {
-          console.warn("Live AI Defender call failed, using local engine:", apiErr);
-          const fallbackRes = generateDefenderResponse(textToSend, findings, activeFileName, code, language, targetFinding);
-          responseText = `⚠️ *[Live AI Provider Notice: ${apiErr.message || 'API call unavailable'}. Active response rendered via Severa Security Engine]*\n\n` + fallbackRes;
         }
-      } else {
-        // Local AST Security Engine Response
+      } catch (_proxyErr) {}
+
+      if (!responseText) {
+        const hasKey = Boolean(apiKey && apiKey.trim().length > 5) || selectedProvider === 'ollama' || Boolean(customEndpoint && customEndpoint.trim());
+        if (hasKey) {
+          try {
+            const liveAiRes = await fetchLiveAiDefenderResponse({
+              prompt: textToSend,
+              findings,
+              targetFinding,
+              fileName: activeFileName,
+              code,
+              language,
+              apiKey,
+              selectedProvider,
+              selectedModel,
+              customEndpoint
+            });
+            if (liveAiRes && liveAiRes.trim()) responseText = liveAiRes;
+          } catch (_apiErr) {}
+        }
+      }
+
+      if (!responseText) {
         await new Promise((r) => setTimeout(r, 400));
         responseText = generateDefenderResponse(textToSend, findings, activeFileName, code, language, targetFinding);
       }
@@ -167,11 +188,9 @@ export default function SeveraDefenderChat({
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-base font-black text-white tracking-tight">Severa Defender AI</h2>
-                <span className={`flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                  hasKey ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400' : 'bg-amber-500/10 border border-amber-500/30 text-amber-400'
-                }`}>
-                  <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${hasKey ? 'bg-emerald-400' : 'bg-amber-400'}`} />
-                  {hasKey ? `LIVE AI: ${(selectedProvider || 'CONNECTED').toUpperCase()}` : 'LOCAL ENGINE ACTIVE'}
+                <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+                  <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-emerald-400" />
+                  {hasKey ? `LIVE AI: ${(selectedProvider || 'CONNECTED').toUpperCase()}` : 'HUGGING FACE QWEN 2.5 32B ACTIVE'}
                 </span>
               </div>
               <p className="text-xs text-slate-400">
