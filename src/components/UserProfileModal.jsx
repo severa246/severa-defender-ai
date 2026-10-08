@@ -165,13 +165,17 @@ export default function UserProfileModal({
           <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-1.5">
             <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
               <div className="flex items-center gap-1.5">
-                <Cpu className="w-4 h-4 text-cyan-400" />
+                <Cpu className={`w-4 h-4 ${hasKey ? 'text-emerald-400' : 'text-cyan-400'}`} />
                 <span>AI Engine</span>
               </div>
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" title="Connected" />
+              {hasKey ? (
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" title="Live API Connected" />
+              ) : (
+                <span className="w-2 h-2 rounded-full bg-cyan-400" title="Built-in Local Engine" />
+              )}
             </div>
-            <p className="text-xs font-bold text-cyan-200 truncate uppercase tracking-tight">
-              {hasKey ? `${selectedProvider} / ${selectedModel}` : 'Severa AI (Built-in Free)'}
+            <p className={`text-xs font-bold truncate uppercase tracking-tight ${hasKey ? 'text-emerald-300' : 'text-cyan-300'}`}>
+              {hasKey ? `${selectedProvider} / ${selectedModel}` : 'Severa Local Security Engine'}
             </p>
             <button
               onClick={() => {
@@ -180,7 +184,7 @@ export default function UserProfileModal({
               }}
               className="text-[10px] font-bold text-cyan-400 hover:text-cyan-300 hover:underline flex items-center gap-1 cursor-pointer pt-0.5"
             >
-              <span>{hasKey ? 'Manage Models' : 'Add Custom API Key'}</span> &rarr;
+              <span>{hasKey ? 'Manage Models' : 'Connect Live API Key'}</span> &rarr;
             </button>
           </div>
         </div>
