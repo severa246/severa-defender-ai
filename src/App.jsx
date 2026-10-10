@@ -1570,10 +1570,8 @@ jobs:
       {/* Main Right Content Panel */}
       <div className="flex-1 flex flex-col min-w-0 overflow-y-auto h-screen">
         
-        {/* Antigravity Top Header Bar displaying Folder Name, Active File Name & Conversation Name */}
+        {/* Antigravity Top Header Bar displaying Folder Name & Active File Name */}
         <TopHeaderBar
-          activeSession={activeSession}
-          onRenameSession={handleRenameSession}
           selectedProvider={selectedProvider}
           selectedModel={selectedModel}
           apiKey={apiKey}
