@@ -583,107 +583,110 @@ export default function Sidebar({
         onSelectUploadFolder={() => folderInputRef.current?.click()}
       />
 
-      {/* Top Section: Brand, Actions, Navigation, Projects Tree & Conversations History */}
-      <div className="space-y-4 overflow-y-auto flex-1 pr-1 font-sans scrollbar-none">
+      {/* Top Section: Fixed Controls + Scrollable Project Explorer */}
+      <div className="flex-1 flex flex-col min-h-0 font-sans overflow-hidden">
         
-        {/* Brand Header with Collapsible Toggle Bar */}
-        {isCollapsed ? (
-          <div className="flex flex-col items-center gap-2 py-1">
-            <button
-              type="button"
-              onClick={() => setIsCollapsed(false)}
-              title="Expand Sidebar (Severa AI)"
-              className="p-2 rounded-xl bg-indigo-600 text-white shadow-md hover:bg-indigo-500 transition-all cursor-pointer relative group/logo shrink-0"
-            >
-              <ShieldAlert className="w-5 h-5" />
-              <div className="absolute inset-0 bg-black/60 rounded-xl opacity-0 group-hover/logo:opacity-100 flex items-center justify-center transition-opacity">
-                <PanelLeftOpen className="w-4 h-4 text-indigo-200" />
-              </div>
-            </button>
-          </div>
-        ) : (
-          <div className="flex items-center justify-between px-1 py-1">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="p-2 rounded-xl bg-indigo-600 text-white shadow-md shrink-0">
+        {/* Fixed Top Controls (Brand, New Project, Main Navigation) */}
+        <div className="shrink-0 space-y-3 pb-2">
+          {/* Brand Header with Collapsible Toggle Bar */}
+          {isCollapsed ? (
+            <div className="flex flex-col items-center gap-2 py-1">
+              <button
+                type="button"
+                onClick={() => setIsCollapsed(false)}
+                title="Expand Sidebar (Severa AI)"
+                className="p-2 rounded-xl bg-indigo-600 text-white shadow-md hover:bg-indigo-500 transition-all cursor-pointer relative group/logo shrink-0"
+              >
                 <ShieldAlert className="w-5 h-5" />
-              </div>
-              <div className="min-w-0 animate-fadeIn">
-                <div className="flex items-center gap-1.5">
-                  <h1 className="font-bold text-[15px] text-slate-100 tracking-tight truncate">Severa AI</h1>
-                  <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                    PRO
-                  </span>
+                <div className="absolute inset-0 bg-black/60 rounded-xl opacity-0 group-hover/logo:opacity-100 flex items-center justify-center transition-opacity">
+                  <PanelLeftOpen className="w-4 h-4 text-indigo-200" />
                 </div>
-                <p className="text-xs text-slate-400 font-medium leading-tight truncate">Continuous SAST Platform</p>
-              </div>
+              </button>
             </div>
+          ) : (
+            <div className="flex items-center justify-between px-1 py-1">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="p-2 rounded-xl bg-indigo-600 text-white shadow-md shrink-0">
+                  <ShieldAlert className="w-5 h-5" />
+                </div>
+                <div className="min-w-0 animate-fadeIn">
+                  <div className="flex items-center gap-1.5">
+                    <h1 className="font-bold text-[15px] text-slate-100 tracking-tight truncate">Severa AI</h1>
+                    <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                      PRO
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 font-medium leading-tight truncate">Continuous SAST Platform</p>
+                </div>
+              </div>
 
-            {/* Toggle Sidebar Collapse Button */}
-            <button
-              type="button"
-              onClick={() => setIsCollapsed(true)}
-              title="Collapse Sidebar"
-              className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400 hover:text-white transition-all cursor-pointer shrink-0"
-            >
-              <PanelLeftClose className="w-4 h-4" />
-            </button>
-          </div>
-        )}
-
-        {/* Primary Action Button */}
-        <button
-          onClick={() => {
-            setActiveTab('workbench');
-            setIsCreatingProject(true);
-          }}
-          title="Create New Project"
-          className={`w-full flex items-center justify-center gap-2 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold shadow-md shadow-indigo-950/50 transition-all cursor-pointer border border-indigo-500/30 ${
-            isCollapsed ? 'px-0' : 'px-3'
-          }`}
-        >
-          <FolderPlus className="w-4 h-4 shrink-0" />
-          {!isCollapsed && <span>New Project</span>}
-        </button>
-
-        {/* Main Navigation Menu */}
-        <nav className="space-y-1.5 pt-1.5 border-t border-slate-900">
-          {!isCollapsed && (
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-2.5 py-1 block">
-              Main Navigation
-            </span>
+              {/* Toggle Sidebar Collapse Button */}
+              <button
+                type="button"
+                onClick={() => setIsCollapsed(true)}
+                title="Collapse Sidebar"
+                className="p-1.5 rounded-lg bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400 hover:text-white transition-all cursor-pointer shrink-0"
+              >
+                <PanelLeftClose className="w-4 h-4" />
+              </button>
+            </div>
           )}
 
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
+          {/* Primary Action Button */}
+          <button
+            onClick={() => {
+              setActiveTab('workbench');
+              setIsCreatingProject(true);
+            }}
+            title="Create New Project"
+            className={`w-full flex items-center justify-center gap-2 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold shadow-md shadow-indigo-950/50 transition-all cursor-pointer border border-indigo-500/30 ${
+              isCollapsed ? 'px-0' : 'px-3'
+            }`}
+          >
+            <FolderPlus className="w-4 h-4 shrink-0" />
+            {!isCollapsed && <span>New Project</span>}
+          </button>
 
-            return (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                title={isCollapsed ? item.label : undefined}
-                className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-sm font-medium transition-all cursor-pointer ${
-                  isActive
-                    ? 'bg-indigo-500/20 text-indigo-200 border-l-2 border-indigo-400 font-semibold shadow-sm'
-                    : 'text-slate-300 hover:bg-slate-900 hover:text-white'
-                }`}
-              >
-                <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-cyan-400' : 'text-slate-400'}`} />
-                {!isCollapsed && <span className="truncate">{item.label}</span>}
-                {!isCollapsed && item.badge !== undefined && item.badge > 0 && (
-                  <span className="ml-auto px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-xs font-bold">
-                    {item.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </nav>
+          {/* Main Navigation Menu */}
+          <nav className="space-y-1.5 pt-1.5 border-t border-slate-900">
+            {!isCollapsed && (
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-2.5 py-1 block">
+                Main Navigation
+              </span>
+            )}
+
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  title={isCollapsed ? item.label : undefined}
+                  className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-sm font-medium transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-indigo-500/20 text-indigo-200 border-l-2 border-indigo-400 font-semibold shadow-sm'
+                      : 'text-slate-300 hover:bg-slate-900 hover:text-white'
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-cyan-400' : 'text-slate-400'}`} />
+                  {!isCollapsed && <span className="truncate">{item.label}</span>}
+                  {!isCollapsed && item.badge !== undefined && item.badge > 0 && (
+                    <span className="ml-auto px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-xs font-bold">
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
 
         {/* Projects Section (Filter, Create, Rename, Delete & Upload Choice) */}
         {!isCollapsed && (
-          <div className="space-y-2 pt-2 border-t border-slate-900 flex-1 flex flex-col min-h-0">
-            <div className="flex items-center justify-between px-2.5">
+          <div className="space-y-2 pt-2 border-t border-slate-900 flex-1 flex flex-col min-h-0 overflow-hidden">
+            <div className="shrink-0 flex items-center justify-between px-2.5">
               <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                 Project Explorer
               </span>
@@ -755,7 +758,7 @@ export default function Sidebar({
           )}
 
           {/* Project Folders Tree with Full Rename, Delete, File+ and Upload Actions */}
-          <div className="space-y-1 font-mono text-xs">
+          <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-1 font-mono text-xs custom-scrollbar">
             {visibleProjects.map((p) => {
               const isExpanded = expandedProjects[p.name];
               const projectFilesList = p.files || [{ name: 'main.py' }];
@@ -939,17 +942,17 @@ export default function Sidebar({
             })}
           </div>
 
-          {/* Dedicated Download Working Folder Action */}
+          {/* Dedicated Download Working Folder Action (Pinned: Always Visible Even After Scrolling) */}
           {onDownloadFixedFolder && (
-            <div className="pt-2 px-1">
+            <div className="shrink-0 pt-2 border-t border-slate-900/90 mt-1 px-1">
               <button
                 type="button"
                 onClick={() => onDownloadFixedFolder(activeProjectName)}
-                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500/40 text-slate-200 hover:text-emerald-300 transition-all text-xs font-mono font-medium cursor-pointer group shadow-sm"
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-slate-900/95 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500/50 text-slate-200 hover:text-emerald-300 transition-all text-xs font-mono font-medium cursor-pointer group shadow-md"
                 title={`Download current working folder "${activeProjectName || 'workspace'}.zip"`}
               >
                 <FolderDown className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform shrink-0" />
-                <span className="truncate">Download {activeProjectName || 'workspace'}.zip</span>
+                <span className="truncate font-semibold">Download {activeProjectName || 'workspace'}.zip</span>
               </button>
             </div>
           )}
