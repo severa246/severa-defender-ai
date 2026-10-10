@@ -57,7 +57,7 @@ function Navbar({ navigate }) {
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
       scrolled ? 'bg-[#0d0f18]/95 backdrop-blur-xl border-b border-white/5' : ''
     }`}>
-      <div className="max-w-7xl mx-auto px-5 py-3 flex items-center justify-between gap-4">
+      <div className="w-full max-w-[1720px] mx-auto px-6 sm:px-10 lg:px-16 py-3.5 flex items-center justify-between gap-4">
         {/* Logo */}
         <div
           onClick={() => scrollToSection('home')}
@@ -344,7 +344,7 @@ export default function LandingPage() {
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
       <section className="relative z-10 pt-28 pb-20">
 
-        <div className="relative max-w-7xl mx-auto px-5 grid lg:grid-cols-2 gap-12 items-center">
+        <div className="relative w-full max-w-[1720px] mx-auto px-6 sm:px-10 lg:px-16 grid lg:grid-cols-2 gap-12 xl:gap-16 items-center">
           {/* Left */}
           <div>
             {/* Info bar */}
@@ -361,7 +361,7 @@ export default function LandingPage() {
               <span className="text-emerald-400">Faster</span>
             </h1>
 
-            <p className="text-sm text-slate-400 leading-relaxed mb-8 max-w-md">
+            <p className="text-sm sm:text-base text-slate-400 leading-relaxed mb-8 max-w-xl">
               Open-source AI security platform for intelligent code review,
               vulnerability detection, automated remediation, and developer workflows.
             </p>
@@ -391,7 +391,7 @@ export default function LandingPage() {
             </div>
 
             {/* Docker quick-start */}
-            <div className="flex items-center gap-2 bg-black/40 border border-white/8 rounded-xl px-4 py-2.5 font-mono text-xs text-slate-300 max-w-md">
+            <div className="flex items-center gap-2 bg-black/40 border border-white/8 rounded-xl px-4 py-2.5 font-mono text-xs text-slate-300 max-w-xl">
               <Terminal size={12} className="text-emerald-400 shrink-0" />
               <span className="flex-1 truncate">$ {DOCKER_CMD}</span>
               <CopyButton text={DOCKER_CMD} />
@@ -408,14 +408,14 @@ export default function LandingPage() {
 
       {/* ── WORKFLOW PIPELINE ─────────────────────────────────────────────── */}
       <section id="features" className="relative z-10 py-20 border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-5">
+        <div className="w-full max-w-[1720px] mx-auto px-6 sm:px-10 lg:px-16">
           <div className="text-center mb-12">
             <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 text-[11px] font-semibold mb-4">
               <Layers size={11} />
               Developer Workflow Pipeline
             </span>
             <h2 className="text-3xl font-black text-white mb-4">End-to-End Automated Code Defense</h2>
-            <p className="text-sm text-slate-500 max-w-xl mx-auto leading-relaxed">
+            <p className="text-sm md:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed">
               Severa replaces fragmented security scanners with a unified open-source workflow
               pipeline built specifically for modern developer teams.
             </p>
@@ -453,7 +453,7 @@ export default function LandingPage() {
 
       {/* ── CTA / QUICK START ─────────────────────────────────────────────── */}
       <section id="quickstart" className="relative z-10 py-24 border-t border-white/5">
-        <div className="max-w-2xl mx-auto px-5 text-center">
+        <div className="max-w-4xl mx-auto px-6 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 text-xs font-semibold mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             Free &amp; Open Source Security Platform
@@ -507,7 +507,7 @@ export default function LandingPage() {
 
       {/* ── FOOTER ────────────────────────────────────────────────────────── */}
       <footer className="relative z-10 border-t border-white/5 py-10">
-        <div className="max-w-7xl mx-auto px-5 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="w-full max-w-[1720px] mx-auto px-6 sm:px-10 lg:px-16 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
             <div className="w-6 h-6 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
               <Shield size={12} className="text-emerald-400" />

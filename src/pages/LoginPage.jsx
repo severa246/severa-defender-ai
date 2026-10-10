@@ -187,14 +187,12 @@ export default function LoginPage({ onLogin }) {
       } catch (err) {
         setLoading(false);
         if (err.code === 'USER_ALREADY_EXISTS') {
-          setError('User already exists with this email address. Redirecting to Sign In...');
-          setTimeout(() => {
-            setTab('login');
-            setForm((f) => ({ ...f, email: normEmail, password: '', confirmPassword: '' }));
-            setError('');
-          }, 1500);
+          setError(`An account with email "${normEmail}" already exists. Please Sign In below.`);
+          setErrorAction({ type: 'switch_to_login', email: normEmail });
+          setTab('login');
+          setForm((f) => ({ ...f, email: normEmail, password: '', confirmPassword: '' }));
         } else {
-          setError(err.message || 'Signup failed.');
+          setError(err.message || 'Signup failed. Please try again.');
         }
       }
       return;
@@ -221,17 +219,14 @@ export default function LoginPage({ onLogin }) {
       setOtpModal({ email: normEmail, name: userSession.name, userSession, mode: 'login', otpCode: userSession.otpCode });
     } catch (err) {
       setLoading(false);
-      if (err.code === 'USER_NOT_FOUND') {
-        setError(`Email "${normEmail}" is not registered. Redirecting to Create Account...`);
-        setTimeout(() => {
-          setTab('signup');
-          setForm((f) => ({ ...f, email: normEmail, name: '', password: '', confirmPassword: '' }));
-          setError('');
-        }, 1500);
-      } else if (err.code === 'INCORRECT_PASSWORD') {
-        setError('Incorrect password. Please check your password and try again.');
+      if (err.code === 'INCORRECT_PASSWORD') {
+        setError('Incorrect password. Please check your password or click "Forgot password?" below to reset.');
+      } else if (err.code === 'INVALID_CREDENTIALS') {
+        setError(`Invalid email or password. If you don't have an account yet, click below to Create Account:`);
+        setErrorAction({ type: 'switch_to_signup', email: normEmail });
       } else {
-        setError(err.message || 'Invalid credentials or user not found. Please check your email and password.');
+        setError(err.message || 'Invalid email or password. Please try again.');
+        setErrorAction({ type: 'switch_to_signup', email: normEmail });
       }
     }
   }
@@ -239,7 +234,8 @@ export default function LoginPage({ onLogin }) {
   async function handleOtpVerify(e) {
     if (e) e.preventDefault();
     setOtpError('');
-    if (!otpCode || otpCode.trim().length < 6) {
+    const cleanToken = (otpCode || '').replace(/\D/g, '').trim();
+    if (!cleanToken || cleanToken.length < 6) {
       setOtpError('Please enter the full 6-digit verification code.');
       return;
     }
@@ -248,7 +244,8 @@ export default function LoginPage({ onLogin }) {
     try {
       const verifiedSession = await authService.verifyOtp({
         email: otpModal.email,
-        token: otpCode
+        token: cleanToken,
+        expectedOtp: otpModal.otpCode
       });
       setOtpLoading(false);
 

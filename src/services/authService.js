@@ -14,37 +14,6 @@ export const authService = {
     return re.test(clean);
   },
 
-  // Check real-time if an email is registered in Supabase DB auth.users table
-  async isUserInSupabaseDB(email) {
-    if (!email) return false;
-    const cleanEmail = email.trim().toLowerCase();
-
-    // Check local storage list first
-    if (storageService.isEmailRegistered(cleanEmail)) {
-      return true;
-    }
-
-    try {
-      const { error } = await supabase.auth.signUp({
-        email: cleanEmail,
-        password: `ExistCheck_${Date.now()}!`,
-      });
-
-      if (error) {
-        const msg = (error.message || '').toLowerCase();
-        if (msg.includes('already registered') || error.status === 422 || msg.includes('user already registered')) {
-          storageService.registerEmail(cleanEmail);
-          return true;
-        }
-      }
-    } catch (_e) {
-      // Catch network fetch error silently
-      return false;
-    }
-
-    return false;
-  },
-
   // Perform Real Email Sign Up via Supabase
   async signup({ name, email, password }) {
     const cleanEmail = email.trim().toLowerCase();
@@ -55,17 +24,6 @@ export const authService = {
 
     if (!password || password.length < 8) {
       throw new Error('Password length is too short (minimum 8 characters required).');
-    }
-
-    try {
-      const existsInDB = await this.isUserInSupabaseDB(cleanEmail);
-      if (existsInDB) {
-        const alreadyExistsError = new Error(`User already exists with email "${cleanEmail}". Please Sign In.`);
-        alreadyExistsError.code = 'USER_ALREADY_EXISTS';
-        throw alreadyExistsError;
-      }
-    } catch (dbCheckErr) {
-      if (dbCheckErr.code === 'USER_ALREADY_EXISTS') throw dbCheckErr;
     }
 
     let data = null;
@@ -82,31 +40,34 @@ export const authService = {
       data = res.data;
       error = res.error;
     } catch (_fetchErr) {
-      // Supabase network error / Failed to fetch - proceed gracefully with session creation
+      // Supabase network error - proceed gracefully
     }
 
     if (error) {
       const msg = (error.message || '').toLowerCase();
-      if (msg.includes('already registered') || error.status === 422 || msg.includes('user already registered')) {
+      if (
+        msg.includes('already registered') || 
+        msg.includes('user already exists') || 
+        error.status === 422 || 
+        error.code === 'user_already_exists'
+      ) {
         storageService.registerEmail(cleanEmail);
-        const alreadyExistsError = new Error(`User already exists with email "${cleanEmail}". Please Sign In.`);
+        const alreadyExistsError = new Error(`An account with email "${cleanEmail}" already exists. Please Sign In.`);
         alreadyExistsError.code = 'USER_ALREADY_EXISTS';
         throw alreadyExistsError;
       }
       if (msg.includes('rate limit') || msg.includes('rate_limit') || msg.includes('exceeded')) {
-        storageService.registerEmail(cleanEmail);
-        return {
-          name: name || cleanEmail.split('@')[0],
-          email: cleanEmail,
-          isNewUser: true,
-          rateLimited: true
-        };
+        // Rate limited by Supabase, proceed with OTP verification
+      } else {
+        throw new Error(error.message || 'Signup failed. Please try again.');
       }
     }
 
+    // Save registration & password
     storageService.registerEmail(cleanEmail);
     this.saveUserPassword(cleanEmail, password);
 
+    // Trigger official 6-digit OTP code to email
     const otpCode = this.generateOtp(cleanEmail, true);
     await this.sendOtpEmail(cleanEmail, otpCode, 'signup');
 
@@ -159,12 +120,8 @@ export const authService = {
     let data = null;
     let error = null;
 
-    if (savedPassword) {
-      if (savedPassword !== password) {
-        const wrongPassError = new Error('Incorrect password. Please check your password and try again.');
-        wrongPassError.code = 'INCORRECT_PASSWORD';
-        throw wrongPassError;
-      }
+    if (savedPassword && savedPassword === password) {
+      // Password matches locally saved password for this user
     } else {
       try {
         const res = await supabase.auth.signInWithPassword({
@@ -176,20 +133,20 @@ export const authService = {
       } catch (_fetchErr) {}
 
       if (error) {
-        const existsInDB = await this.isUserInSupabaseDB(cleanEmail);
-        if (existsInDB) {
-          const wrongPassError = new Error('Incorrect password. Please check your password and try again.');
+        if (savedPassword && savedPassword !== password) {
+          const wrongPassError = new Error('Incorrect password. Please check your password and try again, or click "Forgot password?" to reset.');
           wrongPassError.code = 'INCORRECT_PASSWORD';
           throw wrongPassError;
-        } else {
-          const notFoundError = new Error(`Email address "${cleanEmail}" is not registered. Redirecting to Create Account...`);
-          notFoundError.code = 'USER_NOT_FOUND';
-          throw notFoundError;
         }
+
+        const credError = new Error(`Invalid email or password. If you don't have an account yet, please click "Create account".`);
+        credError.code = 'INVALID_CREDENTIALS';
+        throw credError;
       }
     }
 
     storageService.registerEmail(cleanEmail);
+    this.saveUserPassword(cleanEmail, password);
 
     // Step 2: Trigger 6-digit OTP code to the email for Sign In 2FA from SEVERA DEFENDER AI
     const otpCode = this.generateOtp(cleanEmail, true);
@@ -262,7 +219,7 @@ export const authService = {
     // 1. Primary: Serverless Gmail SMTP endpoint (severadefenderai@gmail.com)
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3500);
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
       const res = await fetch('/api/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -276,7 +233,7 @@ export const authService = {
     // 2. Fallback: FormSubmit Ajax dispatch
     try {
       const controller2 = new AbortController();
-      const timeoutId2 = setTimeout(() => controller2.abort(), 3500);
+      const timeoutId2 = setTimeout(() => controller2.abort(), 4000);
       const params = new URLSearchParams();
       params.append('name', 'SEVERA DEFENDER AI');
       params.append('email', cleanEmail);
@@ -309,11 +266,6 @@ export const authService = {
       throw new Error('Please enter a valid email address ending with a domain extension (e.g. user@gmail.com).');
     }
 
-    const exists = await this.isUserInSupabaseDB(cleanEmail);
-    if (!exists) {
-      throw new Error(`Email address "${cleanEmail}" is not registered. Please check your email or Create an Account.`);
-    }
-
     const otpCode = this.generateOtp(cleanEmail, true);
     await this.sendOtpEmail(cleanEmail, otpCode, 'reset_password');
 
@@ -329,16 +281,16 @@ export const authService = {
   },
 
   // Verify 6-digit OTP code entered by the user
-  async verifyOtp({ email, token }) {
+  async verifyOtp({ email, token, expectedOtp }) {
     const cleanEmail = email.trim().toLowerCase();
-    const cleanToken = (token || '').trim();
+    const cleanToken = (token || '').replace(/\D/g, '').trim();
 
     if (!cleanToken || cleanToken.length < 6) {
       throw new Error('Please enter the full 6-digit verification code sent to your email.');
     }
 
-    // Strict Check: Match ONLY against the exact 6-digit random OTP code sent to user email
-    const activeCode = this.getStoredOtp(cleanEmail);
+    // Strict Check: Match against active stored OTP code or expectedOtp from session
+    const activeCode = this.getStoredOtp(cleanEmail) || expectedOtp;
     if (activeCode && activeCode === cleanToken) {
       this.clearStoredOtp(cleanEmail);
       const userSession = {
@@ -347,6 +299,7 @@ export const authService = {
         isNewUser: false
       };
       storageService.setUserSession(userSession);
+      storageService.registerEmail(cleanEmail);
       return userSession;
     }
 
@@ -365,6 +318,7 @@ export const authService = {
           isNewUser: false
         };
         storageService.setUserSession(userSession);
+        storageService.registerEmail(cleanEmail);
         return userSession;
       }
     } catch (_err) {}
@@ -396,6 +350,7 @@ export const authService = {
     };
 
     storageService.setUserSession(userSession);
+    storageService.registerEmail(cleanEmail);
     return userSession;
   },
 
@@ -411,6 +366,5 @@ export const authService = {
       await supabase.auth.signOut();
     } catch (_e) {}
     storageService.setUserSession(null);
-    storageService.resetRegisteredEmails();
   }
 };
