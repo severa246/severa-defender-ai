@@ -57,28 +57,28 @@ function Navbar({ navigate }) {
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
       scrolled ? 'bg-[#0d0f18]/95 backdrop-blur-xl border-b border-white/5' : ''
     }`}>
-      <div className="w-full max-w-[1720px] mx-auto px-6 sm:px-10 lg:px-16 py-3.5 flex items-center justify-between gap-4">
+      <div className="w-full px-6 sm:px-10 lg:px-14 xl:px-20 py-4 flex items-center justify-between gap-6">
         {/* Logo */}
         <div
           onClick={() => scrollToSection('home')}
-          className="flex items-center gap-2.5 shrink-0 cursor-pointer"
+          className="flex items-center gap-3 shrink-0 cursor-pointer"
         >
-          <div className="w-7 h-7 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
-            <Shield size={14} className="text-emerald-400" />
+          <div className="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
+            <Shield size={16} className="text-emerald-400" />
           </div>
           <div>
-            <span className="text-sm font-black text-white tracking-tight">SEVERA AI</span>
-            <span className="block text-[8px] font-semibold text-slate-500 uppercase tracking-widest -mt-0.5">Open-Source Security</span>
+            <span className="text-base font-black text-white tracking-tight">SEVERA AI</span>
+            <span className="block text-xs font-bold text-emerald-400/90 uppercase tracking-wider">Enterprise Security</span>
           </div>
         </div>
 
         {/* Desktop nav links */}
-        <div className="hidden lg:flex items-center gap-6 text-xs text-slate-400">
+        <div className="hidden lg:flex items-center gap-8 text-sm font-medium text-slate-300">
           {navItems.map((item) => (
             <button
               key={item.label}
               onClick={item.action}
-              className="hover:text-white transition-colors cursor-pointer font-medium"
+              className="hover:text-emerald-400 transition-colors cursor-pointer font-medium"
             >
               {item.label}
             </button>
@@ -86,24 +86,24 @@ function Navbar({ navigate }) {
         </div>
 
         {/* Right actions */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-3.5">
           <button
             onClick={() => navigate('/login')}
-            className="px-3.5 py-1.5 rounded-lg border border-white/10 hover:border-white/20 text-xs font-semibold text-slate-300 hover:text-white transition-all cursor-pointer"
+            className="px-4 py-2 rounded-lg border border-white/10 hover:border-white/20 text-sm font-semibold text-slate-200 hover:text-white transition-all cursor-pointer"
           >
             Sign in
           </button>
           <button
             onClick={() => navigate('/login')}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-black transition-all shadow-lg shadow-emerald-500/20 cursor-pointer"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-black transition-all shadow-lg shadow-emerald-500/20 cursor-pointer"
           >
             Launch Platform
-            <ArrowRight size={12} />
+            <ArrowRight size={14} />
           </button>
         </div>
 
         <button className="md:hidden text-slate-400 hover:text-white" onClick={() => setMobileOpen(!mobileOpen)}>
-          {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
 
@@ -214,26 +214,26 @@ function DemoTerminal() {
   }, [revealedOutput, activeStep, step.items.length]);
 
   return (
-    <div className="bg-[#080b12] border border-white/8 rounded-2xl overflow-hidden shadow-2xl shadow-black/60">
+    <div className="bg-[#080b12] border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-black/80">
       {/* Chrome bar */}
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5 bg-white/[0.02]">
-        <span className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
-        <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
-        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/70" />
-        <span className="ml-3 text-xs text-slate-400 font-mono flex-1">severa-cli — zsh</span>
-        <span className="text-[9px] font-bold px-2 py-0.5 rounded border border-emerald-500/30 text-emerald-400 bg-emerald-500/5">● LIVE DEMO</span>
+      <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-white/10 bg-white/[0.03]">
+        <span className="w-3 h-3 rounded-full bg-red-500/80" />
+        <span className="w-3 h-3 rounded-full bg-yellow-500/80" />
+        <span className="w-3 h-3 rounded-full bg-emerald-500/80" />
+        <span className="ml-3 text-sm text-slate-300 font-mono flex-1">severa-cli — zsh</span>
+        <span className="text-xs font-bold px-2.5 py-1 rounded-md border border-emerald-500/40 text-emerald-400 bg-emerald-500/10">● LIVE DEMO</span>
       </div>
 
       {/* Step tabs */}
-      <div className="flex border-b border-white/5 overflow-x-auto">
+      <div className="flex border-b border-white/10 overflow-x-auto bg-black/40">
         {TERMINAL_STEPS.map((s, i) => (
           <button
             key={s.tab}
             onClick={() => setActiveStep(i)}
-            className={`px-4 py-2.5 text-[11px] font-semibold whitespace-nowrap transition-colors border-b-2 cursor-pointer ${
+            className={`px-5 py-3 text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors border-b-2 cursor-pointer ${
               i === activeStep
-                ? 'border-emerald-500 text-emerald-400 bg-emerald-500/5'
-                : 'border-transparent text-slate-500 hover:text-slate-300'
+                ? 'border-emerald-500 text-emerald-400 bg-emerald-500/10'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
             {s.tab}
@@ -242,24 +242,24 @@ function DemoTerminal() {
       </div>
 
       {/* Command line */}
-      <div className="px-4 py-3 border-b border-white/5 bg-black/30">
-        <p className="font-mono text-xs text-emerald-300">{step.text}</p>
+      <div className="px-5 py-3.5 border-b border-white/10 bg-black/50">
+        <p className="font-mono text-sm sm:text-base text-emerald-300">{step.text}</p>
       </div>
 
       {/* Terminal Body */}
-      <div className="p-4 space-y-2.5 min-h-[220px]">
+      <div className="p-5 space-y-3 min-h-[240px]">
         {/* Header line */}
         <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center">
-              <Shield size={10} className="text-emerald-400" />
+          <div className="flex items-center gap-2.5">
+            <div className="w-6 h-6 rounded-md bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
+              <Shield size={14} className="text-emerald-400" />
             </div>
-            <span className="text-xs font-bold text-emerald-400">{step.title}</span>
+            <span className="text-sm font-bold text-emerald-400">{step.title}</span>
           </div>
-          <span className="text-[10px] text-emerald-400 font-mono animate-pulse">● LIVE</span>
+          <span className="text-xs text-emerald-400 font-mono font-bold animate-pulse">● LIVE</span>
         </div>
 
-        <p className="text-[11px] text-slate-500 font-mono mb-3">
+        <p className="text-xs sm:text-sm text-slate-300 font-mono mb-3">
           {step.info}
         </p>
 
@@ -267,19 +267,19 @@ function DemoTerminal() {
         {step.items.map((item, i) => (
           <div
             key={i}
-            className={`flex items-center justify-between text-[11px] font-mono transition-all duration-300 ${
+            className={`flex items-center justify-between text-xs sm:text-sm font-mono transition-all duration-300 ${
               i < revealedOutput ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'
             }`}
           >
-            <div className="flex items-center gap-2">
-              <span className={i < revealedOutput - 1 ? 'text-emerald-400' : 'text-emerald-500/70'}>
+            <div className="flex items-center gap-2.5">
+              <span className={i < revealedOutput - 1 ? 'text-emerald-400 font-bold' : 'text-emerald-500/80 font-bold'}>
                 {i < revealedOutput - 1 ? '✓' : '⦿'}
               </span>
-              <span className={i < revealedOutput - 1 ? 'text-slate-300' : 'text-slate-400 font-semibold'}>
+              <span className={i < revealedOutput - 1 ? 'text-slate-200' : 'text-slate-300 font-medium'}>
                 {item.label}
               </span>
             </div>
-            <span className={`text-[10px] font-bold ${item.badge || (i < revealedOutput - 1 ? 'text-emerald-400' : 'text-slate-500')}`}>
+            <span className={`text-xs sm:text-sm font-bold ${item.badge || (i < revealedOutput - 1 ? 'text-emerald-400' : 'text-slate-400')}`}>
               {i < revealedOutput - 1 ? item.value : 'Processing...'}
             </span>
           </div>
@@ -292,15 +292,17 @@ function DemoTerminal() {
 // ── Step card ─────────────────────────────────────────────────────────────────
 function StepCard({ number, icon: Icon, title, desc, iconColor = 'text-emerald-400', iconBg = 'bg-emerald-500/10 border-emerald-500/20' }) {
   return (
-    <div className="p-5 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.035] hover:border-white/8 transition-all group">
+    <div className="p-6 rounded-2xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.05] hover:border-emerald-500/30 transition-all group">
       <div className="flex items-start justify-between mb-4">
-        <div className={`w-9 h-9 rounded-lg border flex items-center justify-center ${iconBg} ${iconColor}`}>
-          <Icon size={16} />
+        <div className={`w-12 h-12 rounded-xl border flex items-center justify-center ${iconBg} ${iconColor}`}>
+          <Icon size={22} />
         </div>
-        <span className="text-[10px] font-black text-slate-700 tracking-widest">STEP {String(number).padStart(2,'0')}</span>
+        <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-md tracking-wider">
+          STEP {String(number).padStart(2,'0')}
+        </span>
       </div>
-      <h3 className="text-sm font-bold text-white mb-2">{title}</h3>
-      <p className="text-xs text-slate-500 leading-relaxed">{desc}</p>
+      <h3 className="text-lg font-bold text-white mb-2">{title}</h3>
+      <p className="text-sm text-slate-300 leading-relaxed font-normal">{desc}</p>
     </div>
   );
 }
@@ -344,84 +346,84 @@ export default function LandingPage() {
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
       <section className="relative z-10 pt-28 pb-20">
 
-        <div className="relative w-full max-w-[1720px] mx-auto px-6 sm:px-10 lg:px-16 grid lg:grid-cols-2 gap-12 xl:gap-16 items-center">
+        <div className="relative w-full px-6 sm:px-10 lg:px-14 xl:px-20 grid lg:grid-cols-12 gap-10 xl:gap-16 items-center">
           {/* Left */}
-          <div>
+          <div className="lg:col-span-7">
             {/* Info bar */}
-            <div className="flex flex-wrap items-center gap-3 mb-8 text-[11px]">
-              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-emerald-500/25 bg-emerald-500/5 text-emerald-400 font-semibold">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Open Source &amp; Self-Hostable Platform
+            <div className="flex flex-wrap items-center gap-3 mb-6 text-xs font-semibold">
+              <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 font-bold">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                Open Source &amp; Self-Hostable Security Platform
               </span>
             </div>
 
-            <h1 className="text-5xl lg:text-6xl font-black leading-[1.05] tracking-tight mb-5">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black leading-[1.05] tracking-tight mb-6">
               Build Secure<br />
               Software{' '}
               <span className="text-emerald-400">Faster</span>
             </h1>
 
-            <p className="text-sm sm:text-base text-slate-400 leading-relaxed mb-8 max-w-xl">
+            <p className="text-base sm:text-lg lg:text-xl text-slate-300 leading-relaxed mb-8 max-w-2xl font-normal">
               Open-source AI security platform for intelligent code review,
               vulnerability detection, automated remediation, and developer workflows.
             </p>
 
-            <div className="flex flex-wrap gap-3 mb-8">
+            <div className="flex flex-wrap gap-4 mb-8">
               <button
                 onClick={() => navigate('/login')}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-black transition-all shadow-lg shadow-emerald-500/25 hover:-translate-y-0.5"
+                className="flex items-center gap-2 px-7 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-base font-black transition-all shadow-xl shadow-emerald-500/30 hover:-translate-y-0.5"
               >
                 Get Started
-                <ArrowRight size={14} />
+                <ArrowRight size={16} />
               </button>
               <button
                 onClick={() => navigate('/app')}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-lg border border-white/10 bg-white/[0.04] hover:bg-white/[0.07] text-white text-sm font-semibold transition-all hover:-translate-y-0.5"
+                className="flex items-center gap-2 px-6 py-3.5 rounded-xl border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-white text-base font-semibold transition-all hover:-translate-y-0.5"
               >
-                <Eye size={14} className="text-slate-400" />
+                <Eye size={16} className="text-slate-300" />
                 View Demo
               </button>
               <button
                 onClick={() => {}}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-lg border border-white/10 bg-white/[0.04] hover:bg-white/[0.07] text-white text-sm font-semibold transition-all hover:-translate-y-0.5"
+                className="flex items-center gap-2 px-6 py-3.5 rounded-xl border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-white text-base font-semibold transition-all hover:-translate-y-0.5"
               >
-                <FileCode size={14} className="text-slate-400" />
+                <FileCode size={16} className="text-slate-300" />
                 Read Docs
               </button>
             </div>
 
             {/* Docker quick-start */}
-            <div className="flex items-center gap-2 bg-black/40 border border-white/8 rounded-xl px-4 py-2.5 font-mono text-xs text-slate-300 max-w-xl">
-              <Terminal size={12} className="text-emerald-400 shrink-0" />
+            <div className="flex items-center gap-3 bg-black/60 border border-white/10 rounded-xl px-5 py-3 font-mono text-sm text-slate-200 max-w-xl">
+              <Terminal size={14} className="text-emerald-400 shrink-0" />
               <span className="flex-1 truncate">$ {DOCKER_CMD}</span>
               <CopyButton text={DOCKER_CMD} />
             </div>
           </div>
 
           {/* Right — terminal */}
-          <div className="relative">
-            <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-emerald-500/10 to-transparent blur-xl pointer-events-none" />
+          <div className="relative lg:col-span-5">
+            <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-emerald-500/15 to-transparent blur-xl pointer-events-none" />
             <DemoTerminal />
           </div>
         </div>
       </section>
 
       {/* ── WORKFLOW PIPELINE ─────────────────────────────────────────────── */}
-      <section id="features" className="relative z-10 py-20 border-t border-white/5">
-        <div className="w-full max-w-[1720px] mx-auto px-6 sm:px-10 lg:px-16">
-          <div className="text-center mb-12">
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 text-[11px] font-semibold mb-4">
-              <Layers size={11} />
+      <section id="features" className="relative z-10 py-20 border-t border-white/10">
+        <div className="w-full px-6 sm:px-10 lg:px-14 xl:px-20">
+          <div className="text-center mb-14">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs sm:text-sm font-bold mb-4">
+              <Layers size={14} />
               Developer Workflow Pipeline
             </span>
-            <h2 className="text-3xl font-black text-white mb-4">End-to-End Automated Code Defense</h2>
-            <p className="text-sm md:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed">
+            <h2 className="text-4xl sm:text-5xl font-black text-white mb-4">End-to-End Automated Code Defense</h2>
+            <p className="text-base sm:text-lg text-slate-300 max-w-3xl mx-auto leading-relaxed">
               Severa replaces fragmented security scanners with a unified open-source workflow
               pipeline built specifically for modern developer teams.
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             <StepCard number={1} icon={Code2} iconColor="text-blue-400" iconBg="bg-blue-500/10 border-blue-500/20"
               title="Repository Analysis"
               desc="Deep AST parsing across 30+ languages. Automatically indexes dependencies, branches, and code call graphs." />
@@ -435,7 +437,7 @@ export default function LandingPage() {
               title="AI Review Engine"
               desc="LLM-powered security reviews using Google Gemini 1.5 Pro, Anthropic Claude 3.7, or local Ollama / LM Studio." />
           </div>
-          <div className="grid sm:grid-cols-3 gap-4">
+          <div className="grid sm:grid-cols-3 gap-6">
             <StepCard number={5} icon={Zap} iconColor="text-cyan-400" iconBg="bg-cyan-500/10 border-cyan-500/20"
               title="Automated Fixes"
               desc="Context-aware security patch synthesis. Generates clean, tested code diffs that preserve style and type safety." />
@@ -449,53 +451,51 @@ export default function LandingPage() {
         </div>
       </section>
 
-
-
       {/* ── CTA / QUICK START ─────────────────────────────────────────────── */}
-      <section id="quickstart" className="relative z-10 py-24 border-t border-white/5">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 text-xs font-semibold mb-6">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+      <section id="quickstart" className="relative z-10 py-24 border-t border-white/10">
+        <div className="w-full max-w-5xl mx-auto px-6 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs sm:text-sm font-bold mb-6">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             Free &amp; Open Source Security Platform
           </div>
-          <h2 className="text-4xl font-black text-white mb-4">Start securing your codebase today</h2>
-          <p className="text-sm text-slate-500 mb-8 leading-relaxed">
+          <h2 className="text-4xl sm:text-5xl font-black text-white mb-4">Start securing your codebase today</h2>
+          <p className="text-base sm:text-lg text-slate-300 mb-8 leading-relaxed">
             Deploy in minutes. No vendor lock-in. No usage limits.
             Your code stays on your infrastructure.
           </p>
-          <div className="flex flex-wrap gap-3 justify-center">
+          <div className="flex flex-wrap gap-4 justify-center">
             <button
               onClick={() => navigate('/login')}
-              className="flex items-center gap-2 px-7 py-3 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-black transition-all shadow-lg shadow-emerald-500/25 hover:-translate-y-0.5 cursor-pointer"
+              className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-base font-black transition-all shadow-xl shadow-emerald-500/30 hover:-translate-y-0.5 cursor-pointer"
             >
               Get Started
-              <ArrowRight size={14} />
+              <ArrowRight size={16} />
             </button>
             <button
               onClick={() => navigate('/app')}
-              className="flex items-center gap-2 px-7 py-3 rounded-lg border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-white text-sm font-semibold transition-all hover:-translate-y-0.5 cursor-pointer"
+              className="flex items-center gap-2 px-8 py-3.5 rounded-xl border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-white text-base font-semibold transition-all hover:-translate-y-0.5 cursor-pointer"
             >
-              <Eye size={13} />
+              <Eye size={15} />
               Live Demo
             </button>
           </div>
 
           {/* Quick-start block */}
-          <div className="mt-10 text-left bg-black/40 border border-white/8 rounded-2xl overflow-hidden">
-            <div className="px-4 py-2 border-b border-white/5 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-red-500/60" />
-              <span className="w-2 h-2 rounded-full bg-yellow-500/60" />
-              <span className="w-2 h-2 rounded-full bg-emerald-500/60" />
-              <span className="ml-2 text-[11px] text-slate-600 font-mono">Quick Start CLI</span>
+          <div className="mt-12 text-left bg-black/60 border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+            <div className="px-5 py-3 border-b border-white/10 flex items-center gap-2.5 bg-white/[0.02]">
+              <span className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
+              <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/70" />
+              <span className="ml-2 text-xs text-slate-300 font-mono font-semibold">Quick Start CLI</span>
             </div>
-            <div className="p-5 space-y-2 font-mono text-xs">
+            <div className="p-6 space-y-3 font-mono text-sm sm:text-base">
               {[
-                { prompt: '$', cmd: 'git clone https://github.com/severaai/severa-core', color: 'text-slate-300' },
-                { prompt: '$', cmd: 'cd severa-core && docker compose up -d', color: 'text-slate-300' },
-                { prompt: '$', cmd: 'open http://localhost:3000', color: 'text-emerald-300' },
+                { prompt: '$', cmd: 'git clone https://github.com/severaai/severa-core', color: 'text-slate-200' },
+                { prompt: '$', cmd: 'cd severa-core && docker compose up -d', color: 'text-slate-200' },
+                { prompt: '$', cmd: 'open http://localhost:3000', color: 'text-emerald-300 font-bold' },
               ].map(({ prompt, cmd, color }) => (
-                <div key={cmd} className="flex items-center gap-2 group">
-                  <span className="text-emerald-400 shrink-0">{prompt}</span>
+                <div key={cmd} className="flex items-center gap-3 group">
+                  <span className="text-emerald-400 font-bold shrink-0">{prompt}</span>
                   <span className={color}>{cmd}</span>
                   <CopyButton text={cmd} />
                 </div>
@@ -506,38 +506,40 @@ export default function LandingPage() {
       </section>
 
       {/* ── FOOTER ────────────────────────────────────────────────────────── */}
-      <footer className="relative z-10 border-t border-white/5 py-10">
-        <div className="w-full max-w-[1720px] mx-auto px-6 sm:px-10 lg:px-16 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
-              <Shield size={12} className="text-emerald-400" />
+      <footer className="relative z-10 border-t border-white/10 py-12">
+        <div className="w-full px-6 sm:px-10 lg:px-14 xl:px-20 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
+              <Shield size={16} className="text-emerald-400" />
             </div>
-            <span className="text-xs font-black text-white">SEVERA AI</span>
-            <span className="text-[9px] text-slate-600 uppercase tracking-widest">Open-Source Platform</span>
+            <div>
+              <span className="text-sm font-black text-white">SEVERA AI</span>
+              <span className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Open-Source Platform</span>
+            </div>
           </div>
-          <p className="text-xs text-slate-600">Apache 2.0 License · © 2026 Severa AI</p>
-          <div className="flex gap-5 text-xs text-slate-500">
+          <p className="text-sm text-slate-400">Apache 2.0 License · © 2026 Severa AI</p>
+          <div className="flex gap-6 text-sm text-slate-300">
             <button
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="hover:text-slate-300 transition-colors cursor-pointer"
+              className="hover:text-white transition-colors cursor-pointer"
             >
               Home
             </button>
             <button
               onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-              className="hover:text-slate-300 transition-colors cursor-pointer"
+              className="hover:text-white transition-colors cursor-pointer"
             >
               Features
             </button>
             <button
               onClick={() => document.getElementById('quickstart')?.scrollIntoView({ behavior: 'smooth' })}
-              className="hover:text-slate-300 transition-colors cursor-pointer"
+              className="hover:text-white transition-colors cursor-pointer"
             >
               Quick Start
             </button>
             <button
               onClick={() => navigate('/login')}
-              className="hover:text-emerald-400 font-semibold transition-colors cursor-pointer text-slate-400"
+              className="hover:text-emerald-400 font-bold transition-colors cursor-pointer text-emerald-400"
             >
               Launch Platform →
             </button>

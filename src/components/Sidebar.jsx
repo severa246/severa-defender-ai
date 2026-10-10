@@ -31,7 +31,14 @@ import {
   Image, 
   Layers, 
   LogOut, 
-  FolderDown 
+  FolderDown,
+  MoreVertical,
+  ArrowUpDown,
+  Clock,
+  HardDrive,
+  Calendar,
+  ArrowDownAZ,
+  ArrowUpAZ
 } from 'lucide-react';
 import UploadChoiceModal from './UploadChoiceModal';
 import UserProfileModal from './UserProfileModal';
@@ -352,6 +359,22 @@ export default function Sidebar({
   const [isCreatingProject, setIsCreatingProject] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
 
+  // Three-dot folder menu state
+  const [activeFolderMenuId, setActiveFolderMenuId] = useState(null);
+
+  // Sorting state for Project Explorer: 'recent' | 'name-asc' | 'name-desc' | 'size-desc' | 'size-asc' | 'newest' | 'oldest'
+  const [sortBy, setSortBy] = useState('recent');
+
+  useEffect(() => {
+    const handleCloseMenu = (e) => {
+      if (!e.target.closest('[data-folder-menu]')) {
+        setActiveFolderMenuId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleCloseMenu);
+    return () => document.removeEventListener('mousedown', handleCloseMenu);
+  }, []);
+
   // Per-Project File Creation State
   const [creatingFileForProj, setCreatingFileForProj] = useState(null);
   const [newFileName, setNewFileName] = useState('');
@@ -403,12 +426,37 @@ export default function Sidebar({
     { id: 'dashboard', label: 'Executive Dashboard', icon: LayoutDashboard }
   ];
 
+  // Calculate total folder size helper
+  const getProjectSize = (p) => {
+    if (!p.files || !Array.isArray(p.files)) return 0;
+    return p.files.reduce((total, f) => {
+      const s = f.size || (f.code ? f.code.length : (f.content ? f.content.length : 512));
+      return total + s;
+    }, 0);
+  };
+
+  // Calculate last used timestamp helper
+  const getProjectLastUsed = (p) => {
+    if (p.name === activeProjectName) return Date.now() + 10000000;
+    return p.lastModified || p.updatedAt || p.createdAt || 0;
+  };
+
   // Filter projects by search query
   const filteredProjects = projectFolders.filter((p) =>
     p.name.toLowerCase().includes(projectSearchQuery.toLowerCase())
   );
 
-  const visibleProjects = filteredProjects;
+  // Sort projects according to selected sort criteria: alphabetical, size, last used, new, old
+  const visibleProjects = [...filteredProjects].sort((a, b) => {
+    if (sortBy === 'name-asc') return a.name.localeCompare(b.name);
+    if (sortBy === 'name-desc') return b.name.localeCompare(a.name);
+    if (sortBy === 'size-desc') return getProjectSize(b) - getProjectSize(a);
+    if (sortBy === 'size-asc') return getProjectSize(a) - getProjectSize(b);
+    if (sortBy === 'newest') return (b.createdAt || 0) - (a.createdAt || 0);
+    if (sortBy === 'oldest') return (a.createdAt || 0) - (b.createdAt || 0);
+    // Default: 'recent' (last used by time worked on the folder)
+    return getProjectLastUsed(b) - getProjectLastUsed(a);
+  });
 
   const toggleProjectExpand = (pName) => {
     setExpandedProjects((prev) => ({
@@ -658,6 +706,7 @@ export default function Sidebar({
   };
 
   const handleProjectClick = (p, fileObj) => {
+    p.lastModified = Date.now();
     setActiveTab('workbench');
     const fullPath = fileObj?.path || fileObj?.name || 'main.py';
     if (onSelectProjectFile) {
@@ -837,19 +886,106 @@ export default function Sidebar({
             </div>
           </div>
 
-          {/* Project Filter Search Bar Input */}
+          {/* Project Filter & Sort Panel */}
           {isFilterActive && (
-            <div className="px-2 pt-1">
+            <div className="px-2 pt-1 pb-1 space-y-2 bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 mx-1 mb-1 shadow-lg">
+              {/* Search Input with Clear Button */}
               <div className="relative flex items-center">
-                <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5" />
+                <Search className="w-3.5 h-3.5 text-cyan-400 absolute left-2.5" />
                 <input
                   type="text"
-                  placeholder="Filter projects..."
+                  placeholder="Search projects..."
                   value={projectSearchQuery}
                   onChange={(e) => setProjectSearchQuery(e.target.value)}
                   autoFocus
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-8 pr-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-cyan-500 font-mono"
+                  className="w-full bg-slate-950 border border-slate-700/80 rounded-lg pl-8 pr-7 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-cyan-500 font-mono"
                 />
+                {projectSearchQuery && (
+                  <button
+                    onClick={() => setProjectSearchQuery('')}
+                    className="absolute right-2 text-slate-400 hover:text-slate-200 p-0.5"
+                    title="Clear search"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+
+              {/* Sort Controls */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-[10px] uppercase font-bold text-slate-400 px-0.5">
+                  <span className="flex items-center gap-1 text-cyan-400">
+                    <ArrowUpDown className="w-3 h-3" />
+                    Sort Projects:
+                  </span>
+                  <span className="text-slate-500 capitalize text-[9px] font-mono">
+                    {sortBy === 'name-asc' && 'Name (A-Z)'}
+                    {sortBy === 'name-desc' && 'Name (Z-A)'}
+                    {sortBy === 'size-desc' && 'Size (Max)'}
+                    {sortBy === 'size-asc' && 'Size (Min)'}
+                    {sortBy === 'recent' && 'Last Used'}
+                    {sortBy === 'newest' && 'Newest'}
+                    {sortBy === 'oldest' && 'Oldest'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-1 text-[11px] font-mono">
+                  <button
+                    type="button"
+                    onClick={() => setSortBy(sortBy === 'name-asc' ? 'name-desc' : 'name-asc')}
+                    className={`flex items-center gap-1.5 px-2 py-1 rounded border transition-all ${
+                      sortBy.startsWith('name')
+                        ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-300 font-bold'
+                        : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                    }`}
+                    title="Sort alphabetically (Toggle A-Z / Z-A)"
+                  >
+                    {sortBy === 'name-desc' ? <ArrowUpAZ className="w-3 h-3 text-cyan-400" /> : <ArrowDownAZ className="w-3 h-3 text-cyan-400" />}
+                    <span>{sortBy === 'name-desc' ? 'Name Z→A' : 'Name A→Z'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSortBy(sortBy === 'size-desc' ? 'size-asc' : 'size-desc')}
+                    className={`flex items-center gap-1.5 px-2 py-1 rounded border transition-all ${
+                      sortBy.startsWith('size')
+                        ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-300 font-bold'
+                        : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                    }`}
+                    title="Sort by size / file count (Toggle Max / Min)"
+                  >
+                    <HardDrive className="w-3 h-3 text-blue-400" />
+                    <span>{sortBy === 'size-asc' ? 'Size (Min)' : 'Size (Max)'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSortBy('recent')}
+                    className={`flex items-center gap-1.5 px-2 py-1 rounded border transition-all ${
+                      sortBy === 'recent'
+                        ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-300 font-bold'
+                        : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                    }`}
+                    title="Sort by last used time worked on the folder"
+                  >
+                    <Clock className="w-3 h-3 text-amber-400" />
+                    <span>Last Used</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSortBy(sortBy === 'newest' ? 'oldest' : 'newest')}
+                    className={`flex items-center gap-1.5 px-2 py-1 rounded border transition-all ${
+                      sortBy === 'newest' || sortBy === 'oldest'
+                        ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-300 font-bold'
+                        : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                    }`}
+                    title="Sort by creation date (Toggle Newest / Oldest)"
+                  >
+                    <Calendar className="w-3 h-3 text-emerald-400" />
+                    <span>{sortBy === 'oldest' ? 'Oldest' : 'Newest'}</span>
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -942,74 +1078,115 @@ export default function Sidebar({
                             <span className="whitespace-nowrap font-semibold text-slate-200 group-hover:text-cyan-300">{p.name}</span>
                           </div>
 
-                          {/* Per-Project Action Icons: File+, Upload (File/Folder Choice), Rename & Delete */}
-                          <div className="flex items-center gap-1 ml-auto shrink-0">
+                          {/* Three-Dot Folder Options & Chevron */}
+                          <div 
+                            data-folder-menu
+                            className="relative flex items-center gap-0.5 ml-auto shrink-0" 
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {/* Three Dots Button */}
                             <button
+                              type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setCreatingFileForProj(p.id);
+                                setActiveFolderMenuId(activeFolderMenuId === p.id ? null : p.id);
                               }}
-                              className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 hover:text-cyan-400 transition-opacity"
-                              title={`Create file in ${p.name}`}
+                              className={`p-1 rounded text-slate-400 hover:text-cyan-300 hover:bg-slate-800 transition-colors ${
+                                activeFolderMenuId === p.id ? 'text-cyan-400 bg-slate-800' : 'opacity-70 group-hover:opacity-100'
+                              }`}
+                              title="Folder Actions"
                             >
-                              <FilePlus className="w-3.5 h-3.5" />
+                              <MoreVertical className="w-3.5 h-3.5" />
                             </button>
 
+                            {/* Chevron Toggle Button */}
                             <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openUploadChoice(p);
-                              }}
-                              className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 hover:text-cyan-400 transition-opacity"
-                              title={`Upload File(s) or Folder to ${p.name}`}
-                            >
-                              <Upload className="w-3.5 h-3.5" />
-                            </button>
-
-                            {onDownloadFixedFolder && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onDownloadFixedFolder(p.name);
-                                }}
-                                className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 hover:text-emerald-400 transition-opacity"
-                                title={`Download "${p.name}.zip" (Fixed Working Folder)`}
-                              >
-                                <FolderDown className="w-3.5 h-3.5" />
-                              </button>
-                            )}
-
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                startRenameProject(p);
-                              }}
-                              className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 hover:text-cyan-400 transition-opacity"
-                              title={`Rename folder "${p.name}"`}
-                            >
-                              <Edit2 className="w-3.5 h-3.5" />
-                            </button>
-
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteProjectFolder(p);
-                              }}
-                              className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-500 hover:text-rose-400 transition-opacity"
-                              title={`Delete folder "${p.name}"`}
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-
-                            <button
+                              type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 toggleProjectExpand(p.name);
                               }}
-                              className="p-0.5 text-slate-400 hover:text-slate-200"
+                              className="p-1 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+                              title={isExpanded ? 'Collapse folder' : 'Expand folder'}
                             >
                               <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
                             </button>
+
+                            {/* Dropdown Menu when Three-Dot is clicked */}
+                            {activeFolderMenuId === p.id && (
+                              <div
+                                className="absolute right-0 top-full mt-1 w-48 bg-slate-900/95 backdrop-blur-md border border-slate-700/90 rounded-xl shadow-2xl py-1.5 z-50 font-sans text-xs animate-in fade-in zoom-in-95 duration-100"
+                              >
+                                <div className="px-3 py-1 text-[10px] uppercase font-bold text-slate-500 tracking-wider border-b border-slate-800 mb-1 truncate">
+                                  {p.name}
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setActiveFolderMenuId(null);
+                                    setCreatingFileForProj(p.id);
+                                    if (!isExpanded) toggleProjectExpand(p.name);
+                                  }}
+                                  className="w-full flex items-center gap-2.5 px-3 py-1.5 text-slate-300 hover:text-cyan-300 hover:bg-slate-800/80 transition-colors text-left"
+                                >
+                                  <FilePlus className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                                  <span>New File</span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setActiveFolderMenuId(null);
+                                    openUploadChoice(p);
+                                  }}
+                                  className="w-full flex items-center gap-2.5 px-3 py-1.5 text-slate-300 hover:text-cyan-300 hover:bg-slate-800/80 transition-colors text-left"
+                                >
+                                  <Upload className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                                  <span>Upload File / Folder</span>
+                                </button>
+
+                                {onDownloadFixedFolder && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setActiveFolderMenuId(null);
+                                      onDownloadFixedFolder(p.name);
+                                    }}
+                                    className="w-full flex items-center gap-2.5 px-3 py-1.5 text-slate-300 hover:text-emerald-300 hover:bg-slate-800/80 transition-colors text-left"
+                                  >
+                                    <FolderDown className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                                    <span>Download ZIP</span>
+                                  </button>
+                                )}
+
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setActiveFolderMenuId(null);
+                                    startRenameProject(p);
+                                  }}
+                                  className="w-full flex items-center gap-2.5 px-3 py-1.5 text-slate-300 hover:text-cyan-300 hover:bg-slate-800/80 transition-colors text-left"
+                                >
+                                  <Edit2 className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                                  <span>Rename Folder</span>
+                                </button>
+
+                                <div className="my-1 border-t border-slate-800" />
+
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setActiveFolderMenuId(null);
+                                    handleDeleteProjectFolder(p);
+                                  }}
+                                  className="w-full flex items-center gap-2.5 px-3 py-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors text-left"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                                  <span>Delete Folder</span>
+                                </button>
+                              </div>
+                            )}
                           </div>
                         </>
                       )}
