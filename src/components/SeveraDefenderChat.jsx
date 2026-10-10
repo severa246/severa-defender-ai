@@ -199,12 +199,32 @@ export default function SeveraDefenderChat({
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                const welcomeText = `Chat session reset. Target file \`${activeFileName}\` is loaded into context. How can I assist you with security analysis?`;
+                setMessages([{
+                  id: `welcome-${Date.now()}`,
+                  sender: 'defender',
+                  text: welcomeText,
+                  time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                }]);
+                setInput('');
+              }}
+              title="Reset conversation and start fresh chat"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-xs font-medium border border-slate-700/80 transition-all cursor-pointer"
+            >
+              <RefreshCw className="w-3.5 h-3.5 text-cyan-400" />
+              <span>New Chat</span>
+            </button>
+
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Active Context Strip */}

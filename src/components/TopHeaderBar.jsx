@@ -49,8 +49,8 @@ export default function TopHeaderBar({
   }, []);
 
   useEffect(() => {
-    setTitle(activeSession?.name || 'Vulnerability Detection Audit');
-  }, [activeSession]);
+    setTitle(activeSession?.name || (activeProjectName ? `${activeProjectName} • Security Audit` : 'Vulnerability Detection Audit'));
+  }, [activeSession, activeProjectName]);
 
   const handleSave = () => {
     if (title.trim() && activeSession && onRenameSession) {

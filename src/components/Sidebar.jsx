@@ -29,20 +29,6 @@ import {
 import UploadChoiceModal from './UploadChoiceModal';
 import UserProfileModal from './UserProfileModal';
 import { buildFileTree } from '../utils/fileTreeBuilder';
-function formatSessionTimeAgo(session) {
-  if (!session) return 'Just now';
-  if (session.updatedAt) {
-    const elapsedSec = Math.floor((Date.now() - session.updatedAt) / 1000);
-    if (elapsedSec < 60) return 'Just now';
-    const elapsedMin = Math.floor(elapsedSec / 60);
-    if (elapsedMin < 60) return `${elapsedMin}m ago`;
-    const elapsedHr = Math.floor(elapsedMin / 60);
-    if (elapsedHr < 24) return `${elapsedHr}h ago`;
-    const elapsedDays = Math.floor(elapsedHr / 24);
-    return `${elapsedDays}d ago`;
-  }
-  return session.timeAgo || 'Just now';
-}
 
 function ProjectTreeNode({
   node,
@@ -186,12 +172,6 @@ export default function Sidebar({
   selectedModel = 'gemini-1.5-flash',
   apiKey = '',
   customEndpoint = '',
-  scanSessions = [],
-  activeSessionId,
-  onSelectSession,
-  onNewSession,
-  onDeleteSession,
-  onRenameSession,
   projectFolders: propProjectFolders,
   setProjectFolders: propSetProjectFolders,
   onSelectProjectSample,
@@ -235,12 +215,7 @@ export default function Sidebar({
     window.addEventListener('mouseup', onMouseUp);
   };
 
-  const [showAllProjects, setShowAllProjects] = useState(false);
   const [expandedProjects, setExpandedProjects] = useState({ 'ai project': true, 'flask-api-suite': true });
-  
-  // Conversation session editing
-  const [editingSessionId, setEditingSessionId] = useState(null);
-  const [editingName, setEditingName] = useState('');
 
   // Interactive Project Filter & New Project Creation States
   const [isFilterActive, setIsFilterActive] = useState(false);
@@ -306,9 +281,7 @@ export default function Sidebar({
     p.name.toLowerCase().includes(projectSearchQuery.toLowerCase())
   );
 
-  const PROJECT_INITIAL_LIMIT = 3;
-  const hasMoreProjects = filteredProjects.length > PROJECT_INITIAL_LIMIT;
-  const visibleProjects = showAllProjects ? filteredProjects : filteredProjects.slice(0, PROJECT_INITIAL_LIMIT);
+  const visibleProjects = filteredProjects;
 
   const toggleProjectExpand = (pName) => {
     setExpandedProjects((prev) => ({
@@ -557,18 +530,6 @@ export default function Sidebar({
     e.target.value = '';
   };
 
-  const startRenaming = (session) => {
-    setEditingSessionId(session.id);
-    setEditingName(session.name);
-  };
-
-  const saveRenaming = (sessionId) => {
-    if (editingName.trim() && onRenameSession) {
-      onRenameSession(sessionId, editingName.trim());
-    }
-    setEditingSessionId(null);
-  };
-
   const handleProjectClick = (p, fileObj) => {
     setActiveTab('workbench');
     const fileName = fileObj?.name || 'main.py';
@@ -577,11 +538,6 @@ export default function Sidebar({
     } else if (onSelectProjectSample) {
       onSelectProjectSample(fileObj?.templateId || 'blank', p.name, fileName);
     }
-  };
-
-  const handleConversationClick = (session) => {
-    setActiveTab('workbench');
-    onSelectSession(session);
   };
 
   return (
@@ -679,15 +635,15 @@ export default function Sidebar({
         <button
           onClick={() => {
             setActiveTab('workbench');
-            onNewSession();
+            setIsCreatingProject(true);
           }}
-          title="New Audit Conversation"
+          title="Create New Project"
           className={`w-full flex items-center justify-center gap-2 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-md shadow-indigo-950/50 transition-all cursor-pointer border border-indigo-500/30 ${
             isCollapsed ? 'px-0' : 'px-3'
           }`}
         >
-          <Plus className="w-4 h-4 shrink-0" />
-          {!isCollapsed && <span>New Audit Conversation</span>}
+          <FolderPlus className="w-4 h-4 shrink-0" />
+          {!isCollapsed && <span>New Project</span>}
         </button>
 
         {/* Main Navigation Menu */}
@@ -727,12 +683,11 @@ export default function Sidebar({
 
         {/* Projects Section (Filter, Create, Rename, Delete & Upload Choice) */}
         {!isCollapsed && (
-          <>
-            <div className="space-y-1.5 pt-2 border-t border-slate-900">
-          <div className="flex items-center justify-between px-2">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-              Projects
-            </span>
+          <div className="space-y-1.5 pt-2 border-t border-slate-900 flex-1 flex flex-col min-h-0">
+            <div className="flex items-center justify-between px-2">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                Project Explorer
+              </span>
             <div className="flex items-center gap-1 text-slate-400">
               <button 
                 onClick={() => setIsFilterActive(!isFilterActive)}
@@ -971,130 +926,8 @@ export default function Sidebar({
               );
             })}
           </div>
-
-          {/* Show More / Show All Projects Toggle */}
-          {hasMoreProjects && (
-            <button
-              type="button"
-              onClick={() => setShowAllProjects((prev) => !prev)}
-              className="w-full flex items-center justify-center gap-1.5 text-[10px] text-cyan-400 hover:text-cyan-300 py-1.5 font-semibold transition-all cursor-pointer bg-slate-900/60 hover:bg-slate-900 border border-slate-800/80 hover:border-cyan-500/40 rounded-lg mt-1 group/toggle"
-            >
-              <span className="group-hover/toggle:text-cyan-300">
-                {showAllProjects ? 'Show Fewer Projects' : `Show All Projects (${filteredProjects.length})`}
-              </span>
-              <ChevronDown className={`w-3 h-3 text-cyan-400 transition-transform duration-200 ${showAllProjects ? 'rotate-180' : ''}`} />
-            </button>
-          )}
         </div>
-
-        {/* Conversations History Section */}
-        <div className="space-y-1.5 pt-2 border-t border-slate-900">
-          <div className="flex items-center justify-between px-2">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-              Conversations
-            </span>
-            <button
-              onClick={() => {
-                setActiveTab('workbench');
-                onNewSession();
-              }}
-              className="text-cyan-400 hover:text-cyan-300 text-xs font-bold px-1"
-            >
-              +
-            </button>
-          </div>
-
-          <div className="space-y-1 font-mono text-xs max-h-40 overflow-y-auto pr-1">
-            {scanSessions.length === 0 ? (
-              <p className="text-[10px] text-slate-500 px-2 py-1">No conversations yet.</p>
-            ) : (
-              scanSessions.map((session) => {
-                const isSessionActive = session.id === activeSessionId;
-                const isEditing = editingSessionId === session.id;
-
-                return (
-                  <div
-                    key={session.id}
-                    onClick={() => handleConversationClick(session)}
-                    className={`flex items-center justify-between p-1.5 rounded-xl border text-[11px] transition-all cursor-pointer group ${
-                      isSessionActive
-                        ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-300 font-bold shadow-sm'
-                        : 'bg-slate-900/60 hover:bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    {isEditing ? (
-                      <form
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          saveRenaming(session.id);
-                        }}
-                        className="flex items-center gap-1 w-full"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <input
-                          type="text"
-                          value={editingName}
-                          onChange={(e) => setEditingName(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Escape') setEditingSessionId(null);
-                          }}
-                          autoFocus
-                          className="flex-1 bg-slate-950 border border-cyan-500 rounded px-1 py-0.5 text-[10px] text-slate-100 focus:outline-none font-mono"
-                        />
-                        <button type="submit" className="text-emerald-400 p-0.5">
-                          <Check className="w-3 h-3" />
-                        </button>
-                        <button type="button" onClick={() => setEditingSessionId(null)} className="text-slate-400 p-0.5">
-                          <X className="w-3 h-3" />
-                        </button>
-                      </form>
-                    ) : (
-                      <>
-                        <div className="flex items-center gap-1.5 overflow-hidden">
-                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${session.findings?.length > 0 ? 'bg-rose-400' : 'bg-cyan-400'}`} />
-                          <span className="truncate font-sans text-[11px]" title={session.name}>
-                            {session.name}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-1 shrink-0">
-                          <span className="text-[9px] text-slate-500 font-mono">
-                            {formatSessionTimeAgo(session)}
-                          </span>
-
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              startRenaming(session);
-                            }}
-                            className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 hover:text-cyan-400 transition-opacity"
-                            title="Rename Session"
-                          >
-                            <Edit2 className="w-3 h-3" />
-                          </button>
-
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onDeleteSession(session.id);
-                            }}
-                            className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-500 hover:text-rose-400 transition-opacity"
-                            title="Delete Session"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-      </>
-    )}
+      )}
 
   </div>
 

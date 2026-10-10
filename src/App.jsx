@@ -1462,7 +1462,7 @@ export default function App({ user, onLogout }) {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-cyan-500 selection:text-slate-950 flex">
       
-      {/* Antigravity-Style Sidebar with Projects Tree & Conversations History */}
+      {/* Enterprise DevSecOps Sidebar with Dedicated Project Explorer */}
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -1473,12 +1473,6 @@ export default function App({ user, onLogout }) {
         selectedModel={selectedModel}
         apiKey={apiKey}
         customEndpoint={customEndpoint}
-        scanSessions={scanSessions}
-        activeSessionId={activeSessionId}
-        onSelectSession={handleSelectSession}
-        onNewSession={handleNewSession}
-        onDeleteSession={handleDeleteSession}
-        onRenameSession={handleRenameSession}
         projectFolders={projectFolders}
         setProjectFolders={setProjectFolders}
         onSelectProjectSample={handleSelectProjectSample}
