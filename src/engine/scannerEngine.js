@@ -116,9 +116,9 @@ export function analyzeCode(code, language = 'javascript', customRules = []) {
       trimmedLine.startsWith('/*') ||
       trimmedLine.startsWith('{/*') ||
       trimmedLine.startsWith('*') ||
-      trimmedLine.includes('SECURED') ||
+      ((trimmedLine.includes('SECURED') ||
       trimmedLine.includes('REMEDIATED') ||
-      trimmedLine.includes('FIXED')
+      trimmedLine.includes('FIXED')) && !trimmedLine.includes('std::') && !/\bString\s+[a-zA-Z0-9_$]+\s*[:=]/.test(trimmedLine))
     ) {
       return;
     }
@@ -478,8 +478,8 @@ function checkSyntaxErrors(code, language = 'javascript') {
       trimmed.endsWith(' transition-all"') ||
       trimmed.endsWith(' transition-colors"') ||
       trimmed.endsWith(' overflow-hidden"') ||
-      trimmed.includes('SECURED') ||
-      trimmed.includes('REMEDIATED')
+      ((trimmed.includes('SECURED') ||
+      trimmed.includes('REMEDIATED')) && !trimmed.includes('std::') && !/\bString\s+[a-zA-Z0-9_$]+\s*[:=]/.test(trimmed))
     ) {
       return;
     }
@@ -587,6 +587,50 @@ function checkSyntaxErrors(code, language = 'javascript') {
             description: 'An operator is followed directly by a semicolon or closing parenthesis without a valid right-hand operand.',
             impact: 'Uncaught SyntaxError: Unexpected token.',
             remediation: 'Provide a valid variable or value expression after operator.'
+          });
+        }
+
+        // Cross-Language C++ Syntax Leakage Check (std::getenv, #include, etc.)
+        if (/\bstd::\w+/i.test(trimmed) || /#include\s*<.*>/i.test(trimmed)) {
+          findings.push({
+            id: `SYNTAX-ERR-CROSS-CPP-L${line}`,
+            ruleId: 'SYN-LANG-001',
+            line,
+            column: trimmed.indexOf('std::') >= 0 ? trimmed.indexOf('std::') + 1 : 1,
+            codeSnippet: trimmed,
+            title: 'Syntax Error: C++ Syntax in JavaScript (CWE-710)',
+            severity: 'HIGH',
+            cvssScore: 7.5,
+            cvssVector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N',
+            epssScore: '40.0%',
+            cwe: 'CWE-710',
+            cweUrl: 'https://cwe.mitre.org/data/definitions/710.html',
+            owasp: 'A04:2021 - Insecure Design & Syntax Validation',
+            description: 'Foreign C++ syntax construct (e.g. std::getenv) detected inside JavaScript / React code. This causes a ReferenceError at runtime.',
+            impact: 'ReferenceError: std is not defined at runtime.',
+            remediation: 'Replace with idiomatic Node.js / JavaScript (e.g. process.env.KEY).'
+          });
+        }
+
+        // Cross-Language Java Syntax Leakage Check (String query =, System.out, etc.)
+        if (/\b(?:String|PreparedStatement|ResultSet)\s+[a-zA-Z0-9_$]+\s*[:=]/i.test(trimmed) || /System\.(?:out|err)\.print/i.test(trimmed)) {
+          findings.push({
+            id: `SYNTAX-ERR-CROSS-JAVA-L${line}`,
+            ruleId: 'SYN-LANG-002',
+            line,
+            column: 1,
+            codeSnippet: trimmed,
+            title: 'Syntax Error: Java Type Declaration in JavaScript (CWE-710)',
+            severity: 'HIGH',
+            cvssScore: 7.5,
+            cvssVector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N',
+            epssScore: '40.0%',
+            cwe: 'CWE-710',
+            cweUrl: 'https://cwe.mitre.org/data/definitions/710.html',
+            owasp: 'A04:2021 - Insecure Design & Syntax Validation',
+            description: "Foreign Java variable type declaration (e.g. 'String variable = ...') or System.out syntax detected in JavaScript. In JS, variables must use const, let, or var.",
+            impact: 'SyntaxError: Unexpected identifier at runtime.',
+            remediation: 'Use const or let instead of Java explicit type annotations (e.g. const query = ...).'
           });
         }
       }

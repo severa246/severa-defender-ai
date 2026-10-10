@@ -431,69 +431,51 @@ export default function EditorContainer({
               <Trash2 className="w-3.5 h-3.5" />
             </button>
 
-            {/* Scan Active File Button */}
+            {/* Primary Action: Scan Active File */}
             <button
               type="button"
               onClick={() => onScan(code, language)}
               disabled={isScanning}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer border ${
-                isScanning
-                  ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40 shadow-sm'
-                  : 'bg-indigo-600 hover:bg-indigo-500 text-white border-indigo-500/30 shadow-sm shadow-indigo-950/40'
-              } disabled:opacity-50`}
+              className="flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-slate-200 text-black rounded-lg text-xs font-semibold transition-all cursor-pointer shadow-sm disabled:opacity-50"
               title="Run SAST Vulnerability Scan on Active File"
             >
-              <Play className={`w-3 h-3 ${isScanning ? 'animate-spin text-indigo-300' : 'text-white fill-white'}`} />
+              <Play className={`w-3 h-3 ${isScanning ? 'animate-spin text-black' : 'text-black fill-black'}`} />
               <span>{isScanning ? 'Scanning...' : 'Scan File'}</span>
             </button>
 
-            {/* Scan Full Project Folder Button */}
-            {onScanFullProject && (
-              <button
-                type="button"
-                onClick={() => onScanFullProject()}
-                disabled={isScanning}
-                className="flex items-center gap-1.5 px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold transition-all cursor-pointer border border-slate-700 disabled:opacity-50"
-                title="Scan all files in active project folder"
-              >
-                <FolderSearch className="w-3.5 h-3.5 text-indigo-400" />
-                <span>Scan Full Project</span>
-              </button>
-            )}
-
-            {/* Apply Correct Code Button (Active File) */}
+            {/* Consolidated Patch Action: Apply Active File with optional Folder All */}
             {aiReviewData?.fixedCode && onApplyFix && (
-              <button
-                onClick={() => onApplyFix(aiReviewData.fixedCode)}
-                className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1 rounded-lg text-xs font-bold shadow-sm transition-all cursor-pointer border border-emerald-500/30"
-                title="Apply AI Refactored Secure Code to Active File"
-              >
-                <Check className="w-3.5 h-3.5 text-white" />
-                <span>Apply Active File</span>
-              </button>
+              <div className="relative inline-flex items-center rounded-lg shadow-sm">
+                <button
+                  onClick={() => onApplyFix(aiReviewData.fixedCode)}
+                  className="flex items-center gap-1.5 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 px-2.5 py-1 rounded-l-lg text-xs font-semibold transition-all cursor-pointer"
+                  title="Apply AI Refactored Secure Code to Active File"
+                >
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Apply Patch</span>
+                </button>
+                {onApplyFixAll && (
+                  <button
+                    onClick={() => onApplyFixAll()}
+                    disabled={isAiLoading}
+                    className="bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border-y border-r border-emerald-500/30 px-2 py-1 rounded-r-lg text-xs font-semibold transition-all cursor-pointer"
+                    title="Apply Fix Across All Files in Project Folder"
+                  >
+                    <span className="text-[10px] text-emerald-400 font-mono">All</span>
+                  </button>
+                )}
+              </div>
             )}
 
-            {/* Apply Fix to All Folder Files Button */}
-            {onApplyFixAll && (
-              <button
-                onClick={() => onApplyFixAll()}
-                disabled={isAiLoading}
-                className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm transition-all cursor-pointer border border-emerald-500/30 disabled:opacity-50"
-                title="Apply AI Security Fixes Across ALL Files in Project Folder"
-              >
-                <CheckCheck className="w-3.5 h-3.5 text-white" />
-                <span>{isAiLoading ? 'Fixing All...' : 'Apply Fix to All Folder Files'}</span>
-              </button>
-            )}
-
-            {/* Generate AI Fix (when fix not yet generated) */}
-            {!aiReviewData?.fixedCode && !onApplyFixAll && (
+            {/* Subtle Secondary: Quick Fix if not yet generated */}
+            {!aiReviewData?.fixedCode && findings.length > 0 && onGenerateAiFix && (
               <button
                 onClick={() => onGenerateAiFix()}
-                disabled={isAiLoading || findings.length === 0}
-                className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1 rounded-lg text-xs font-semibold shadow-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed border border-indigo-500/30"
+                disabled={isAiLoading}
+                className="flex items-center gap-1.5 bg-[#0e121d] hover:bg-white/[0.08] text-slate-300 border border-white/[0.08] px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer disabled:opacity-50"
+                title="Generate AI Security Patch"
               >
-                <Sparkles className={`w-3.5 h-3.5 ${isAiLoading ? 'animate-spin' : ''}`} />
+                <Sparkles className={`w-3.5 h-3.5 text-slate-400 ${isAiLoading ? 'animate-spin' : ''}`} />
                 <span>{isAiLoading ? 'Fixing...' : 'AI Fix'}</span>
               </button>
             )}

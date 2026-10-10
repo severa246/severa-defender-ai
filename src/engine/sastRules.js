@@ -531,6 +531,21 @@ export const SAST_RULES = [
     description: "Exposing network ingress rules to the entire public Internet (0.0.0.0/0).",
     impact: "Unrestricted network exposure allowing brute-force or exploitation from arbitrary hosts.",
     remediation: "Restrict ingress CIDR blocks to specific trusted IP ranges or security groups."
+  },
+
+  // --- CROSS-LANGUAGE SYNTAX & CODING STANDARDS (CWE-710) ---
+  {
+    id: "SEC-LANG-001",
+    title: "Cross-Language Syntax Anomaly in JavaScript (CWE-710)",
+    severity: "HIGH",
+    cwe: "CWE-710",
+    cweUrl: "https://cwe.mitre.org/data/definitions/710.html",
+    owasp: "A04:2021 - Insecure Design & Language Standards",
+    languages: ["javascript", "typescript", "react", "js", "ts"],
+    pattern: /\b(?:std::\w+|String\s+[a-zA-Z0-9_$]+\s*[:=]|System\.(?:out|err)\.print|#include\s*<)/i,
+    description: "Foreign C++ / Java syntax constructs detected inside JavaScript code, leading to runtime ReferenceError or syntax failures.",
+    impact: "Application crash due to Uncaught ReferenceError / SyntaxError at runtime.",
+    remediation: "Replace with idiomatic JavaScript constructs (e.g. process.env or const/let)."
   }
 ];
 
