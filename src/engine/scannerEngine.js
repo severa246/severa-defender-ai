@@ -301,10 +301,14 @@ export function analyzeCode(code, language = 'javascript', customRules = []) {
   const consolidatedFindings = [];
 
   filteredFindings.forEach((f) => {
-    // Check if there is an existing finding for the same CWE within 2 lines (e.g. string construction + db sink)
-    const existingIndex = consolidatedFindings.findIndex(
-      (ef) => ef.cwe === f.cwe && (Math.abs(ef.line - f.line) <= 2 || (f.cwe === 'CWE-22' && (ef.ruleId.includes('PATH') || f.ruleId.includes('PATH'))))
-    );
+    // Check if there is an existing finding on the same line or for the same data-flow CWE within 2 lines
+    const existingIndex = consolidatedFindings.findIndex((ef) => {
+      if (ef.line === f.line && (ef.ruleId === f.ruleId || ef.id === f.id || ef.cwe === f.cwe)) return true;
+      if (['CWE-89', 'CWE-22', 'CWE-78', 'CWE-918', 'CWE-79'].includes(f.cwe) && ef.cwe === f.cwe && Math.abs(ef.line - f.line) <= 2) {
+        return true;
+      }
+      return false;
+    });
 
     if (existingIndex !== -1) {
       const existing = consolidatedFindings[existingIndex];
@@ -589,50 +593,50 @@ function checkSyntaxErrors(code, language = 'javascript') {
             remediation: 'Provide a valid variable or value expression after operator.'
           });
         }
+      }
 
-        // Cross-Language C++ Syntax Leakage Check (std::getenv, #include, etc.)
-        if (/\bstd::\w+/i.test(trimmed) || /#include\s*<.*>/i.test(trimmed)) {
-          findings.push({
-            id: `SYNTAX-ERR-CROSS-CPP-L${line}`,
-            ruleId: 'SYN-LANG-001',
-            line,
-            column: trimmed.indexOf('std::') >= 0 ? trimmed.indexOf('std::') + 1 : 1,
-            codeSnippet: trimmed,
-            title: 'Syntax Error: C++ Syntax in JavaScript (CWE-710)',
-            severity: 'HIGH',
-            cvssScore: 7.5,
-            cvssVector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N',
-            epssScore: '40.0%',
-            cwe: 'CWE-710',
-            cweUrl: 'https://cwe.mitre.org/data/definitions/710.html',
-            owasp: 'A04:2021 - Insecure Design & Syntax Validation',
-            description: 'Foreign C++ syntax construct (e.g. std::getenv) detected inside JavaScript / React code. This causes a ReferenceError at runtime.',
-            impact: 'ReferenceError: std is not defined at runtime.',
-            remediation: 'Replace with idiomatic Node.js / JavaScript (e.g. process.env.KEY).'
-          });
-        }
+      // Cross-Language C++ Syntax Leakage Check (std::getenv, #include, etc.)
+      if (/\bstd::\w+/i.test(trimmed) || /#include\s*<.*>/i.test(trimmed)) {
+        findings.push({
+          id: `SYNTAX-ERR-CROSS-CPP-L${line}`,
+          ruleId: 'SYN-LANG-001',
+          line,
+          column: trimmed.indexOf('std::') >= 0 ? trimmed.indexOf('std::') + 1 : 1,
+          codeSnippet: trimmed,
+          title: 'Syntax Error: C++ Syntax in JavaScript (CWE-710)',
+          severity: 'HIGH',
+          cvssScore: 7.5,
+          cvssVector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N',
+          epssScore: '40.0%',
+          cwe: 'CWE-710',
+          cweUrl: 'https://cwe.mitre.org/data/definitions/710.html',
+          owasp: 'A04:2021 - Insecure Design & Syntax Validation',
+          description: 'C++ standard library call std::getenv is illegal in ECMAScript/JavaScript. Use process.env instead.',
+          impact: 'ReferenceError: std is not defined at runtime.',
+          remediation: 'Replace with idiomatic Node.js / JavaScript (e.g. process.env.KEY).'
+        });
+      }
 
-        // Cross-Language Java Syntax Leakage Check (String query =, System.out, etc.)
-        if (/\b(?:String|PreparedStatement|ResultSet)\s+[a-zA-Z0-9_$]+\s*[:=]/i.test(trimmed) || /System\.(?:out|err)\.print/i.test(trimmed)) {
-          findings.push({
-            id: `SYNTAX-ERR-CROSS-JAVA-L${line}`,
-            ruleId: 'SYN-LANG-002',
-            line,
-            column: 1,
-            codeSnippet: trimmed,
-            title: 'Syntax Error: Java Type Declaration in JavaScript (CWE-710)',
-            severity: 'HIGH',
-            cvssScore: 7.5,
-            cvssVector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N',
-            epssScore: '40.0%',
-            cwe: 'CWE-710',
-            cweUrl: 'https://cwe.mitre.org/data/definitions/710.html',
-            owasp: 'A04:2021 - Insecure Design & Syntax Validation',
-            description: "Foreign Java variable type declaration (e.g. 'String variable = ...') or System.out syntax detected in JavaScript. In JS, variables must use const, let, or var.",
-            impact: 'SyntaxError: Unexpected identifier at runtime.',
-            remediation: 'Use const or let instead of Java explicit type annotations (e.g. const query = ...).'
-          });
-        }
+      // Cross-Language Java Syntax Leakage Check (String query =, System.out, etc.)
+      if (/\b(?:String|PreparedStatement|ResultSet)\s+[a-zA-Z0-9_$]+\s*[:=]/i.test(trimmed) || /System\.(?:out|err)\.print/i.test(trimmed)) {
+        findings.push({
+          id: `SYNTAX-ERR-CROSS-JAVA-L${line}`,
+          ruleId: 'SYN-LANG-002',
+          line,
+          column: 1,
+          codeSnippet: trimmed,
+          title: 'Syntax Error: Java Type Declaration in JavaScript (CWE-710)',
+          severity: 'HIGH',
+          cvssScore: 7.5,
+          cvssVector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N',
+          epssScore: '40.0%',
+          cwe: 'CWE-710',
+          cweUrl: 'https://cwe.mitre.org/data/definitions/710.html',
+          owasp: 'A04:2021 - Insecure Design & Syntax Validation',
+          description: "Java variable type declaration 'String query =' is illegal in JavaScript. Use const or let instead.",
+          impact: 'SyntaxError: Unexpected identifier at runtime.',
+          remediation: 'Use const or let instead of Java explicit type annotations (e.g. const query = ...).'
+        });
       }
     }
   });

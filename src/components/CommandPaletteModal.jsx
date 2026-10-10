@@ -37,7 +37,19 @@ export default function CommandPaletteModal({
     if (isOpen) {
       setQuery('');
       setSelectedIndex(0);
-      setTimeout(() => inputRef.current?.focus(), 50);
+      const focusInput = () => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      };
+      focusInput();
+      requestAnimationFrame(focusInput);
+      const t1 = setTimeout(focusInput, 30);
+      const t2 = setTimeout(focusInput, 100);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
     }
   }, [isOpen]);
 
@@ -178,6 +190,7 @@ export default function CommandPaletteModal({
           <Search className="w-4 h-4 text-slate-400 shrink-0 mr-3" />
           <input
             ref={inputRef}
+            autoFocus
             type="text"
             value={query}
             onChange={(e) => {

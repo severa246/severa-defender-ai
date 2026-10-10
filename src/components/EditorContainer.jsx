@@ -1,14 +1,12 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
+import Editor from '@monaco-editor/react';
 import { CODE_TEMPLATES } from '../engine/templates';
 import { 
   Play, 
   Sparkles, 
   Wand2,
-  FolderSearch,
   CheckCircle2,
   AlertCircle,
-  Check,
-  CheckCheck,
   Undo2,
   Redo2,
   FolderTree,
@@ -21,6 +19,24 @@ import {
 import { detectLanguage } from '../engine/languageDetector';
 import GitHubPullModal from './GitHubPullModal';
 import FileTreeSidebar from './FileTreeSidebar';
+
+const MONACO_LANG_MAP = {
+  javascript: 'javascript',
+  typescript: 'typescript',
+  python: 'python',
+  java: 'java',
+  c: 'c',
+  cpp: 'cpp',
+  csharp: 'csharp',
+  go: 'go',
+  rust: 'rust',
+  php: 'php',
+  ruby: 'ruby',
+  shell: 'shell',
+  dockerfile: 'dockerfile',
+  yaml: 'yaml',
+  sql: 'sql'
+};
 
 export default function EditorContainer({
   code,
@@ -63,7 +79,6 @@ export default function EditorContainer({
     const onMouseMove = (moveEvt) => {
       if (!isDraggingFileTree.current) return;
       const delta = moveEvt.clientX - startX;
-      // Strict min/max limit boundary: 160px min to 360px max
       const newWidth = Math.max(160, Math.min(360, startWidth + delta));
       setFileTreeWidth(newWidth);
     };
@@ -81,121 +96,143 @@ export default function EditorContainer({
   };
 
   const singleFileInputRef = useRef(null);
-  const lineGutterRef = useRef(null);
-  const highlightLayerRef = useRef(null);
-  const textareaRef = useRef(null);
+  const editorRef = useRef(null);
+  const monacoRef = useRef(null);
+  const decorationsRef = useRef([]);
 
   const lines = code ? code.split('\n') : [''];
   const lineCount = lines.length;
 
-  // Map findings by line number for line highlighting
-  const findingsByLine = React.useMemo(() => {
-    const map = {};
-    findings.forEach((f) => {
-      if (!map[f.line]) map[f.line] = [];
-      map[f.line].push(f);
+  // Configure custom dark theme on mount
+  const handleEditorDidMount = (editor, monaco) => {
+    editorRef.current = editor;
+    monacoRef.current = monaco;
+
+    monaco.editor.defineTheme('severa-dark', {
+      base: 'vs-dark',
+      inherit: true,
+      rules: [
+        { token: 'comment', foreground: '64748b', fontStyle: 'italic' },
+        { token: 'keyword', foreground: 'c084fc', fontStyle: 'bold' },
+        { token: 'string', foreground: '34d399' },
+        { token: 'number', foreground: '38bdf8' },
+        { token: 'type', foreground: 'fbbf24' },
+        { token: 'delimiter', foreground: '94a3b8' }
+      ],
+      colors: {
+        'editor.background': '#070a13',
+        'editor.foreground': '#e2e8f0',
+        'editorLineNumber.foreground': '#475569',
+        'editorLineNumber.activeForeground': '#cbd5e1',
+        'editor.lineHighlightBackground': '#0f172a60',
+        'editorGutter.background': '#070a13',
+        'editorIndentGuide.background1': '#1e293b',
+        'editorIndentGuide.activeBackground1': '#334155',
+        'editorError.foreground': '#f43f5e',
+        'editorWarning.foreground': '#f59e0b',
+        'editor.selectionBackground': '#38bdf830'
+      }
     });
-    return map;
-  }, [findings]);
 
-  // Per-file Undo/Redo isolated history store
-  const fileHistoriesRef = useRef({});
-  const currentFileKey = activeFilePath || 'active_workspace_file';
-  const [historyTick, setHistoryTick] = useState(0);
+    monaco.editor.setTheme('severa-dark');
 
-  // Sync active file code updates into file-isolated history stack
+    // Shortcut Cmd+Enter / Ctrl+Enter to trigger SAST scan
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+      onScan(editor.getValue(), language);
+    });
+  };
+
+  // Synchronize red problem squiggles & diagnostics to Monaco markers
   useEffect(() => {
-    if (code === undefined) return;
-    const fileHist = fileHistoriesRef.current[currentFileKey];
+    if (!editorRef.current || !monacoRef.current) return;
+    const monaco = monacoRef.current;
+    const model = editorRef.current.getModel();
+    if (!model) return;
 
-    if (!fileHist) {
-      fileHistoriesRef.current[currentFileKey] = {
-        stack: [code],
-        index: 0
+    const markers = (findings || []).map((f) => {
+      const lineNum = Math.max(1, Math.min(model.getLineCount(), Number(f.line) || 1));
+      const maxCol = Math.max(1, model.getLineMaxColumn(lineNum));
+
+      let severity = monaco.MarkerSeverity.Error;
+      if (f.severity === 'MEDIUM') severity = monaco.MarkerSeverity.Warning;
+      else if (f.severity === 'LOW') severity = monaco.MarkerSeverity.Info;
+
+      const messageParts = [
+        `[${f.id || 'CWE'}] ${f.title || f.name || 'Security Finding'}`,
+        f.description || f.message || '',
+        f.cvss ? `CVSS: ${f.cvss} | Severity: ${f.severity}` : ''
+      ].filter(Boolean);
+
+      return {
+        severity,
+        startLineNumber: lineNum,
+        startColumn: 1,
+        endLineNumber: lineNum,
+        endColumn: maxCol,
+        message: messageParts.join('\n\n'),
+        source: 'Severa SAST'
       };
-      setHistoryTick((t) => t + 1);
-      return;
-    }
+    });
 
-    const currentCodeInStack = fileHist.stack[fileHist.index];
-    if (code !== currentCodeInStack) {
-      const truncatedStack = fileHist.stack.slice(0, fileHist.index + 1);
-      truncatedStack.push(code);
-      if (truncatedStack.length > 100) truncatedStack.shift();
+    monaco.editor.setModelMarkers(model, 'severa-sast', markers);
+  }, [findings, code]);
 
-      fileHistoriesRef.current[currentFileKey] = {
-        stack: truncatedStack,
-        index: Math.min(fileHist.index + 1, truncatedStack.length - 1)
-      };
-      setHistoryTick((t) => t + 1);
-    }
-  }, [code, currentFileKey]);
-
-  const [canUndo, setCanUndo] = useState(false);
-  const [canRedo, setCanRedo] = useState(false);
-
+  // Synchronize line highlights and gutter markers
   useEffect(() => {
-    const hist = fileHistoriesRef.current[currentFileKey];
-    setCanUndo(hist ? hist.index > 0 : false);
-    setCanRedo(hist ? hist.index < hist.stack.length - 1 : false);
-  }, [currentFileKey, historyTick]);
+    if (!editorRef.current || !monacoRef.current) return;
+    const monaco = monacoRef.current;
+    const editor = editorRef.current;
+    const model = editor.getModel();
+    if (!model) return;
+
+    const newDecorations = [];
+    const totalLines = model.getLineCount();
+
+    (findings || []).forEach((f) => {
+      const line = Math.max(1, Math.min(totalLines, Number(f.line) || 1));
+      newDecorations.push({
+        range: new monaco.Range(line, 1, line, 1),
+        options: {
+          isWholeLine: true,
+          className: 'severa-vuln-line',
+          glyphMarginClassName: 'severa-vuln-glyph',
+          hoverMessage: {
+            value: `### 🚨 ${f.title || 'Security Finding'} [${f.id || 'CWE'}]\n\n${f.description || ''}\n\n**Severity:** \`${f.severity || 'CRITICAL'}\` | **CVSS:** \`${f.cvss || 'N/A'}\``
+          }
+        }
+      });
+    });
+
+    (fixedLineNumbers || []).forEach((lineNum) => {
+      const line = Math.max(1, Math.min(totalLines, Number(lineNum)));
+      newDecorations.push({
+        range: new monaco.Range(line, 1, line, 1),
+        options: {
+          isWholeLine: true,
+          className: 'severa-fixed-line',
+          hoverMessage: {
+            value: `### ✔ Security Patch Applied\n\nCode refactored and secured by Severa AI.`
+          }
+        }
+      });
+    });
+
+    decorationsRef.current = editor.deltaDecorations(decorationsRef.current, newDecorations);
+  }, [findings, fixedLineNumbers, code]);
 
   const handleUndo = useCallback(() => {
-    const hist = fileHistoriesRef.current[currentFileKey];
-    if (hist && hist.index > 0) {
-      const prevIdx = hist.index - 1;
-      const prevCode = hist.stack[prevIdx];
-      hist.index = prevIdx;
-      setHistoryTick((t) => t + 1);
-
-      setCode(prevCode);
-      if (autoDetectMode) {
-        const detected = detectLanguage(prevCode, currentFileKey);
-        setLanguage(detected);
-        onScan(prevCode, detected);
-      } else {
-        onScan(prevCode, language);
-      }
+    if (editorRef.current) {
+      editorRef.current.trigger('toolbar', 'undo');
+      editorRef.current.focus();
     }
-  }, [currentFileKey, setCode, autoDetectMode, setLanguage, onScan, language]);
+  }, []);
 
   const handleRedo = useCallback(() => {
-    const hist = fileHistoriesRef.current[currentFileKey];
-    if (hist && hist.index < hist.stack.length - 1) {
-      const nextIdx = hist.index + 1;
-      const nextCode = hist.stack[nextIdx];
-      hist.index = nextIdx;
-      setHistoryTick((t) => t + 1);
-
-      setCode(nextCode);
-      if (autoDetectMode) {
-        const detected = detectLanguage(nextCode, currentFileKey);
-        setLanguage(detected);
-        onScan(nextCode, detected);
-      } else {
-        onScan(nextCode, language);
-      }
+    if (editorRef.current) {
+      editorRef.current.trigger('toolbar', 'redo');
+      editorRef.current.focus();
     }
-  }, [currentFileKey, setCode, autoDetectMode, setLanguage, onScan, language]);
-
-  const handleKeyDown = (e) => {
-    const isMac = typeof navigator !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-    const modifier = isMac ? e.metaKey : e.ctrlKey;
-
-    if (modifier && e.key.toLowerCase() === 'z') {
-      e.preventDefault();
-      e.stopPropagation();
-      if (e.shiftKey) {
-        handleRedo();
-      } else {
-        handleUndo();
-      }
-    } else if (modifier && e.key.toLowerCase() === 'y') {
-      e.preventDefault();
-      e.stopPropagation();
-      handleRedo();
-    }
-  };
+  }, []);
 
   // Code input handler with Auto Language Detection
   const handleCodeChange = (newCode, filename = '') => {
@@ -295,7 +332,7 @@ export default function EditorContainer({
           {/* Left Controls: Toggle Sidebar, Preset Templates & Language Dropdowns */}
           <div className="flex items-center gap-2 flex-wrap">
             
-            {/* Toggle Project Explorer Sidebar Button (ALWAYS VISIBLE) */}
+            {/* Toggle Project Explorer Sidebar Button */}
             <button
               onClick={() => setShowSidebar(!showSidebar)}
               className={`p-1.5 rounded-lg border text-xs transition-all cursor-pointer ${
@@ -357,31 +394,21 @@ export default function EditorContainer({
           {/* Right Controls: Quick Actions */}
           <div className="flex items-center gap-1.5 flex-wrap">
             
-            {/* File-Isolated Undo Button */}
+            {/* Native Editor Undo Button */}
             <button
               onClick={handleUndo}
-              disabled={!canUndo}
-              title="Undo edits in current file (Ctrl+Z)"
-              className={`flex items-center gap-1 border px-2 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                canUndo
-                  ? 'bg-slate-900 hover:bg-slate-800 text-slate-200 border-slate-800'
-                  : 'bg-slate-950 text-slate-600 border-slate-900 cursor-not-allowed opacity-50'
-              }`}
+              title="Undo edits in editor (Ctrl+Z)"
+              className="flex items-center gap-1 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 px-2 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer"
             >
               <Undo2 className="w-3.5 h-3.5 text-indigo-400" />
               <span className="hidden xl:inline">Undo</span>
             </button>
 
-            {/* File-Isolated Redo Button */}
+            {/* Native Editor Redo Button */}
             <button
               onClick={handleRedo}
-              disabled={!canRedo}
-              title="Redo edits in current file (Ctrl+Y)"
-              className={`flex items-center gap-1 border px-2 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                canRedo
-                  ? 'bg-slate-900 hover:bg-slate-800 text-slate-200 border-slate-800'
-                  : 'bg-slate-950 text-slate-600 border-slate-900 cursor-not-allowed opacity-50'
-              }`}
+              title="Redo edits in editor (Ctrl+Y / Cmd+Shift+Z)"
+              className="flex items-center gap-1 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 px-2 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer"
             >
               <Redo2 className="w-3.5 h-3.5 text-indigo-400" />
               <span className="hidden xl:inline">Redo</span>
@@ -436,142 +463,51 @@ export default function EditorContainer({
               type="button"
               onClick={() => onScan(code, language)}
               disabled={isScanning}
-              className="flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-slate-200 text-black rounded-lg text-xs font-semibold transition-all cursor-pointer shadow-sm disabled:opacity-50"
-              title="Run SAST Vulnerability Scan on Active File"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-white hover:bg-slate-200 text-black rounded-lg text-xs font-semibold transition-all cursor-pointer shadow-sm disabled:opacity-50"
+              title="Run SAST Vulnerability Scan on Active File (Cmd + Enter)"
             >
-              <Play className={`w-3 h-3 ${isScanning ? 'animate-spin text-black' : 'text-black fill-black'}`} />
+              <Play className={`w-3.5 h-3.5 ${isScanning ? 'animate-spin text-black' : 'text-black fill-black'}`} />
               <span>{isScanning ? 'Scanning...' : 'Scan File'}</span>
             </button>
-
-            {/* Consolidated Patch Action: Apply Active File with optional Folder All */}
-            {aiReviewData?.fixedCode && onApplyFix && (
-              <div className="relative inline-flex items-center rounded-lg shadow-sm">
-                <button
-                  onClick={() => onApplyFix(aiReviewData.fixedCode)}
-                  className="flex items-center gap-1.5 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 px-2.5 py-1 rounded-l-lg text-xs font-semibold transition-all cursor-pointer"
-                  title="Apply AI Refactored Secure Code to Active File"
-                >
-                  <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Apply Patch</span>
-                </button>
-                {onApplyFixAll && (
-                  <button
-                    onClick={() => onApplyFixAll()}
-                    disabled={isAiLoading}
-                    className="bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border-y border-r border-emerald-500/30 px-2 py-1 rounded-r-lg text-xs font-semibold transition-all cursor-pointer"
-                    title="Apply Fix Across All Files in Project Folder"
-                  >
-                    <span className="text-[10px] text-emerald-400 font-mono">All</span>
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Subtle Secondary: Quick Fix if not yet generated */}
-            {!aiReviewData?.fixedCode && findings.length > 0 && onGenerateAiFix && (
-              <button
-                onClick={() => onGenerateAiFix()}
-                disabled={isAiLoading}
-                className="flex items-center gap-1.5 bg-[#0e121d] hover:bg-white/[0.08] text-slate-300 border border-white/[0.08] px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer disabled:opacity-50"
-                title="Generate AI Security Patch"
-              >
-                <Sparkles className={`w-3.5 h-3.5 text-slate-400 ${isAiLoading ? 'animate-spin' : ''}`} />
-                <span>{isAiLoading ? 'Fixing...' : 'AI Fix'}</span>
-              </button>
-            )}
           </div>
         </div>
 
-        {/* High-Grade Editor Container with Synchronized Line Numbers & Highlight Layer */}
-        <div className="relative flex-1 flex overflow-hidden bg-slate-950 font-mono text-xs leading-relaxed min-h-0">
-          
-          {/* Custom Editor Display Layer (Line Highlights + Gutter) */}
-          <div className="w-full h-full flex flex-1 overflow-hidden">
-            
-            {/* Line Gutter & Status Badges */}
-            <div 
-              ref={lineGutterRef}
-              onWheel={(e) => {
-                if (textareaRef.current) {
-                  textareaRef.current.scrollTop += e.deltaY;
-                }
-              }}
-              className="sticky left-0 top-0 select-none bg-slate-950 border-r border-slate-800/80 text-slate-600 text-right py-3 px-2.5 min-w-[52px] font-mono shrink-0 z-20 h-full overflow-hidden"
-            >
-              {lines.map((_, i) => {
-                const lineNum = i + 1;
-                const lineFindings = findingsByLine[lineNum] || [];
-                const isVulnerable = lineFindings.length > 0;
-                const isFixedLine = fixedLineNumbers.includes(lineNum);
-
-                return (
-                  <div key={lineNum} className="relative flex items-center justify-between h-5">
-                    <span className={`text-[11px] ${
-                      isVulnerable ? 'text-rose-300 font-black bg-rose-500/25 px-1 rounded' : isFixedLine ? 'text-emerald-300 font-black bg-emerald-500/25 px-1 rounded' : 'text-slate-600 font-semibold'
-                    }`}>
-                      {lineNum}
-                    </span>
-                    {isVulnerable && (
-                      <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-md shadow-rose-500/90 animate-pulse ml-1 inline-block shrink-0" title="Vulnerability Flagged (Red)" />
-                    )}
-                    {!isVulnerable && isFixedLine && (
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-md shadow-emerald-500/90 ml-1 inline-block shrink-0" title="Security Patch Applied (Green)" />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Code Textarea & Highlight Background Layer */}
-            <div className="relative flex-1 w-full h-full min-w-0 overflow-hidden">
-              
-              {/* Background Highlight Rows for ONLY Vulnerable Lines (RED) and ONLY Fixed Lines (GREEN) */}
-              <div 
-                ref={highlightLayerRef}
-                className="absolute inset-0 pointer-events-none py-3 font-mono text-xs leading-5 z-0 overflow-hidden"
-              >
-                {lines.map((_, i) => {
-                  const lineNum = i + 1;
-                  const lineFindings = findingsByLine[lineNum] || [];
-                  const isVulnerable = lineFindings.length > 0;
-                  const isFixedLine = fixedLineNumbers.includes(lineNum);
-
-                  return (
-                    <div
-                      key={lineNum}
-                      className={`h-5 w-full transition-colors ${
-                        isVulnerable
-                          ? 'bg-rose-500/20 border-l-4 border-rose-500 shadow-[inset_0_0_14px_rgba(244,63,94,0.25)]'
-                          : isFixedLine
-                          ? 'bg-emerald-500/20 border-l-4 border-emerald-500 shadow-[inset_0_0_14px_rgba(16,185,129,0.25)]'
-                          : ''
-                      }`}
-                    />
-                  );
-                })}
+        {/* Monaco Editor Engine with True Syntax Highlighting, Minimap, and Inline Problem Squiggles */}
+        <div className="relative flex-1 overflow-hidden bg-[#070a13] min-h-0">
+          <Editor
+            height="100%"
+            language={MONACO_LANG_MAP[language] || language || 'javascript'}
+            value={code}
+            theme="severa-dark"
+            onChange={(val) => handleCodeChange(val || '')}
+            onMount={handleEditorDidMount}
+            loading={
+              <div className="flex flex-col items-center justify-center h-full text-slate-500 font-mono text-xs gap-2">
+                <div className="w-6 h-6 border-2 border-indigo-500/30 border-t-indigo-400 rounded-full animate-spin" />
+                <span>Loading Monaco Engine...</span>
               </div>
-
-              {/* Editable Textarea overlay */}
-              <textarea
-                ref={textareaRef}
-                value={code}
-                onChange={(e) => handleCodeChange(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onScroll={(e) => {
-                  const { scrollTop, scrollLeft } = e.target;
-                  if (lineGutterRef.current) lineGutterRef.current.scrollTop = scrollTop;
-                  if (highlightLayerRef.current) {
-                    highlightLayerRef.current.scrollTop = scrollTop;
-                    highlightLayerRef.current.scrollLeft = scrollLeft;
-                  }
-                }}
-                placeholder="Paste or type your source code here to analyze with Severa AI..."
-                spellCheck={false}
-                className="relative z-10 w-full h-full bg-transparent text-slate-100 py-3 px-3 font-mono text-xs leading-5 resize-none focus:outline-none whitespace-pre overflow-auto custom-scrollbar selection:bg-cyan-500/30"
-              />
-            </div>
-
-          </div>
+            }
+            options={{
+              minimap: { enabled: true, maxColumn: 80, scale: 0.8 },
+              fontSize: 12.5,
+              fontFamily: "'JetBrains Mono', 'Fira Code', Menlo, Monaco, Consolas, monospace",
+              fontLigatures: true,
+              lineNumbers: 'on',
+              lineNumbersMinChars: 3,
+              glyphMargin: true,
+              folding: true,
+              scrollBeyondLastLine: false,
+              automaticLayout: true,
+              wordWrap: 'off',
+              bracketPairColorization: { enabled: true },
+              padding: { top: 12, bottom: 12 },
+              cursorBlinking: 'smooth',
+              smoothScrolling: true,
+              renderLineHighlight: 'all',
+              tabSize: 2,
+              fixedOverflowWidgets: true
+            }}
+          />
         </div>
 
         {/* Footer Status Bar */}

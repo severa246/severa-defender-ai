@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { scanDependencies, scanDependenciesLive } from '../engine/scaScanner';
-import { PackageCheck, FileJson, ArrowUpRight, CheckCircle2, Globe2, ShieldCheck, ExternalLink, Loader2 } from 'lucide-react';
+import { PackageCheck, FileJson, ArrowUpRight, CheckCircle2, Globe2, ShieldCheck, ExternalLink, Loader2, Wand2, Check } from 'lucide-react';
 
 const SAMPLE_PACKAGE_JSON = `{
   "name": "vulnerable-web-app",
@@ -19,7 +19,54 @@ export default function DependencyScanner() {
   const [results, setResults] = useState(() => scanDependencies(SAMPLE_PACKAGE_JSON, 'package.json'));
   const [isLiveLoading, setIsLiveLoading] = useState(false);
   const [isLiveActive, setIsLiveActive] = useState(true);
+  const [bumpToast, setBumpToast] = useState('');
   const debounceTimerRef = useRef(null);
+
+  const handleAutoBump = (pkgName, fixedVersion) => {
+    if (!pkgName || !fixedVersion || fixedVersion === 'Latest' || fixedVersion.includes('Official')) return;
+    const cleanFixed = fixedVersion.replace(/^[v^~>=<\s]+/, '');
+
+    if (manifestType === 'package.json') {
+      try {
+        const parsed = JSON.parse(manifestText);
+        let updated = false;
+        if (parsed.dependencies && parsed.dependencies[pkgName]) {
+          parsed.dependencies[pkgName] = cleanFixed;
+          updated = true;
+        }
+        if (parsed.devDependencies && parsed.devDependencies[pkgName]) {
+          parsed.devDependencies[pkgName] = cleanFixed;
+          updated = true;
+        }
+        if (updated) {
+          setManifestText(JSON.stringify(parsed, null, 2));
+          setBumpToast(`Updated ${pkgName} ➔ v${cleanFixed} in package.json`);
+          setTimeout(() => setBumpToast(''), 3500);
+          return;
+        }
+      } catch {
+        // Fallback to regex
+      }
+      const regex = new RegExp(`("${pkgName}"\\s*:\\s*")[^"]+(")`, 'g');
+      setManifestText(manifestText.replace(regex, `$1${cleanFixed}$2`));
+      setBumpToast(`Updated ${pkgName} ➔ v${cleanFixed} in package.json`);
+      setTimeout(() => setBumpToast(''), 3500);
+    } else if (manifestType === 'requirements.txt') {
+      const regex = new RegExp(`^(${pkgName}\\s*(?:==|>=|<=|~=)\\s*).*$`, 'im');
+      if (regex.test(manifestText)) {
+        setManifestText(manifestText.replace(regex, `${pkgName}==${cleanFixed}`));
+      } else {
+        setManifestText(manifestText.replace(new RegExp(`^${pkgName}$`, 'im'), `${pkgName}==${cleanFixed}`));
+      }
+      setBumpToast(`Updated ${pkgName} ➔ v${cleanFixed} in requirements.txt`);
+      setTimeout(() => setBumpToast(''), 3500);
+    } else if (manifestType === 'go.mod') {
+      const regex = new RegExp(`(${pkgName}\\s+)v[0-9\\.]+`, 'g');
+      setManifestText(manifestText.replace(regex, `$1v${cleanFixed}`));
+      setBumpToast(`Updated ${pkgName} ➔ v${cleanFixed} in go.mod`);
+      setTimeout(() => setBumpToast(''), 3500);
+    }
+  };
 
   // Trigger live OSV.dev lookup with debounce
   useEffect(() => {
@@ -116,6 +163,16 @@ export default function DependencyScanner() {
             </select>
           </div>
 
+          {bumpToast && (
+            <div className="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-mono flex items-center justify-between animate-fadeIn">
+              <span className="flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                {bumpToast}
+              </span>
+              <span className="text-[10px] text-slate-400">Re-scanning...</span>
+            </div>
+          )}
+
           <textarea
             value={manifestText}
             onChange={(e) => setManifestText(e.target.value)}
@@ -197,16 +254,29 @@ export default function DependencyScanner() {
                     </div>
                   )}
 
-                  {/* Footer Row: CVE & Upgrade Target */}
+                  {/* Footer Row: CVE & Upgrade Target with 1-Click Auto-Bump */}
                   <div className="flex items-center justify-between text-xs pt-2 border-t border-white/[0.04]">
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-xs text-rose-400 font-medium">{item.cve}</span>
                       <span className="text-[10px] font-mono text-slate-500">{item.source || 'OSV.dev'}</span>
                     </div>
 
-                    <div className="flex items-center gap-1 text-emerald-400 font-mono text-xs font-medium">
-                      <span>Fixed in v{item.fixedIn}</span>
-                      <ArrowUpRight className="w-3.5 h-3.5 text-emerald-400" />
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1 text-emerald-400 font-mono text-xs font-medium">
+                        <span>Fixed in v{item.fixedIn}</span>
+                        <ArrowUpRight className="w-3.5 h-3.5 text-emerald-400" />
+                      </div>
+
+                      {item.fixedIn && item.fixedIn !== 'Latest' && !item.fixedIn.includes('Official') && (
+                        <button
+                          onClick={() => handleAutoBump(item.packageName, item.fixedIn)}
+                          className="px-2 py-0.5 bg-white hover:bg-slate-200 text-black text-[10px] font-semibold rounded-md shadow-sm transition-all flex items-center gap-1 cursor-pointer"
+                          title={`Auto-bump ${item.packageName} to v${item.fixedIn} in manifest`}
+                        >
+                          <Wand2 className="w-2.5 h-2.5 text-black" />
+                          <span>Fix</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

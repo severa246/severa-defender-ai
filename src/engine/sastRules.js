@@ -536,16 +536,29 @@ export const SAST_RULES = [
   // --- CROSS-LANGUAGE SYNTAX & CODING STANDARDS (CWE-710) ---
   {
     id: "SEC-LANG-001",
-    title: "Cross-Language Syntax Anomaly in JavaScript (CWE-710)",
+    title: "C++ Syntax Anomaly in JavaScript (std::getenv)",
     severity: "HIGH",
     cwe: "CWE-710",
     cweUrl: "https://cwe.mitre.org/data/definitions/710.html",
     owasp: "A04:2021 - Insecure Design & Language Standards",
     languages: ["javascript", "typescript", "react", "js", "ts"],
-    pattern: /\b(?:std::\w+|String\s+[a-zA-Z0-9_$]+\s*[:=]|System\.(?:out|err)\.print|#include\s*<)/i,
-    description: "Foreign C++ / Java syntax constructs detected inside JavaScript code, leading to runtime ReferenceError or syntax failures.",
-    impact: "Application crash due to Uncaught ReferenceError / SyntaxError at runtime.",
-    remediation: "Replace with idiomatic JavaScript constructs (e.g. process.env or const/let)."
+    pattern: /\b(?:std::\w+|#include\s*<)/i,
+    description: "C++ standard library call or directive (e.g. std::getenv) is illegal in ECMAScript/JavaScript. This causes a ReferenceError at runtime.",
+    impact: "Application crash due to Uncaught ReferenceError: std is not defined.",
+    remediation: "Use process.env.VARIABLE_NAME in Node.js or import in ES modules."
+  },
+  {
+    id: "SEC-LANG-002",
+    title: "Java Explicit Type Declaration in JavaScript (String / System.out)",
+    severity: "HIGH",
+    cwe: "CWE-710",
+    cweUrl: "https://cwe.mitre.org/data/definitions/710.html",
+    owasp: "A04:2021 - Insecure Design & Language Standards",
+    languages: ["javascript", "typescript", "react", "js", "ts"],
+    pattern: /\b(?:String|PreparedStatement|ResultSet)\s+[a-zA-Z0-9_$]+\s*[:=]|System\.(?:out|err)\.print/i,
+    description: "Java variable type declaration (e.g. 'String variable = ...') or System.out syntax is illegal in JavaScript. In JS, variables must use const, let, or var.",
+    impact: "Application crash due to SyntaxError: Unexpected identifier at runtime.",
+    remediation: "Use const or let instead of Java explicit type annotations (e.g. const query = ...)."
   }
 ];
 
