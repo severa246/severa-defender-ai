@@ -27,6 +27,7 @@ import {
   LogOut
 } from 'lucide-react';
 import UploadChoiceModal from './UploadChoiceModal';
+import UserProfileModal from './UserProfileModal';
 import { buildFileTree } from '../utils/fileTreeBuilder';
 function formatSessionTimeAgo(session) {
   if (!session) return 'Just now';
