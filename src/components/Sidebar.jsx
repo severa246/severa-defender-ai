@@ -22,7 +22,8 @@ import {
   FilePlus,
   Upload,
   FileCode,
-  LogOut
+  LogOut,
+  FolderDown
 } from 'lucide-react';
 import UploadChoiceModal from './UploadChoiceModal';
 import UserProfileModal from './UserProfileModal';
@@ -183,6 +184,8 @@ export default function Sidebar({
   onDeleteFileInProject,
   user,
   onLogout,
+  activeProjectName = 'ai project',
+  onDownloadFixedFolder,
 }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(285);
@@ -831,6 +834,19 @@ export default function Sidebar({
                             <Upload className="w-3.5 h-3.5" />
                           </button>
 
+                          {onDownloadFixedFolder && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onDownloadFixedFolder(p.name);
+                              }}
+                              className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 hover:text-emerald-400 transition-opacity"
+                              title={`Download "${p.name}.zip" (Fixed Working Folder)`}
+                            >
+                              <FolderDown className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -922,6 +938,21 @@ export default function Sidebar({
               );
             })}
           </div>
+
+          {/* Dedicated Download Working Folder Action */}
+          {onDownloadFixedFolder && (
+            <div className="pt-2 px-1">
+              <button
+                type="button"
+                onClick={() => onDownloadFixedFolder(activeProjectName)}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500/40 text-slate-200 hover:text-emerald-300 transition-all text-xs font-mono font-medium cursor-pointer group shadow-sm"
+                title={`Download current working folder "${activeProjectName || 'workspace'}.zip"`}
+              >
+                <FolderDown className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform shrink-0" />
+                <span className="truncate">Download {activeProjectName || 'workspace'}.zip</span>
+              </button>
+            </div>
+          )}
         </div>
       )}
 

@@ -120,36 +120,84 @@ export function createZipBuffer(files = []) {
   return out;
 }
 
-export function downloadProjectZip(projectName = 'project', files = []) {
+function uint8ArrayToBase64(bytes) {
+  let binary = '';
+  const len = bytes.byteLength;
+  const chunkSize = 16384;
+  for (let i = 0; i < len; i += chunkSize) {
+    const chunk = bytes.subarray(i, Math.min(i + chunkSize, len));
+    binary += String.fromCharCode.apply(null, chunk);
+  }
+  return btoa(binary);
+}
+
+export function downloadProjectZip(projectName = 'workspace', files = []) {
   if (!files || files.length === 0) return;
 
-  const zipBytes = createZipBuffer(files);
-  const blob = new Blob([zipBytes], { type: 'application/zip' });
-  const url = URL.createObjectURL(blob);
-  
   // Use exact current folder name with .zip extension
-  const rawName = (projectName || 'project').trim();
-  const cleanName = rawName.replace(/[/\\?%*:|"<>]/g, '_').trim() || 'project';
+  const rawName = (projectName || 'workspace').trim();
+  const cleanName = rawName.replace(/[/\\?%*:|"<>]/g, '_').trim() || 'workspace';
   const fileName = `${cleanName}.zip`;
 
+  const zipBytes = createZipBuffer(files);
+
+  // Strategy 1: Data URI for archives (< 15MB)
+  // Data URIs do not have a blob UUID in the URL path.
+  // Chrome and all Chromium browsers are forced to use the `download="${fileName}"` attribute!
+  if (zipBytes.length < 15 * 1024 * 1024) {
+    try {
+      const base64 = uint8ArrayToBase64(zipBytes);
+      const dataUri = `data:application/zip;base64,${base64}`;
+
+      const link = document.createElement('a');
+      link.href = dataUri;
+      link.download = fileName;
+      link.setAttribute('download', fileName);
+      link.style.position = 'fixed';
+      link.style.left = '-9999px';
+      link.style.top = '-9999px';
+      link.style.opacity = '0';
+      document.body.appendChild(link);
+      
+      link.click();
+
+      setTimeout(() => {
+        try {
+          if (link.parentNode) document.body.removeChild(link);
+        } catch {}
+      }, 5000);
+      return;
+    } catch (e) {
+      console.warn('Data URI export fallback to Blob/File:', e);
+    }
+  }
+
+  // Strategy 2: Blob/File Object Fallback for very large archives
+  let blob;
+  try {
+    blob = new File([zipBytes], fileName, { type: 'application/zip' });
+  } catch {
+    blob = new Blob([zipBytes], { type: 'application/octet-stream' });
+  }
+
+  const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
   link.download = fileName;
   link.setAttribute('download', fileName);
-  link.style.display = 'none';
+  link.style.position = 'fixed';
+  link.style.left = '-9999px';
+  link.style.top = '-9999px';
+  link.style.opacity = '0';
   document.body.appendChild(link);
   
   link.click();
 
-  // Safely defer revoking to prevent browser from losing filename and falling back to UUID
+  // Generous 60-second window before revoking to prevent browser from reverting to UUID
   setTimeout(() => {
     try {
-      if (link.parentNode) {
-        document.body.removeChild(link);
-      }
+      if (link.parentNode) document.body.removeChild(link);
       URL.revokeObjectURL(url);
-    } catch {
-      // Ignore cleanup error
-    }
-  }, 2500);
+    } catch {}
+  }, 60000);
 }

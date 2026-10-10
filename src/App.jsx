@@ -226,13 +226,34 @@ jobs:
         with:
           sarif_file: severa-findings.sarif
 `;
+    try {
+      const dataUri = `data:text/yaml;charset=utf-8,${encodeURIComponent(workflowYaml)}`;
+      const link = document.createElement('a');
+      link.href = dataUri;
+      link.download = 'severa-security-gate.yml';
+      link.setAttribute('download', 'severa-security-gate.yml');
+      link.style.position = 'fixed';
+      link.style.left = '-9999px';
+      link.style.top = '-9999px';
+      link.style.opacity = '0';
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => {
+        try { if (link.parentNode) document.body.removeChild(link); } catch {}
+      }, 5000);
+      return;
+    } catch {}
+
     const blob = new Blob([workflowYaml], { type: 'text/yaml;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
     link.download = 'severa-security-gate.yml';
     link.setAttribute('download', 'severa-security-gate.yml');
-    link.style.display = 'none';
+    link.style.position = 'fixed';
+    link.style.left = '-9999px';
+    link.style.top = '-9999px';
+    link.style.opacity = '0';
     document.body.appendChild(link);
     link.click();
     setTimeout(() => {
@@ -240,16 +261,17 @@ jobs:
         if (link.parentNode) document.body.removeChild(link);
         URL.revokeObjectURL(url);
       } catch {}
-    }, 2500);
+    }, 60000);
   };
 
   // Download Remediated Working Folder as .zip Archive
-  const handleDownloadFixedFolder = () => {
-    const currentFolderObj = projectFolders.find((p) => p.name === activeProjectName);
+  const handleDownloadFixedFolder = (specifiedProjectName) => {
+    const targetProjectName = specifiedProjectName || activeProjectName;
+    const currentFolderObj = projectFolders.find((p) => p.name === targetProjectName);
     const filesToExport = (currentFolderObj?.files && currentFolderObj.files.length > 0)
       ? currentFolderObj.files.map((f) => {
           let fCode = f.code;
-          if ((f.name === activeFileName || f.path === activeFilePath) && code && code.trim().length > 0) {
+          if ((f.name === activeFileName || f.path === activeFilePath) && targetProjectName === activeProjectName && code && code.trim().length > 0) {
             fCode = code;
           } else if (fCode === undefined) {
             const foundTpl = CODE_TEMPLATES.find((t) => t.id === f.templateId);
@@ -263,7 +285,7 @@ jobs:
         })
       : (projectFiles && projectFiles.length > 0 ? projectFiles : [{ name: activeFileName || 'main.py', code: code || '' }]);
 
-    const targetFolderName = (activeProjectName || 'workspace').trim();
+    const targetFolderName = (targetProjectName || 'workspace').trim();
     downloadProjectZip(targetFolderName, filesToExport);
   };
 
@@ -1565,6 +1587,8 @@ jobs:
         onDeleteFileInProject={handleDeleteFileInProject}
         user={user}
         onLogout={onLogout}
+        activeProjectName={activeProjectName}
+        onDownloadFixedFolder={handleDownloadFixedFolder}
       />
 
       {/* Main Right Content Panel */}

@@ -123,13 +123,39 @@ export function generateSarifReport(findings = [], {
  */
 export function downloadSarifFile(findings, options = {}) {
   const sarifObj = generateSarifReport(findings, options);
-  const blob = new Blob([JSON.stringify(sarifObj, null, 2)], { type: 'application/json' });
+  const jsonStr = JSON.stringify(sarifObj, null, 2);
+  const filename = `${options.projectName || 'severa-scan'}-${new Date().toISOString().slice(0, 10)}.sarif`;
+
+  // Strategy 1: Data URI for instant guaranteed filename
+  try {
+    const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(jsonStr)}`;
+    const a = document.createElement('a');
+    a.href = dataUri;
+    a.download = filename;
+    a.setAttribute('download', filename);
+    a.style.position = 'fixed';
+    a.style.left = '-9999px';
+    a.style.top = '-9999px';
+    a.style.opacity = '0';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      try { if (a.parentNode) document.body.removeChild(a); } catch {}
+    }, 5000);
+    return;
+  } catch {}
+
+  // Strategy 2: Blob fallback with 60s timeout
+  const blob = new Blob([jsonStr], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  const filename = `${options.projectName || 'severa-scan'}-${new Date().toISOString().slice(0, 10)}.sarif`;
+  a.download = filename;
   a.setAttribute('download', filename);
-  a.style.display = 'none';
+  a.style.position = 'fixed';
+  a.style.left = '-9999px';
+  a.style.top = '-9999px';
+  a.style.opacity = '0';
   document.body.appendChild(a);
   a.click();
   setTimeout(() => {
@@ -137,5 +163,5 @@ export function downloadSarifFile(findings, options = {}) {
       if (a.parentNode) document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch {}
-  }, 2500);
+  }, 60000);
 }
