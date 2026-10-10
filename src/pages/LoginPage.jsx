@@ -7,8 +7,8 @@ import { supabase } from '../services/supabaseClient';
 function Orbs() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden>
-      <div className="absolute -top-40 -left-40 w-[500px] h-[500px] rounded-full bg-blue-600/10 blur-3xl animate-pulse" style={{ animationDuration: '6s' }} />
-      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-violet-600/8 blur-3xl animate-pulse" style={{ animationDuration: '9s', animationDelay: '3s' }} />
+      <div className="absolute -top-40 -left-40 w-[500px] h-[500px] rounded-full bg-emerald-500/5 blur-3xl animate-pulse" style={{ animationDuration: '6s' }} />
+      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-slate-700/5 blur-3xl animate-pulse" style={{ animationDuration: '9s', animationDelay: '3s' }} />
     </div>
   );
 }
@@ -626,13 +626,13 @@ export default function LoginPage({ onLogin }) {
 
             {/* Quick demo link */}
             {tab === 'login' && (
-              <div className="mt-4 p-3 rounded-xl bg-blue-500/5 border border-blue-500/10">
-                <p className="text-[11px] text-slate-500 text-center">
+              <div className="mt-4 p-3 rounded-xl bg-[#191C23] border border-white/10">
+                <p className="text-[11px] text-slate-400 text-center">
                   Quick demo (with sample vulnerabilities):{' '}
                   <button type="button" onClick={() => {
                     setField('email', 'demo@severa.ai');
                     setField('password', 'demo1234');
-                  }} className="text-blue-400 hover:underline font-medium cursor-pointer">
+                  }} className="text-emerald-400 hover:underline font-medium cursor-pointer">
                     demo@severa.ai / demo1234
                   </button>
                 </p>
@@ -656,7 +656,7 @@ export default function LoginPage({ onLogin }) {
       {/* ── Reset Password Modal ── */}
       {resetModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
-          <div className="bg-[#121826] border border-blue-500/30 text-white rounded-2xl w-full max-w-md p-7 shadow-2xl space-y-5 relative font-sans">
+          <div className="bg-[#191C23] border border-white/15 text-white rounded-2xl w-full max-w-md p-7 shadow-2xl space-y-5 relative font-sans">
             <button
               onClick={() => setResetModal(null)}
               className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
@@ -666,8 +666,8 @@ export default function LoginPage({ onLogin }) {
 
             {/* Modal Header */}
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center shadow-lg shadow-blue-500/10">
-                <Lock size={22} className="text-blue-400" />
+              <div className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shadow-lg">
+                <Lock size={22} className="text-emerald-400" />
               </div>
               <div>
                 <h3 className="text-base font-black text-white">
@@ -761,7 +761,7 @@ export default function LoginPage({ onLogin }) {
       {/* ── Forgot Password Email Prompt Modal ── */}
       {forgotPromptOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
-          <div className="bg-[#121826] border border-blue-500/30 text-white rounded-2xl w-full max-w-md p-7 shadow-2xl space-y-5 relative font-sans">
+          <div className="bg-[#191C23] border border-white/15 text-white rounded-2xl w-full max-w-md p-7 shadow-2xl space-y-5 relative font-sans">
             <button
               onClick={() => setForgotPromptOpen(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors cursor-pointer"
@@ -770,8 +770,8 @@ export default function LoginPage({ onLogin }) {
             </button>
 
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center shadow-lg shadow-blue-500/10">
-                <Lock size={22} className="text-blue-400" />
+              <div className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shadow-lg">
+                <Lock size={22} className="text-emerald-400" />
               </div>
               <div>
                 <h3 className="text-base font-black text-white">Reset Your Password</h3>

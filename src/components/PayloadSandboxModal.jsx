@@ -123,7 +123,7 @@ export default function PayloadSandboxModal({ isOpen, onClose, initialPayloadTyp
                 onClick={() => handleSelectExploit(exp)}
                 className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
                   selectedExploit.id === exp.id
-                    ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-lg shadow-indigo-500/10'
+                    ? 'bg-[#191C23] border-emerald-500/40 text-white shadow-lg border'
                     : 'bg-slate-950/60 hover:bg-slate-800/60 border-slate-800 text-slate-400'
                 }`}
               >

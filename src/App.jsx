@@ -1862,7 +1862,7 @@ jobs:
       {/* Floating Severa Defender Quick Launcher Trigger Button */}
       <button
         onClick={() => handleOpenDefenderWithFinding(null)}
-        className="fixed bottom-5 right-5 z-40 flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-xl shadow-indigo-950/60 hover:scale-105 active:scale-95 transition-all cursor-pointer border border-indigo-500/40 group"
+        className="fixed bottom-5 right-5 z-40 flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-[#191C23] hover:bg-[#232732] text-white font-semibold text-xs shadow-xl shadow-black/80 hover:scale-105 active:scale-95 transition-all cursor-pointer border border-white/15 hover:border-emerald-500/40 group"
       >
         <div className="relative w-5 h-5 rounded-md bg-white/10 flex items-center justify-center">
           <Shield className="w-3.5 h-3.5 text-white group-hover:rotate-12 transition-transform" />

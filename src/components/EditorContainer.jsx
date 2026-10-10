@@ -314,9 +314,9 @@ export default function EditorContainer({
           <div
             onMouseDown={handleFileTreeMouseDown}
             title="Drag to resize file explorer panel (Min: 160px, Max: 360px limit)"
-            className="absolute -right-1.5 top-0 bottom-0 w-3 hover:w-3.5 bg-transparent hover:bg-indigo-500/50 cursor-col-resize z-40 transition-all flex items-center justify-center group/resizer"
+            className="absolute -right-1.5 top-0 bottom-0 w-3 hover:w-3.5 bg-transparent hover:bg-slate-700/50 cursor-col-resize z-40 transition-all flex items-center justify-center group/resizer"
           >
-            <div className="w-0.5 h-8 bg-slate-700 group-hover/resizer:bg-indigo-300 rounded-full" />
+            <div className="w-0.5 h-8 bg-slate-700 group-hover/resizer:bg-slate-400 rounded-full" />
           </div>
         </div>
       )}
@@ -343,7 +343,7 @@ export default function EditorContainer({
             <button
               onClick={() => setShowSidebar(!showSidebar)}
               className={`p-1.5 rounded-lg border text-xs transition-all cursor-pointer ${
-                showSidebar ? 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30 shadow-sm' : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border-slate-800'
+                showSidebar ? 'bg-[#191C23] text-white border-white/20 shadow-sm' : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border-slate-800'
               }`}
               title={showSidebar ? 'Hide Project Explorer' : 'Expand Project Explorer'}
             >
@@ -389,7 +389,7 @@ export default function EditorContainer({
               }}
               className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer border ${
                 autoDetectMode
-                  ? 'bg-indigo-500/10 text-indigo-300 border-indigo-500/30'
+                  ? 'bg-[#191C23] text-emerald-400 border-emerald-500/30'
                   : 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800'
               }`}
               title="Toggle Automatic Language Detection"

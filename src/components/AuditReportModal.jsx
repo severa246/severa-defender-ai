@@ -97,7 +97,7 @@ export default function AuditReportModal({ isOpen, onClose, scanMetrics, finding
               <button
                 onClick={() => setActiveTab('preview')}
                 className={`px-3 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
-                  activeTab === 'preview' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+                  activeTab === 'preview' ? 'bg-[#191C23] text-white border border-white/20 shadow-sm' : 'text-slate-400 hover:text-white'
                 }`}
               >
                 Visual Executive Summary
@@ -105,7 +105,7 @@ export default function AuditReportModal({ isOpen, onClose, scanMetrics, finding
               <button
                 onClick={() => setActiveTab('raw')}
                 className={`px-3 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
-                  activeTab === 'raw' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+                  activeTab === 'raw' ? 'bg-[#191C23] text-white border border-white/20 shadow-sm' : 'text-slate-400 hover:text-white'
                 }`}
               >
                 Raw Markdown

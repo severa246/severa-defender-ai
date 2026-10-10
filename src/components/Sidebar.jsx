@@ -214,7 +214,7 @@ function ProjectTreeNode({
       onClick={() => handleProjectClick(p, fileObj)}
       className={`flex items-center justify-between py-1 px-2 rounded-md cursor-pointer group/file text-xs font-mono transition-colors w-full ${
         isCurrentActive
-          ? 'bg-indigo-600/25 text-cyan-200 border-l-2 border-cyan-400 font-semibold shadow-sm'
+          ? 'bg-white/10 text-white border-l-2 border-emerald-400 font-semibold shadow-sm'
           : 'text-slate-300 hover:bg-slate-900/90 hover:text-cyan-300 font-medium'
       }`}
     >
@@ -719,16 +719,16 @@ export default function Sidebar({
   return (
     <aside 
       style={{ width: isCollapsed ? '64px' : `${sidebarWidth}px` }}
-      className="bg-slate-950/95 border-r border-slate-800 flex flex-col justify-between shrink-0 h-screen sticky top-0 z-40 p-3 shadow-2xl backdrop-blur-md transition-all duration-75 relative group"
+      className="bg-[#191C23] border-r border-slate-800/80 flex flex-col justify-between shrink-0 h-screen sticky top-0 z-40 p-3 shadow-2xl backdrop-blur-md transition-all duration-75 relative group"
     >
       {/* Draggable Resizer Handle for Left Sidebar (Min: 180px, Max: 380px) */}
       {!isCollapsed && (
         <div
           onMouseDown={handleSidebarMouseDown}
           title="Drag left or right to resize sidebar (Min: 180px, Max: 380px limit)"
-          className="absolute right-0 top-0 bottom-0 w-2 hover:w-2.5 bg-transparent hover:bg-indigo-500/60 cursor-col-resize z-50 transition-all flex items-center justify-center group/resizer"
+          className="absolute right-0 top-0 bottom-0 w-2 hover:w-2.5 bg-transparent hover:bg-slate-700/60 cursor-col-resize z-50 transition-all flex items-center justify-center group/resizer"
         >
-          <div className="w-0.5 h-8 bg-slate-700 group-hover/resizer:bg-indigo-300 rounded-full" />
+          <div className="w-0.5 h-8 bg-slate-700 group-hover/resizer:bg-slate-400 rounded-full" />
         </div>
       )}
       
@@ -772,24 +772,24 @@ export default function Sidebar({
                 type="button"
                 onClick={() => setIsCollapsed(false)}
                 title="Expand Sidebar (Severa AI)"
-                className="p-2 rounded-xl bg-indigo-600 text-white shadow-md hover:bg-indigo-500 transition-all cursor-pointer relative group/logo shrink-0"
+                className="p-2 rounded-xl bg-[#191C23] border border-white/10 text-white shadow-md hover:bg-[#232732] transition-all cursor-pointer relative group/logo shrink-0"
               >
-                <ShieldAlert className="w-5 h-5" />
+                <ShieldAlert className="w-5 h-5 text-emerald-400" />
                 <div className="absolute inset-0 bg-black/60 rounded-xl opacity-0 group-hover/logo:opacity-100 flex items-center justify-center transition-opacity">
-                  <PanelLeftOpen className="w-4 h-4 text-indigo-200" />
+                  <PanelLeftOpen className="w-4 h-4 text-slate-300" />
                 </div>
               </button>
             </div>
           ) : (
             <div className="flex items-center justify-between px-1 py-1">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="p-2 rounded-xl bg-indigo-600 text-white shadow-md shrink-0">
-                  <ShieldAlert className="w-5 h-5" />
+                <div className="p-2 rounded-xl bg-[#191C23] border border-white/10 text-white shadow-md shrink-0">
+                  <ShieldAlert className="w-5 h-5 text-emerald-400" />
                 </div>
                 <div className="min-w-0 animate-fadeIn">
                   <div className="flex items-center gap-1.5">
                     <h1 className="font-bold text-[15px] text-slate-100 tracking-tight truncate">Severa AI</h1>
-                    <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                    <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded bg-white/10 text-slate-300 border border-white/10">
                       PRO
                     </span>
                   </div>
@@ -809,18 +809,18 @@ export default function Sidebar({
             </div>
           )}
 
-          {/* Primary Action Button */}
+          {/* Primary Action Button — Black #191C23 Theme */}
           <button
             onClick={() => {
               setActiveTab('workbench');
               setIsCreatingProject(true);
             }}
             title="Create New Project"
-            className={`w-full flex items-center justify-center gap-2 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold shadow-md shadow-indigo-950/50 transition-all cursor-pointer border border-indigo-500/30 ${
+            className={`w-full flex items-center justify-center gap-2 py-2.5 bg-[#191C23] hover:bg-[#232732] text-slate-100 rounded-xl text-sm font-semibold shadow-md shadow-black/40 transition-all cursor-pointer border border-white/10 hover:border-white/20 ${
               isCollapsed ? 'px-0' : 'px-3'
             }`}
           >
-            <FolderPlus className="w-4 h-4 shrink-0" />
+            <FolderPlus className="w-4 h-4 shrink-0 text-slate-300" />
             {!isCollapsed && <span>New Project</span>}
           </button>
 
@@ -843,14 +843,14 @@ export default function Sidebar({
                   title={isCollapsed ? item.label : undefined}
                   className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-sm font-medium transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-indigo-500/20 text-indigo-200 border-l-2 border-indigo-400 font-semibold shadow-sm'
-                      : 'text-slate-300 hover:bg-slate-900 hover:text-white'
+                      ? 'bg-[#191C23] text-white border-l-2 border-emerald-400 font-semibold shadow-sm border border-white/10'
+                      : 'text-slate-300 hover:bg-[#191C23]/60 hover:text-white'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-cyan-400' : 'text-slate-400'}`} />
+                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`} />
                   {!isCollapsed && <span className="truncate">{item.label}</span>}
                   {!isCollapsed && item.badge !== undefined && item.badge > 0 && (
-                    <span className="ml-auto px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-xs font-bold">
+                    <span className="ml-auto px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold">
                       {item.badge}
                     </span>
                   )}

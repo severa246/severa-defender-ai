@@ -55,7 +55,7 @@ function Navbar({ navigate }) {
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
-      scrolled ? 'bg-[#0d0f18]/95 backdrop-blur-xl border-b border-white/5' : ''
+      scrolled ? 'bg-[#191C23]/95 backdrop-blur-xl border-b border-white/5' : ''
     }`}>
       <div className="w-full px-6 sm:px-10 lg:px-14 xl:px-20 py-4 flex items-center justify-between gap-6">
         {/* Logo */}
@@ -108,7 +108,7 @@ function Navbar({ navigate }) {
       </div>
 
       {mobileOpen && (
-        <div className="md:hidden border-t border-white/5 bg-[#0d0f18]/95 backdrop-blur-xl px-6 py-5 space-y-3">
+        <div className="md:hidden border-t border-white/5 bg-[#191C23]/95 backdrop-blur-xl px-6 py-5 space-y-3">
           {navItems.map((item) => (
             <button
               key={item.label}
@@ -348,7 +348,7 @@ function ContribAvatars({ count = 5 }) {
         <div
           key={i}
           style={{ zIndex: count - i, marginLeft: i === 0 ? 0 : -8 }}
-          className={`w-6 h-6 rounded-full bg-gradient-to-br ${CONTRIB_COLORS[i % CONTRIB_COLORS.length]} border-2 border-[#0d0f18] flex items-center justify-center text-[9px] font-black text-white`}
+          className={`w-6 h-6 rounded-full bg-gradient-to-br ${CONTRIB_COLORS[i % CONTRIB_COLORS.length]} border-2 border-[#191C23] flex items-center justify-center text-[9px] font-black text-white`}
         >
           {String.fromCharCode(65 + i)}
         </div>
@@ -364,12 +364,12 @@ export default function LandingPage() {
   const DOCKER_CMD = 'docker run -d -p 3000:3000 severaai/severa:latest';
 
   return (
-    <div className="min-h-screen bg-[#0d0f18] text-white font-sans overflow-x-hidden relative">
+    <div className="min-h-screen bg-[#191C23] text-white font-sans overflow-x-hidden relative">
       {/* Seamless fixed background grid design throughout the home page */}
       <div
         className="fixed inset-0 pointer-events-none z-0"
         style={{
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)',
+          backgroundImage: 'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)',
           backgroundSize: '48px 48px',
         }}
       />
@@ -378,9 +378,9 @@ export default function LandingPage() {
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
       <section className="relative z-10 pt-28 pb-20">
 
-        <div className="relative w-full px-6 sm:px-10 lg:px-14 xl:px-20 grid lg:grid-cols-12 gap-10 xl:gap-16 items-center">
+        <div className="relative max-w-6xl xl:max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 grid lg:grid-cols-2 gap-8 lg:gap-10 xl:gap-14 items-center">
           {/* Left */}
-          <div className="lg:col-span-7">
+          <div className="w-full">
             {/* Info bar */}
             <div className="flex flex-wrap items-center gap-3 mb-5">
               <span className="flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs sm:text-[13px] font-semibold">
@@ -389,7 +389,7 @@ export default function LandingPage() {
               </span>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight mb-5">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-black leading-[1.1] tracking-tight mb-5">
               Build Secure<br />
               Software{' '}
               <span className="text-emerald-400">Faster</span>
@@ -433,7 +433,7 @@ export default function LandingPage() {
           </div>
 
           {/* Right — terminal */}
-          <div className="relative lg:col-span-5">
+          <div className="relative w-full">
             <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-emerald-500/15 to-transparent blur-xl pointer-events-none" />
             <DemoTerminal />
           </div>
@@ -456,7 +456,7 @@ export default function LandingPage() {
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            <StepCard number={1} icon={Code2} iconColor="text-blue-400" iconBg="bg-blue-500/10 border-blue-500/20"
+            <StepCard number={1} icon={Code2} iconColor="text-slate-200" iconBg="bg-white/5 border-white/10"
               title="Repository Analysis"
               desc="Deep AST parsing across 30+ languages. Automatically indexes dependencies, branches, and code call graphs." />
             <StepCard number={2} icon={Lock} iconColor="text-amber-400" iconBg="bg-amber-500/10 border-amber-500/20"

@@ -105,14 +105,14 @@ export default function TopHeaderBar({
                           setIsFolderMenuOpen(false);
                         }}
                         className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer text-left ${
-                          isSelected ? 'bg-indigo-500/15 text-indigo-300 font-bold border border-indigo-500/30' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                          isSelected ? 'bg-[#191C23] text-white font-bold border border-white/10' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
                         }`}
                       >
                         <div className="flex items-center gap-2 min-w-0">
-                          <Folder className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-indigo-400' : 'text-slate-500'}`} />
+                          <Folder className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-emerald-400' : 'text-slate-500'}`} />
                           <span className="truncate">{proj.name}</span>
                         </div>
-                        {isSelected && <Check className="w-3 h-3 text-indigo-400 shrink-0" />}
+                        {isSelected && <Check className="w-3 h-3 text-emerald-400 shrink-0" />}
                       </button>
                     );
                   })}
@@ -134,19 +134,19 @@ export default function TopHeaderBar({
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-200 transition-all cursor-pointer group"
               title="Click to select file in project"
             >
-              <FileCode className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-              <span className="font-semibold text-slate-200 group-hover:text-indigo-300 transition-colors">
+              <FileCode className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span className="font-semibold text-slate-200 group-hover:text-emerald-300 transition-colors">
                 {activeFileName}
               </span>
-              <ChevronDown className={`w-3 h-3 text-slate-500 transition-transform duration-200 ${isFileMenuOpen ? 'rotate-180 text-indigo-400' : ''}`} />
+              <ChevronDown className={`w-3 h-3 text-slate-500 transition-transform duration-200 ${isFileMenuOpen ? 'rotate-180 text-emerald-400' : ''}`} />
             </button>
 
             {/* File Dropdown Menu */}
             {isFileMenuOpen && (
-              <div className="absolute left-0 top-full mt-1.5 w-64 bg-[#0e111a] border border-slate-800 rounded-xl shadow-2xl z-50 py-1.5 animate-fadeIn">
+              <div className="absolute left-0 top-full mt-1.5 w-64 bg-[#191C23] border border-slate-800 rounded-xl shadow-2xl z-50 py-1.5 animate-fadeIn">
                 <div className="px-3 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-800/80 mb-1 flex items-center justify-between">
                   <span>Files in {activeProjectName}</span>
-                  <span className="text-indigo-400">{activeProjFiles.length}</span>
+                  <span className="text-emerald-400">{activeProjFiles.length}</span>
                 </div>
 
                 <div className="max-h-60 overflow-y-auto space-y-0.5 px-1">
@@ -164,14 +164,14 @@ export default function TopHeaderBar({
                           setIsFileMenuOpen(false);
                         }}
                         className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer text-left ${
-                          isSelected ? 'bg-indigo-500/15 text-indigo-300 font-bold border border-indigo-500/30' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                          isSelected ? 'bg-[#191C23] text-white font-bold border border-white/10' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
                         }`}
                       >
                         <div className="flex items-center gap-2 min-w-0">
-                          <FileCode className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-indigo-400' : 'text-slate-500'}`} />
+                          <FileCode className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-emerald-400' : 'text-slate-500'}`} />
                           <span className="truncate">{fName}</span>
                         </div>
-                        {isSelected && <Check className="w-3 h-3 text-indigo-400 shrink-0" />}
+                        {isSelected && <Check className="w-3 h-3 text-emerald-400 shrink-0" />}
                       </button>
                     );
                   })}
