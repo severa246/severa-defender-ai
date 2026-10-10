@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  MessageSquare, ShieldCheck, Edit2, Check, X, Terminal,
+  MessageSquare, Edit2, Check, X,
   Folder, FileCode, ChevronRight, ChevronDown, FileText, Cloud,
   Search, Download
 } from 'lucide-react';
@@ -17,22 +17,20 @@ export default function TopHeaderBar({
   projectFolders = [],
   onSelectProjectFile,
   onOpenReport,
-  onOpenDefender,
-  onOpenSandbox,
   onScanFullProject,
   onOpenCommandPalette,
   onExportSarif,
-  isDefenderOpen = false,
-  isSandboxOpen = false,
-  isReportOpen = false,
+  onExportWorkflow,
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(activeSession?.name || 'Vulnerability Detection Audit');
   const [isFolderMenuOpen, setIsFolderMenuOpen] = useState(false);
   const [isFileMenuOpen, setIsFileMenuOpen] = useState(false);
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
 
   const folderMenuRef = useRef(null);
   const fileMenuRef = useRef(null);
+  const exportMenuRef = useRef(null);
 
   // Close menus when clicking outside
   useEffect(() => {
@@ -42,6 +40,9 @@ export default function TopHeaderBar({
       }
       if (fileMenuRef.current && !fileMenuRef.current.contains(e.target)) {
         setIsFileMenuOpen(false);
+      }
+      if (exportMenuRef.current && !exportMenuRef.current.contains(e.target)) {
+        setIsExportMenuOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -244,36 +245,9 @@ export default function TopHeaderBar({
         </div>
       </div>
 
-      {/* Right: Engine badge + Action buttons */}
-      <div className="flex items-center gap-2 sm:gap-2.5 font-mono text-xs shrink-0 flex-wrap">
-        {(() => {
-          const hasCloudKey = Boolean(apiKey && apiKey.trim());
-          const isLocalProvider = selectedProvider === 'ollama' || selectedProvider === 'local' || Boolean(customEndpoint && customEndpoint.trim());
-          
-          let engineBadgeText = 'HUGGING FACE: QWEN 2.5 CODER 32B (DEFAULT FREE)';
-
-          if (hasCloudKey) {
-            const provName = selectedProvider ? selectedProvider : 'CLOUD AI';
-            const modelName = selectedModel ? ` (${selectedModel})` : '';
-            engineBadgeText = `LIVE: ${provName}${modelName}`;
-          } else if (isLocalProvider) {
-            const provName = selectedProvider ? selectedProvider : 'LOCAL ENGINE';
-            const modelName = selectedModel ? ` (${selectedModel})` : '';
-            engineBadgeText = `LOCAL: ${provName}${modelName}`;
-          }
-
-          return (
-            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900/90 border border-emerald-500/30 text-emerald-300 text-[11px]">
-              <Terminal className="w-3 h-3 text-emerald-400" />
-              <span className="text-slate-400 hidden md:inline">Engine:</span>
-              <span className="font-semibold uppercase text-emerald-300">
-                {engineBadgeText}
-              </span>
-            </span>
-          );
-        })()}
-
-        {/* Spotlight Command Palette Trigger (Cmd+K) */}
+      {/* Right: 3 Clean Enterprise Actions */}
+      <div className="flex items-center gap-2 sm:gap-2.5 font-mono text-xs shrink-0">
+        {/* 1. Spotlight Command Palette Trigger (Cmd+K) */}
         {onOpenCommandPalette && (
           <button
             onClick={onOpenCommandPalette}
@@ -281,26 +255,14 @@ export default function TopHeaderBar({
             title="Open Command Palette (Cmd + K / Ctrl + K)"
           >
             <Search className="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition-colors" />
-            <span className="hidden xl:inline text-slate-300 group-hover:text-white">Spotlight</span>
+            <span className="hidden sm:inline text-slate-300 group-hover:text-white">Spotlight</span>
             <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white/[0.06] text-slate-400 border border-white/[0.08]">
               ⌘K
             </span>
           </button>
         )}
 
-        {/* OASIS SARIF 2.1.0 Export Button */}
-        {onExportSarif && (
-          <button
-            onClick={onExportSarif}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#0e121d] hover:bg-white/[0.08] text-slate-300 border border-white/[0.08] hover:border-white/[0.16] rounded-lg text-xs font-medium transition-all cursor-pointer group shadow-sm"
-            title="Export findings as OASIS SARIF 2.1.0 (.sarif) for GitHub Code Scanning"
-          >
-            <Download className="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition-colors" />
-            <span className="hidden sm:inline text-slate-300 group-hover:text-white">SARIF</span>
-          </button>
-        )}
-
-        {/* Scan Full Project Button */}
+        {/* 2. Scan Full Project Button */}
         {onScanFullProject && (
           <button
             onClick={onScanFullProject}
@@ -312,49 +274,84 @@ export default function TopHeaderBar({
           </button>
         )}
 
-        {/* Severa Defender AI Button */}
-        <button
-          onClick={() => onOpenDefender && onOpenDefender(null)}
-          className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer group shadow-sm border ${
-            isDefenderOpen
-              ? 'bg-white/10 text-white border-white/20 ring-1 ring-white/10'
-              : 'bg-[#0e121d] hover:bg-white/[0.08] text-slate-300 hover:text-white border-white/[0.08] hover:border-white/[0.16]'
-          }`}
-          title="Open Severa Defender AI Copilot"
-        >
-          <ShieldCheck className="w-3.5 h-3.5 text-indigo-400 group-hover:text-indigo-300 transition-colors" />
-          <span>Severa Defender AI</span>
-        </button>
-
-        {/* Attack Payload Sandbox Simulator Button */}
-        {onOpenSandbox && (
+        {/* 3. Export Report (Consolidated Dropdown) */}
+        <div className="relative" ref={exportMenuRef}>
           <button
-            onClick={onOpenSandbox}
-            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer group shadow-sm border ${
-              isSandboxOpen
-                ? 'bg-white/10 text-white border-white/20 ring-1 ring-white/10'
-                : 'bg-[#0e121d] hover:bg-white/[0.08] text-slate-300 hover:text-white border-white/[0.08] hover:border-white/[0.16]'
-            }`}
-            title="Open Interactive Attack Payload Sandbox Simulator"
+            type="button"
+            onClick={() => setIsExportMenuOpen((prev) => !prev)}
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-[#0e121d] hover:bg-white/[0.08] text-slate-300 hover:text-white border border-white/[0.08] hover:border-white/[0.16] rounded-lg text-xs font-medium transition-all cursor-pointer group shadow-sm"
+            title="Export Security Compliance Artifacts"
           >
-            <Cloud className="w-3.5 h-3.5 text-amber-400 group-hover:text-amber-300 transition-colors" />
-            <span className="hidden md:inline">Attack Sandbox</span>
+            <Download className="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition-colors" />
+            <span>Export</span>
+            <ChevronDown className={`w-3 h-3 text-slate-500 transition-transform duration-200 ${isExportMenuOpen ? 'rotate-180 text-white' : ''}`} />
           </button>
-        )}
 
-        {/* Generate Audit Report button */}
-        <button
-          onClick={onOpenReport}
-          className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer group shadow-sm border ${
-            isReportOpen
-              ? 'bg-white/10 text-white border-white/20 ring-1 ring-white/10'
-              : 'bg-[#0e121d] hover:bg-white/[0.08] text-slate-300 hover:text-white border-white/[0.08] hover:border-white/[0.16]'
-          }`}
-          title="Generate CISO Security Audit Report"
-        >
-          <FileText className="w-3.5 h-3.5 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
-          <span className="hidden md:inline">Audit Report</span>
-        </button>
+          {isExportMenuOpen && (
+            <div className="absolute right-0 top-full mt-1.5 w-72 bg-[#0e111a] border border-white/[0.1] rounded-xl shadow-2xl z-50 py-1.5 animate-fadeIn">
+              <div className="px-3 py-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-white/[0.06] mb-1">
+                Export & Compliance Artifacts
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsExportMenuOpen(false);
+                  if (onExportSarif) onExportSarif();
+                }}
+                className="w-full flex items-start gap-2.5 px-3 py-2 text-left hover:bg-white/[0.06] transition-colors group cursor-pointer"
+              >
+                <FileCode className="w-4 h-4 text-cyan-400 mt-0.5 shrink-0" />
+                <div>
+                  <div className="text-xs font-medium text-slate-200 group-hover:text-white">
+                    OASIS SARIF 2.1.0 <span className="text-[10px] font-mono text-cyan-400">.sarif</span>
+                  </div>
+                  <div className="text-[11px] text-slate-500">
+                    Standard format for GitHub Code Scanning & CI/CD
+                  </div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsExportMenuOpen(false);
+                  if (onOpenReport) onOpenReport();
+                }}
+                className="w-full flex items-start gap-2.5 px-3 py-2 text-left hover:bg-white/[0.06] transition-colors group cursor-pointer"
+              >
+                <FileText className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
+                <div>
+                  <div className="text-xs font-medium text-slate-200 group-hover:text-white">
+                    CISO Security Audit Report
+                  </div>
+                  <div className="text-[11px] text-slate-500">
+                    Executive report with cryptographic SHA-256 seal
+                  </div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsExportMenuOpen(false);
+                  if (onExportWorkflow) onExportWorkflow();
+                }}
+                className="w-full flex items-start gap-2.5 px-3 py-2 text-left hover:bg-white/[0.06] transition-colors group cursor-pointer border-t border-white/[0.04]"
+              >
+                <Download className="w-4 h-4 text-purple-400 mt-0.5 shrink-0" />
+                <div>
+                  <div className="text-xs font-medium text-slate-200 group-hover:text-white">
+                    GitHub Actions CI/CD <span className="text-[10px] font-mono text-purple-400">.yml</span>
+                  </div>
+                  <div className="text-[11px] text-slate-500">
+                    Automated pipeline security gate configuration
+                  </div>
+                </div>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

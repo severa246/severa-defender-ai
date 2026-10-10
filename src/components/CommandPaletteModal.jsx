@@ -22,6 +22,8 @@ export default function CommandPaletteModal({
   onScanFile,
   onScanProject,
   onExportSarif,
+  onExportWorkflow,
+  onOpenDefender,
   onGenerateAiFix,
   findings = [],
   onSelectFinding,
@@ -74,13 +76,13 @@ export default function CommandPaletteModal({
       action: () => { onScanProject && onScanProject(); onClose(); }
     },
     {
-      id: 'export-sarif',
-      category: 'Export & Compliance',
-      title: 'Export SARIF 2.1.0 Report (.sarif)',
-      subtitle: 'Download OASIS SARIF report for GitHub Code Scanning and SonarQube',
-      shortcut: 'Cmd + S',
-      icon: Download,
-      action: () => { onExportSarif && onExportSarif(); onClose(); }
+      id: 'open-defender',
+      category: 'Remediation',
+      title: 'Open Severa Defender AI Copilot',
+      subtitle: 'Contextual AI security assistant for exploit analysis and code review',
+      shortcut: 'Cmd + /',
+      icon: Sparkles,
+      action: () => { onOpenDefender && onOpenDefender(); onClose(); }
     },
     {
       id: 'generate-fix',
@@ -92,24 +94,33 @@ export default function CommandPaletteModal({
       action: () => { onGenerateAiFix && onGenerateAiFix(); onClose(); }
     },
     {
-      id: 'nav-sca',
-      category: 'Tools',
-      title: 'Open SCA Dependency Scanner',
-      subtitle: 'Query Google OSV.dev database for third-party CVEs',
-      icon: PackageCheck,
-      action: () => { onSwitchTab && onSwitchTab('dependencies'); onClose(); }
+      id: 'export-sarif',
+      category: 'Export & Compliance',
+      title: 'Export SARIF 2.1.0 Report (.sarif)',
+      subtitle: 'Download OASIS SARIF report for GitHub Code Scanning and SonarQube',
+      shortcut: 'Cmd + S',
+      icon: Download,
+      action: () => { onExportSarif && onExportSarif(); onClose(); }
     },
     {
-      id: 'nav-cicd',
-      category: 'Tools',
-      title: 'Open CI/CD Quality Gate Pipeline',
-      subtitle: 'Simulate GitHub Actions security gates and policy enforcement',
-      icon: Activity,
-      action: () => { onSwitchTab && onSwitchTab('cicd'); onClose(); }
+      id: 'export-workflow',
+      category: 'Export & Compliance',
+      title: 'Export GitHub Actions CI/CD Workflow (.yml)',
+      subtitle: 'Generate automated security gate pipeline for GitHub Actions',
+      icon: Download,
+      action: () => { onExportWorkflow && onExportWorkflow(); onClose(); }
+    },
+    {
+      id: 'nav-sca',
+      category: 'Navigation',
+      title: 'Open SCA Dependencies Scanner',
+      subtitle: 'Query Google OSV.dev database for third-party CVEs',
+      icon: PackageCheck,
+      action: () => { onSwitchTab && onSwitchTab('sca'); onClose(); }
     },
     {
       id: 'nav-dashboard',
-      category: 'Tools',
+      category: 'Navigation',
       title: 'Open Executive Security Dashboard',
       subtitle: 'Review OWASP compliance matrices and security posture',
       icon: Layers,

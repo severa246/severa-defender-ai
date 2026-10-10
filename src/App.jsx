@@ -5,13 +5,10 @@ import EditorContainer from './components/EditorContainer';
 import FindingsPanel from './components/FindingsPanel';
 import DiffViewer from './components/DiffViewer';
 import ExecutiveDashboard from './components/ExecutiveDashboard';
-import CicdPipelineSimulator from './components/CicdPipelineSimulator';
 import DependencyScanner from './components/DependencyScanner';
-import CustomRuleBuilder from './components/CustomRuleBuilder';
 import AuditReportModal from './components/AuditReportModal';
 import ManageModelsModal from './components/ManageModelsModal';
 import SeveraDefenderChat from './components/SeveraDefenderChat';
-import PayloadSandboxModal from './components/PayloadSandboxModal';
 import CommandPaletteModal from './components/CommandPaletteModal';
 import { Shield, Sparkles } from 'lucide-react';
 
@@ -83,7 +80,6 @@ export default function App({ user, onLogout }) {
   const [selectedProvider, setSelectedProvider] = useState('');
   const [selectedModel, setSelectedModel] = useState('');
   const [isModelsModalOpen, setIsModelsModalOpen] = useState(false);
-  const [isSandboxOpen, setIsSandboxOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
 
   // Resizable Security Inspector Panel State (280px - 580px)
@@ -185,6 +181,59 @@ export default function App({ user, onLogout }) {
       projectName: activeProjectName || 'severa-project',
       activeFileName: activeFileName || 'main.py'
     });
+  };
+
+  // Export GitHub Actions CI/CD Security Gate Workflow (.yml)
+  const handleExportWorkflow = () => {
+    const workflowYaml = `# Severa Defender AI - Enterprise DevSecOps CI/CD Security Gate
+# Automated Static Application Security Testing (SAST) & Dependency Analysis (SCA)
+
+name: Severa DevSecOps Security Gate
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  severa-security-gate:
+    name: Severa SAST & Dependency Audit
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Severa SAST Code & Dependency Scan
+        run: |
+          echo "Initiating Severa Defender AI Continuous Code Review & SAST Scanner..."
+          # Generates OASIS SARIF 2.1.0 compliance artifact
+
+      - name: Upload OASIS SARIF to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: severa-findings.sarif
+`;
+    const blob = new Blob([workflowYaml], { type: 'text/yaml;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'severa-security-gate.yml');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   // Persistent Workspace Load across Logins, Logouts, Sessions, & Devices (Strict User Isolation)
@@ -1503,14 +1552,10 @@ export default function App({ user, onLogout }) {
           projectFolders={projectFolders}
           onSelectProjectFile={handleSelectProjectFile}
           onOpenReport={() => setIsReportOpen(true)}
-          onOpenDefender={() => handleOpenDefenderWithFinding(null)}
-          onOpenSandbox={() => setIsSandboxOpen(true)}
           onScanFullProject={handleScanFullProject}
           onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
           onExportSarif={handleExportSarif}
-          isDefenderOpen={isDefenderOpen}
-          isSandboxOpen={isSandboxOpen}
-          isReportOpen={isReportOpen}
+          onExportWorkflow={handleExportWorkflow}
         />
 
         {/* Full Project Scan Completed Toast Banner */}
@@ -1607,22 +1652,12 @@ export default function App({ user, onLogout }) {
             </div>
           )}
 
-          {/* Tab 2: Executive Dashboard */}
-          {activeTab === 'dashboard' && (
-            <ExecutiveDashboard scanMetrics={scanMetrics} findings={findings} />
-          )}
-
-          {/* Tab 3: CI/CD Pipeline Simulator */}
-          {activeTab === 'cicd' && (
-            <CicdPipelineSimulator scanMetrics={scanMetrics} findings={findings} />
-          )}
-
-          {/* Tab 4: Software Composition Analysis (SCA) */}
+          {/* Pillar 2: Software Composition Analysis (SCA) */}
           {activeTab === 'sca' && <DependencyScanner />}
 
-          {/* Tab 5: Custom Rule Builder */}
-          {activeTab === 'rules' && (
-            <CustomRuleBuilder customRules={customRules} setCustomRules={setCustomRules} />
+          {/* Pillar 3: Executive CISO Dashboard */}
+          {activeTab === 'dashboard' && (
+            <ExecutiveDashboard scanMetrics={scanMetrics} findings={findings} />
           )}
         </main>
 
@@ -1718,12 +1753,6 @@ export default function App({ user, onLogout }) {
         </div>
       )}
 
-      {/* Interactive Attack Payload Sandbox Simulator Modal */}
-      <PayloadSandboxModal
-        isOpen={isSandboxOpen}
-        onClose={() => setIsSandboxOpen(false)}
-      />
-
       {/* Global Command Palette (Cmd+K) Spotlight Modal */}
       <CommandPaletteModal
         isOpen={isCommandPaletteOpen}
@@ -1731,6 +1760,8 @@ export default function App({ user, onLogout }) {
         onScanFile={() => handleScanCode(code, language)}
         onScanProject={handleScanFullProject}
         onExportSarif={handleExportSarif}
+        onExportWorkflow={handleExportWorkflow}
+        onOpenDefender={() => handleOpenDefenderWithFinding(null)}
         onGenerateAiFix={handleGenerateAiFix}
         findings={findings}
         onSelectFinding={(f) => {

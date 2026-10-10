@@ -2,10 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   ShieldAlert, 
   Code2, 
-  GitPullRequest, 
   LayoutDashboard, 
   PackageCheck, 
-  Sliders, 
   Cpu, 
   ChevronDown, 
   ChevronRight, 
@@ -270,10 +268,8 @@ export default function Sidebar({
 
   const navItems = [
     { id: 'workbench', label: 'Code Workbench', icon: Code2, badge: scanMetrics?.totalFindings },
-    { id: 'dashboard', label: 'Executive Dashboard', icon: LayoutDashboard },
-    { id: 'cicd', label: 'CI/CD Security Gate', icon: GitPullRequest },
     { id: 'sca', label: 'SCA Dependencies', icon: PackageCheck },
-    { id: 'rules', label: 'Custom Rules', icon: Sliders }
+    { id: 'dashboard', label: 'Executive Dashboard', icon: LayoutDashboard }
   ];
 
   // Filter projects by search query
