@@ -131,7 +131,7 @@ function uint8ArrayToBase64(bytes) {
   return btoa(binary);
 }
 
-export function downloadProjectZip(projectName = 'workspace', files = []) {
+export async function downloadProjectZip(projectName = 'workspace', files = []) {
   if (!files || files.length === 0) return;
 
   // Use exact current folder name with .zip extension
@@ -139,43 +139,73 @@ export function downloadProjectZip(projectName = 'workspace', files = []) {
   const cleanName = rawName.replace(/[/\\?%*:|"<>]/g, '_').trim() || 'workspace';
   const fileName = `${cleanName}.zip`;
 
-  const zipBytes = createZipBuffer(files);
+  const filesPayload = files.map((f) => ({
+    name: f.name || f.path || 'file.txt',
+    path: f.path || f.name || 'file.txt',
+    code: f.code !== undefined ? f.code : (f.content !== undefined ? f.content : '')
+  }));
 
-  // Strategy 1: Data URI for archives (< 15MB)
-  // Data URIs do not have a blob UUID in the URL path.
-  // Chrome and all Chromium browsers are forced to use the `download="${fileName}"` attribute!
-  if (zipBytes.length < 15 * 1024 * 1024) {
+  // Strategy 1: Serverless /api/download-zip with native HTTP Content-Disposition
+  // This is the enterprise-standard method used by Snyk, GitHub, and Linear.
+  // The server responds with `Content-Disposition: attachment; filename="<name>.zip"`.
+  // Chrome and all Chromium engines are strictly bound by HTTP spec to save with that filename,
+  // completely bypassing Blob URL UUID generation and download manager extension bugs.
+  try {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/api/download-zip';
+    form.style.display = 'none';
+
+    const folderInput = document.createElement('input');
+    folderInput.type = 'hidden';
+    folderInput.name = 'folderName';
+    folderInput.value = cleanName;
+    form.appendChild(folderInput);
+
+    const filesInput = document.createElement('input');
+    filesInput.type = 'hidden';
+    filesInput.name = 'files';
+    filesInput.value = JSON.stringify(filesPayload);
+    form.appendChild(filesInput);
+
+    document.body.appendChild(form);
+    form.submit();
+
+    setTimeout(() => {
+      try {
+        if (form.parentNode) document.body.removeChild(form);
+      } catch {}
+    }, 4000);
+    return;
+  } catch (err) {
+    console.warn('Server download initiation failed, falling back to client-side picker:', err);
+  }
+
+  // Strategy 2: Modern Chromium File System Access API (showSaveFilePicker)
+  // Prompts the OS Save dialog with the exact pre-filled filename, bypassing Chrome downloads manager
+  const zipBytes = createZipBuffer(filesPayload);
+  if (typeof window !== 'undefined' && 'showSaveFilePicker' in window) {
     try {
-      const base64 = uint8ArrayToBase64(zipBytes);
-      const dataUri = `data:application/zip;base64,${base64}`;
-
-      const link = document.createElement('a');
-      link.href = dataUri;
-      link.download = fileName;
-      link.setAttribute('download', fileName);
-      link.style.position = 'fixed';
-      link.style.left = '-9999px';
-      link.style.top = '-9999px';
-      link.style.opacity = '0';
-      document.body.appendChild(link);
-      
-      link.click();
-
-      setTimeout(() => {
-        try {
-          if (link.parentNode) document.body.removeChild(link);
-        } catch {}
-      }, 5000);
+      const handle = await window.showSaveFilePicker({
+        suggestedName: fileName,
+        types: [{
+          description: 'ZIP Archive',
+          accept: { 'application/zip': ['.zip'] }
+        }]
+      });
+      const writable = await handle.createWritable();
+      await writable.write(zipBytes);
+      await writable.close();
       return;
-    } catch (e) {
-      console.warn('Data URI export fallback to Blob/File:', e);
+    } catch (pickerErr) {
+      if (pickerErr.name === 'AbortError') return; // User cancelled
     }
   }
 
-  // Strategy 2: Blob/File Object Fallback for very large archives
+  // Strategy 3: Client-side Blob download fallback
   let blob;
   try {
-    blob = new File([zipBytes], fileName, { type: 'application/zip' });
+    blob = new File([zipBytes], fileName, { type: 'application/octet-stream' });
   } catch {
     blob = new Blob([zipBytes], { type: 'application/octet-stream' });
   }
@@ -193,7 +223,6 @@ export function downloadProjectZip(projectName = 'workspace', files = []) {
   
   link.click();
 
-  // Generous 60-second window before revoking to prevent browser from reverting to UUID
   setTimeout(() => {
     try {
       if (link.parentNode) document.body.removeChild(link);
@@ -201,3 +230,4 @@ export function downloadProjectZip(projectName = 'workspace', files = []) {
     } catch {}
   }, 60000);
 }
+

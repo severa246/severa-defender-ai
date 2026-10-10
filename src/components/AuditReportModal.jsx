@@ -17,13 +17,43 @@ export default function AuditReportModal({ isOpen, onClose, scanMetrics, finding
   };
 
   const handleDownloadMarkdown = () => {
-    const blob = new Blob([reportText], { type: 'text/markdown' });
+    const filename = `Severa_AI_Security_Audit_Report_${Date.now()}.md`;
+    try {
+      const dataUri = `data:text/markdown;charset=utf-8,${encodeURIComponent(reportText)}`;
+      const a = document.createElement('a');
+      a.href = dataUri;
+      a.download = filename;
+      a.setAttribute('download', filename);
+      a.style.position = 'fixed';
+      a.style.left = '-9999px';
+      a.style.top = '-9999px';
+      a.style.opacity = '0';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        try { if (a.parentNode) document.body.removeChild(a); } catch {}
+      }, 5000);
+      return;
+    } catch {}
+
+    const blob = new Blob([reportText], { type: 'text/markdown;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Severa_AI_Security_Audit_Report_${Date.now()}.md`;
+    a.download = filename;
+    a.setAttribute('download', filename);
+    a.style.position = 'fixed';
+    a.style.left = '-9999px';
+    a.style.top = '-9999px';
+    a.style.opacity = '0';
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => {
+      try {
+        if (a.parentNode) document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch {}
+    }, 60000);
   };
 
   const handlePrintPdf = () => {
