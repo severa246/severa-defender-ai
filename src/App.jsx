@@ -28,6 +28,29 @@ const INITIAL_SESSIONS = [
   { id: 'sess-4', name: 'Dockerfile Root Security', code: CODE_TEMPLATES[3].code, language: 'dockerfile', findings: [], timeAgo: '1w' }
 ];
 
+export const DEFAULT_AI_PROJECT_FILES = [
+  { name: 'main.py', path: 'main.py', templateId: 'py-sqli' },
+  { name: 'download-zip.js', path: 'api/download-zip.js', code: '// Severa Serverless Download ZIP Proxy API\nconst JSZip = require("jszip");\n\nmodule.exports = async (req, res) => {\n  // Streaming ZIP attachment download\n};\n', language: 'javascript' },
+  { name: 'Sidebar.jsx', path: 'src/components/Sidebar.jsx', code: '// Severa Defender AI Sidebar & File Tree Explorer Component\nimport React from "react";\n\nexport default function Sidebar() {\n  return <aside>...</aside>;\n}\n', language: 'javascript' },
+  { name: 'CodeWorkbench.jsx', path: 'src/components/CodeWorkbench.jsx', code: '// Monaco Code Workbench Component\nimport React from "react";\n\nexport default function CodeWorkbench() {\n  return <div>Workbench</div>;\n}\n', language: 'javascript' },
+  { name: 'authService.js', path: 'src/services/authService.js', code: '// Severa Authentication & Session Management\nexport const authService = {\n  getUser: () => ({ email: "demo@severa.ai" })\n};\n', language: 'javascript' },
+  { name: 'cloudSyncService.js', path: 'src/services/cloudSyncService.js', code: '// Cloud Sync & Workspace Auto-Persistence\nexport const cloudSyncService = {\n  save: async () => {}\n};\n', language: 'javascript' },
+  { name: 'storageService.js', path: 'src/services/storageService.js', code: '// Local Storage & Scoped Configurations\nexport const storageService = {};\n', language: 'javascript' },
+  { name: 'supabaseClient.js', path: 'src/services/supabaseClient.js', code: '// Supabase Client Instance\nexport const supabase = null;\n', language: 'javascript' },
+  { name: 'fileTreeBuilder.js', path: 'src/utils/fileTreeBuilder.js', code: '// File Tree Structure Builder\nexport function buildFileTree() {}\n', language: 'javascript' },
+  { name: 'App.css', path: 'src/App.css', code: '/* App Theme Styles */\n.app { min-height: 100vh; }\n', language: 'css' },
+  { name: 'App.jsx', path: 'src/App.jsx', code: '// Severa Defender AI Main Application Root\nimport React from "react";\n\nexport default function App() {\n  return <div>Severa</div>;\n}\n', language: 'javascript' },
+  { name: 'index.css', path: 'src/index.css', code: '/* Global Design System & Custom Scrollbars */\n@layer base {\n  body { background: #090b10; }\n}\n', language: 'css' },
+  { name: 'main.jsx', path: 'src/main.jsx', code: '// Application Mount Point\nimport React from "react";\nimport ReactDOM from "react-dom/client";\n', language: 'javascript' },
+  { name: '.dockerignore', path: '.dockerignore', code: 'node_modules\n.git\ndist\n', language: 'dockerfile' },
+  { name: '.env.example', path: '.env.example', code: 'VITE_API_URL=https://api.severa.ai\nVITE_SUPABASE_KEY=your_key_here\n', language: 'shell' },
+  { name: '.gitignore', path: '.gitignore', code: 'node_modules\ndist\n.env\n', language: 'shell' },
+  { name: 'Dockerfile', path: 'Dockerfile', templateId: 'docker-sec' },
+  { name: 'package.json', path: 'package.json', code: '{\n  "name": "ai-project",\n  "version": "2.4.0",\n  "type": "module",\n  "scripts": {\n    "dev": "vite",\n    "build": "vite build"\n  }\n}\n', language: 'json' },
+  { name: 'README.md', path: 'README.md', code: '# AI Project - Severa Defender AI\n\nEnterprise Static Application Security Testing (SAST) & DevSecOps Platform.\n', language: 'markdown' },
+  { name: 'vite.config.js', path: 'vite.config.js', code: 'import { defineConfig } from "vite";\nimport react from "@vitejs/plugin-react";\n\nexport default defineConfig({\n  plugins: [react()]\n});\n', language: 'javascript' }
+];
+
 // Helper to ensure every file in projectFolders has concrete, resolved 'code' property
 const resolveProjectFiles = (folders) => {
   if (!Array.isArray(folders)) return [];
@@ -134,13 +157,13 @@ export default function App({ user, onLogout }) {
   // Multi-File Project Folder State & Synchronization
   const [projectFolders, setProjectFolders] = useState(() => {
     const defaultFolders = isDemoUser ? [
-      { id: 'p1', name: 'ai project', files: [{ name: 'main.py', templateId: 'py-sqli' }], session: 'Flask SQLi & Secret Audit' },
-      { id: 'p2', name: 'react-frontend-sec', files: [{ name: 'App.jsx', templateId: 'js-xss' }], session: 'React DOM XSS Audit' },
-      { id: 'p3', name: 'node-express-rce', files: [{ name: 'server.js', templateId: 'node-rce' }], session: 'Node Express RCE Audit' },
-      { id: 'p4', name: 'docker-containers', files: [{ name: 'Dockerfile', templateId: 'docker-sec' }], session: 'Dockerfile Root Hardening' },
-      { id: 'p5', name: 'python-deser', files: [{ name: 'deserialize.py', templateId: 'py-deser' }], session: 'Insecure Pickle Deserialization' }
+      { id: 'p1', name: 'ai project', files: DEFAULT_AI_PROJECT_FILES, session: 'Flask SQLi & Secret Audit' },
+      { id: 'p2', name: 'react-frontend-sec', files: [{ name: 'App.jsx', path: 'src/App.jsx', templateId: 'js-xss' }, { name: 'index.css', path: 'src/index.css', code: '/* styles */', language: 'css' }], session: 'React DOM XSS Audit' },
+      { id: 'p3', name: 'node-express-rce', files: [{ name: 'server.js', path: 'server.js', templateId: 'node-rce' }], session: 'Node Express RCE Audit' },
+      { id: 'p4', name: 'docker-containers', files: [{ name: 'Dockerfile', path: 'Dockerfile', templateId: 'docker-sec' }], session: 'Dockerfile Root Hardening' },
+      { id: 'p5', name: 'python-deser', files: [{ name: 'deserialize.py', path: 'deserialize.py', templateId: 'py-deser' }], session: 'Insecure Pickle Deserialization' }
     ] : [
-      { id: 'p1', name: 'my-workspace', files: [{ name: 'main.py', templateId: 'blank' }], session: 'Fresh Code Audit' }
+      { id: 'p1', name: 'my-workspace', files: [{ name: 'main.py', path: 'main.py', templateId: 'blank' }], session: 'Fresh Code Audit' }
     ];
     return resolveProjectFiles(defaultFolders);
   });
@@ -314,7 +337,12 @@ jobs:
           if (saved.activeProjectName) setActiveProjectName(saved.activeProjectName);
           if (saved.activeFileName) setActiveFileName(saved.activeFileName);
           if (saved.projectFolders && Array.isArray(saved.projectFolders) && saved.projectFolders.length > 0) {
-            setProjectFolders(resolveProjectFiles(saved.projectFolders));
+            let loadedFolders = saved.projectFolders;
+            const aiProj = loadedFolders.find((p) => p.name === 'ai project');
+            if (aiProj && (!aiProj.files || aiProj.files.length <= 1)) {
+              aiProj.files = DEFAULT_AI_PROJECT_FILES;
+            }
+            setProjectFolders(resolveProjectFiles(loadedFolders));
           }
           if (saved.projectFiles && Array.isArray(saved.projectFiles) && saved.projectFiles.length > 0) setProjectFiles(saved.projectFiles);
           if (saved.scanSessions && Array.isArray(saved.scanSessions) && saved.scanSessions.length > 0) setScanSessions(saved.scanSessions);
@@ -339,13 +367,13 @@ jobs:
           const initialFileName = 'main.py';
 
           const initialFolders = isDemoUser ? [
-            { id: 'p1', name: 'ai project', files: [{ name: 'main.py', templateId: 'py-sqli' }], session: 'Flask SQLi & Secret Audit' },
-            { id: 'p2', name: 'react-frontend-sec', files: [{ name: 'App.jsx', templateId: 'js-xss' }], session: 'React DOM XSS Audit' },
-            { id: 'p3', name: 'node-express-rce', files: [{ name: 'server.js', templateId: 'node-rce' }], session: 'Node Express RCE Audit' },
-            { id: 'p4', name: 'docker-containers', files: [{ name: 'Dockerfile', templateId: 'docker-sec' }], session: 'Dockerfile Root Hardening' },
-            { id: 'p5', name: 'python-deser', files: [{ name: 'deserialize.py', templateId: 'py-deser' }], session: 'Insecure Pickle Deserialization' }
+            { id: 'p1', name: 'ai project', files: DEFAULT_AI_PROJECT_FILES, session: 'Flask SQLi & Secret Audit' },
+            { id: 'p2', name: 'react-frontend-sec', files: [{ name: 'App.jsx', path: 'src/App.jsx', templateId: 'js-xss' }, { name: 'index.css', path: 'src/index.css', code: '/* styles */', language: 'css' }], session: 'React DOM XSS Audit' },
+            { id: 'p3', name: 'node-express-rce', files: [{ name: 'server.js', path: 'server.js', templateId: 'node-rce' }], session: 'Node Express RCE Audit' },
+            { id: 'p4', name: 'docker-containers', files: [{ name: 'Dockerfile', path: 'Dockerfile', templateId: 'docker-sec' }], session: 'Dockerfile Root Hardening' },
+            { id: 'p5', name: 'python-deser', files: [{ name: 'deserialize.py', path: 'deserialize.py', templateId: 'py-deser' }], session: 'Insecure Pickle Deserialization' }
           ] : [
-            { id: 'p1', name: 'my-workspace', files: [{ name: 'main.py', code: initialCode }], session: 'Fresh Code Audit' }
+            { id: 'p1', name: 'my-workspace', files: [{ name: 'main.py', path: 'main.py', code: initialCode }], session: 'Fresh Code Audit' }
           ];
 
           const initialSessions = isDemoUser ? INITIAL_SESSIONS : [
@@ -481,7 +509,7 @@ jobs:
         prev.map((folder) => {
           if (folder.name === activeProjectName) {
             const files = folder.files || [];
-            const updatedFiles = files.map((f) => (f.name === activeFileName ? { ...f, code: currentCode } : f));
+            const updatedFiles = files.map((f) => (f.name === activeFileName || f.path === activeFilePath ? { ...f, code: currentCode } : f));
             return { ...folder, files: updatedFiles };
           }
           return folder;
@@ -489,31 +517,32 @@ jobs:
       );
     }
 
+    const baseName = fileName.includes('/') ? fileName.split('/').pop() : fileName;
     setActiveProjectName(projectName);
-    setActiveFileName(fileName);
+    setActiveFileName(baseName);
     setActiveFilePath(fileName);
 
     const targetFolder = projectFolders.find((p) => p.name === projectName);
-    const targetFileObj = targetFolder?.files?.find((f) => f.name === fileName);
-    const pfMatch = projectFiles.find((f) => f.name === fileName || f.path === fileName);
+    const targetFileObj = targetFolder?.files?.find((f) => (f.path || f.name) === fileName || f.name === baseName || f.name === fileName);
+    const pfMatch = projectFiles.find((f) => (f.path || f.name) === fileName || f.name === baseName || f.name === fileName);
 
     let targetCode = targetFileObj?.code !== undefined ? targetFileObj.code : pfMatch?.code;
 
     if (targetCode === undefined && targetFileObj?.templateId) {
       const foundTpl = CODE_TEMPLATES.find((t) => t.id === targetFileObj.templateId);
-      targetCode = foundTpl ? foundTpl.code : `# Code file for ${fileName}\n`;
+      targetCode = foundTpl ? foundTpl.code : `# Code file for ${baseName}\n`;
       setProjectFolders((prev) =>
-        prev.map((p) => (p.name === projectName ? { ...p, files: (p.files || []).map((f) => (f.name === fileName ? { ...f, code: targetCode } : f)) } : p))
+        prev.map((p) => (p.name === projectName ? { ...p, files: (p.files || []).map((f) => ((f.path || f.name) === fileName || f.name === baseName ? { ...f, code: targetCode } : f)) } : p))
       );
     } else if (targetCode === undefined) {
-      targetCode = `# Fresh Blank Code File for ${projectName}\n\n`;
+      targetCode = `# Fresh Blank Code File for ${baseName}\n\n`;
     }
 
     setCode(targetCode);
-    const lang = detectLanguage(targetCode, fileName);
+    const lang = detectLanguage(targetCode, baseName);
     setLanguage(lang);
     setFixedLineNumbers([]);
-    handleScan(targetCode, lang, fileName, projectName);
+    handleScan(targetCode, lang, baseName, projectName);
   };
 
   // Synchronize projectFiles when activeProjectName or projectFolders changes
@@ -1578,6 +1607,9 @@ jobs:
         projectFolders={projectFolders}
         setProjectFolders={setProjectFolders}
         onSelectProjectSample={handleSelectProjectSample}
+        onSelectProjectFile={handleSelectProjectFile}
+        activeFileName={activeFileName}
+        activeFilePath={activeFilePath}
         onCreateBlankProject={handleCreateBlankProject}
         onCreateFileInProject={handleCreateFileInProject}
         onUploadFileToProject={handleUploadFileToProject}

@@ -7,8 +7,8 @@ import {
   Cpu, 
   ChevronDown, 
   ChevronRight, 
-  PanelLeftClose,
-  PanelLeftOpen,
+  PanelLeftClose, 
+  PanelLeftOpen, 
   Plus, 
   Trash2, 
   Edit2, 
@@ -17,22 +17,102 @@ import {
   Folder, 
   FolderOpen, 
   Filter, 
-  FolderPlus,
-  Search,
-  FilePlus,
-  Upload,
-  FileCode,
-  LogOut,
-  FolderDown
+  FolderPlus, 
+  Search, 
+  FilePlus, 
+  Upload, 
+  FileCode, 
+  FileJson, 
+  FileText, 
+  Settings, 
+  Zap, 
+  Lock, 
+  GitBranch, 
+  Image, 
+  Layers, 
+  LogOut, 
+  FolderDown 
 } from 'lucide-react';
 import UploadChoiceModal from './UploadChoiceModal';
 import UserProfileModal from './UserProfileModal';
 import { buildFileTree } from '../utils/fileTreeBuilder';
 
+// Rich Extension & Filename Icon Component matching VS Code themes
+function FileIcon({ name }) {
+  const lower = (name || '').toLowerCase();
+  
+  if (lower.endsWith('.py')) {
+    return <FileCode className="w-3.5 h-3.5 text-amber-400 shrink-0" />;
+  }
+  if (lower.endsWith('.jsx') || lower.endsWith('.tsx')) {
+    return <FileCode className="w-3.5 h-3.5 text-cyan-400 shrink-0" />;
+  }
+  if (lower.endsWith('.js') || lower.endsWith('.mjs') || lower.endsWith('.cjs')) {
+    return (
+      <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-[2px] bg-amber-400 text-slate-950 font-black text-[8px] font-mono shrink-0 select-none leading-none">
+        JS
+      </span>
+    );
+  }
+  if (lower.endsWith('.ts')) {
+    return (
+      <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-[2px] bg-blue-600 text-white font-black text-[8px] font-mono shrink-0 select-none leading-none">
+        TS
+      </span>
+    );
+  }
+  if (lower.endsWith('.css') || lower.endsWith('.scss')) {
+    return (
+      <span className="inline-flex items-center justify-center w-3.5 h-3.5 text-sky-400 font-black text-[10px] font-mono shrink-0 select-none leading-none">
+        #
+      </span>
+    );
+  }
+  if (lower.endsWith('.html')) {
+    return (
+      <span className="inline-flex items-center justify-center w-3.5 h-3.5 text-orange-400 font-bold text-[9px] font-mono shrink-0 select-none leading-none">
+        &lt;&gt;
+      </span>
+    );
+  }
+  if (lower.endsWith('.json')) {
+    return <FileJson className="w-3.5 h-3.5 text-amber-400 shrink-0" />;
+  }
+  if (lower.endsWith('.md')) {
+    return (
+      <span className="inline-flex items-center justify-center w-3.5 h-3.5 text-sky-300 font-black text-[8px] font-mono shrink-0 select-none leading-none border border-sky-400/40 rounded-[2px]">
+        M↓
+      </span>
+    );
+  }
+  if (lower.includes('docker') || lower.endsWith('.dockerignore')) {
+    return <Layers className="w-3.5 h-3.5 text-cyan-400 shrink-0" />;
+  }
+  if (lower.startsWith('.env') || lower.includes('.env')) {
+    return <Lock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />;
+  }
+  if (lower.includes('gitignore') || lower.includes('.git/')) {
+    return <GitBranch className="w-3.5 h-3.5 text-orange-500 shrink-0" />;
+  }
+  if (lower.includes('vite.config')) {
+    return <Zap className="w-3.5 h-3.5 text-yellow-400 shrink-0" />;
+  }
+  if (lower.endsWith('.png') || lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.svg') || lower.endsWith('.ico') || lower.endsWith('.webp')) {
+    return <Image className="w-3.5 h-3.5 text-purple-400 shrink-0" />;
+  }
+  if (lower.endsWith('.yml') || lower.endsWith('.yaml') || lower.endsWith('.toml') || lower.endsWith('.conf') || lower.endsWith('.ini')) {
+    return <Settings className="w-3.5 h-3.5 text-slate-400 shrink-0" />;
+  }
+  return <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />;
+}
+
 function ProjectTreeNode({
   node,
   level = 0,
   p,
+  activeFileName,
+  activeFilePath,
+  activeProjectName,
   editingFileKey,
   editingFileName,
   setEditingFileName,
@@ -46,25 +126,50 @@ function ProjectTreeNode({
 
   if (node.isFolder) {
     return (
-      <div className="space-y-0.5 select-none">
+      <div className="space-y-0.5 select-none w-full">
         <div
           onClick={() => setIsExpanded(!isExpanded)}
-          style={{ paddingLeft: `${level * 12 + 4}px` }}
-          className="flex items-center gap-1.5 py-1 px-1.5 rounded hover:bg-slate-900 text-xs font-semibold text-slate-200 hover:text-cyan-300 cursor-pointer"
+          style={{ paddingLeft: `${Math.max(4, level * 12 + 4)}px` }}
+          className="flex items-center justify-between py-1 px-1.5 rounded hover:bg-slate-900/90 text-xs font-semibold text-slate-200 hover:text-cyan-300 cursor-pointer group/folder transition-colors w-full"
         >
-          <ChevronRight className={`w-3.5 h-3.5 transition-transform shrink-0 ${isExpanded ? 'rotate-90 text-cyan-400' : 'text-slate-400'}`} />
-          {isExpanded ? <FolderOpen className="w-3.5 h-3.5 text-cyan-400 shrink-0" /> : <Folder className="w-3.5 h-3.5 text-slate-400 shrink-0" />}
-          <span className="truncate">{node.name}</span>
+          <div className="flex items-center gap-1.5 min-w-0 pr-2">
+            <ChevronRight
+              className={`w-3.5 h-3.5 transition-transform shrink-0 ${
+                isExpanded ? 'rotate-90 text-cyan-400' : 'text-slate-400 group-hover/folder:text-cyan-400'
+              }`}
+            />
+            {isExpanded ? (
+              <FolderOpen className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+            ) : (
+              <Folder className="w-3.5 h-3.5 text-slate-400 group-hover/folder:text-slate-300 shrink-0" />
+            )}
+            <span className="whitespace-nowrap font-mono font-medium text-slate-200 group-hover/folder:text-cyan-300">
+              {node.name}
+            </span>
+          </div>
+
+          {node.children && node.children.length > 0 && (
+            <span className="text-[10px] text-slate-500 group-hover/folder:text-slate-400 font-mono pr-1 shrink-0">
+              {node.children.length}
+            </span>
+          )}
         </div>
 
+        {/* Nested Folder Children with Vertical Indentation Guide Line */}
         {isExpanded && node.children && (
-          <div className="space-y-0.5">
+          <div
+            style={{ marginLeft: `${Math.max(8, level * 12 + 8)}px` }}
+            className="pl-2 border-l border-slate-800/80 hover:border-slate-700/80 space-y-0.5 transition-colors"
+          >
             {node.children.map((child) => (
               <ProjectTreeNode
-                key={child.path}
+                key={child.path || child.name}
                 node={child}
                 level={level + 1}
                 p={p}
+                activeFileName={activeFileName}
+                activeFilePath={activeFilePath}
+                activeProjectName={activeProjectName}
                 editingFileKey={editingFileKey}
                 editingFileName={editingFileName}
                 setEditingFileName={setEditingFileName}
@@ -81,17 +186,30 @@ function ProjectTreeNode({
     );
   }
 
-  const fileObj = node.file;
-  const fileIdx = (p.files || []).findIndex((f) => (f.path || f.name) === fileObj.path || f.name === fileObj.name || f.name === node.name);
+  const fileObj = node.file || {};
+  const filePathOrName = fileObj.path || fileObj.name || node.name;
+  const fileIdx = (p.files || []).findIndex(
+    (f) => (f.path || f.name) === filePathOrName || f.name === node.name
+  );
   const targetIdx = fileIdx >= 0 ? fileIdx : 0;
   const fileKey = `${p.id}-${targetIdx}`;
   const isEditingFile = editingFileKey === fileKey;
 
+  const isCurrentActive =
+    activeProjectName === p.name &&
+    (activeFilePath === filePathOrName ||
+     activeFileName === node.name ||
+     activeFileName === fileObj.name);
+
   return (
     <div
-      style={{ paddingLeft: `${level * 12 + 8}px` }}
+      style={{ paddingLeft: `${Math.max(4, level * 12 + 6)}px` }}
       onClick={() => handleProjectClick(p, fileObj)}
-      className="flex items-center justify-between py-1.5 px-2 rounded-md hover:bg-slate-900/90 hover:text-cyan-300 cursor-pointer group/file text-xs font-mono font-medium text-slate-200"
+      className={`flex items-center justify-between py-1 px-2 rounded-md cursor-pointer group/file text-xs font-mono transition-colors w-full ${
+        isCurrentActive
+          ? 'bg-indigo-600/25 text-cyan-200 border-l-2 border-cyan-400 font-semibold shadow-sm'
+          : 'text-slate-300 hover:bg-slate-900/90 hover:text-cyan-300 font-medium'
+      }`}
     >
       {isEditingFile ? (
         <form
@@ -122,14 +240,19 @@ function ProjectTreeNode({
         </form>
       ) : (
         <>
-          <div className="flex items-center gap-2 truncate">
-            <FileCode className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-            <span className="truncate text-slate-200 group-hover/file:text-cyan-300" title={fileObj.path || fileObj.name}>
+          <div className="flex items-center gap-2 whitespace-nowrap min-w-0 pr-2">
+            <FileIcon name={node.name} />
+            <span
+              className={`whitespace-nowrap ${
+                isCurrentActive ? 'text-cyan-200 font-semibold' : 'text-slate-300 group-hover/file:text-cyan-300'
+              }`}
+              title={filePathOrName}
+            >
               {node.name}
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0 ml-auto">
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -152,14 +275,17 @@ function ProjectTreeNode({
               <Trash2 className="w-3 h-3" />
             </button>
 
-            <span className="w-2 h-2 rounded-full bg-cyan-400 shrink-0 shadow-sm shadow-cyan-400/50" />
+            {isCurrentActive ? (
+              <span className="w-2 h-2 rounded-full bg-cyan-400 shrink-0 shadow-sm shadow-cyan-400/80 animate-pulse" />
+            ) : (
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-600/60 group-hover/file:bg-cyan-500/80 shrink-0" />
+            )}
           </div>
         </>
       )}
     </div>
   );
 }
-
 
 export default function Sidebar({ 
   activeTab, 
@@ -185,6 +311,8 @@ export default function Sidebar({
   user,
   onLogout,
   activeProjectName = 'ai project',
+  activeFileName = 'main.py',
+  activeFilePath = '',
   onDownloadFixedFolder,
 }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -531,11 +659,11 @@ export default function Sidebar({
 
   const handleProjectClick = (p, fileObj) => {
     setActiveTab('workbench');
-    const fileName = fileObj?.name || 'main.py';
+    const fullPath = fileObj?.path || fileObj?.name || 'main.py';
     if (onSelectProjectFile) {
-      onSelectProjectFile(p.name, fileName);
+      onSelectProjectFile(p.name, fullPath, fileObj);
     } else if (onSelectProjectSample) {
-      onSelectProjectSample(fileObj?.templateId || 'blank', p.name, fileName);
+      onSelectProjectSample(fileObj?.templateId || 'blank', p.name, fullPath);
     }
   };
 
@@ -757,189 +885,194 @@ export default function Sidebar({
             </div>
           )}
 
-          {/* Project Folders Tree with Full Rename, Delete, File+ and Upload Actions */}
-          <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-1 font-mono text-xs custom-scrollbar">
-            {visibleProjects.map((p) => {
-              const isExpanded = expandedProjects[p.name];
-              const projectFilesList = p.files || [{ name: 'main.py' }];
-              const isEditingProj = editingProjectId === p.id;
+          {/* Project Folders Tree with Dual Horizontal & Vertical Scrollbars */}
+          <div className="flex-1 min-h-0 overflow-auto pr-1 pb-1 font-mono text-xs custom-scrollbar">
+            <div className="min-w-full w-max space-y-1 pr-3 pb-2">
+              {visibleProjects.map((p) => {
+                const isExpanded = expandedProjects[p.name];
+                const projectFilesList = p.files || [{ name: 'main.py' }];
+                const isEditingProj = editingProjectId === p.id;
 
-              return (
-                <div key={p.id} className="space-y-1">
-                  
-                  {/* Project Folder Row */}
-                  <div
-                    onClick={() => {
-                      toggleProjectExpand(p.name);
-                      handleProjectClick(p, projectFilesList[0]);
-                    }}
-                    className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium text-slate-200 hover:bg-slate-900 hover:text-cyan-300 transition-colors cursor-pointer group"
-                  >
-                    {isEditingProj ? (
-                      <form
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          saveRenameProject(p.id);
-                        }}
-                        className="flex items-center gap-1 w-full"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <input
-                          type="text"
-                          value={editingProjectName}
-                          onChange={(e) => setEditingProjectName(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Escape') setEditingProjectId(null);
+                return (
+                  <div key={p.id} className="space-y-1">
+                    
+                    {/* Project Folder Row */}
+                    <div
+                      onClick={() => {
+                        toggleProjectExpand(p.name);
+                        handleProjectClick(p, projectFilesList[0]);
+                      }}
+                      className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium text-slate-200 hover:bg-slate-900 hover:text-cyan-300 transition-colors cursor-pointer group"
+                    >
+                      {isEditingProj ? (
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            saveRenameProject(p.id);
                           }}
-                          autoFocus
-                          className="flex-1 bg-slate-950 border border-cyan-500 rounded px-2 py-0.5 text-xs text-slate-100 focus:outline-none font-mono"
-                        />
-                        <button type="submit" className="p-0.5 text-emerald-400">
-                          <Check className="w-3.5 h-3.5" />
-                        </button>
-                        <button type="button" onClick={() => setEditingProjectId(null)} className="p-0.5 text-slate-400">
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      </form>
-                    ) : (
-                      <>
-                        <div className="flex items-center gap-2 overflow-hidden">
-                          {isExpanded ? (
-                            <FolderOpen className="w-4 h-4 text-cyan-400 shrink-0" />
-                          ) : (
-                            <Folder className="w-4 h-4 text-slate-400 shrink-0" />
-                          )}
-                          <span className="truncate font-semibold text-slate-200 group-hover:text-cyan-300">{p.name}</span>
-                        </div>
-
-                        {/* Per-Project Action Icons: File+, Upload (File/Folder Choice), Rename & Delete */}
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setCreatingFileForProj(p.id);
+                          className="flex items-center gap-1 w-full"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <input
+                            type="text"
+                            value={editingProjectName}
+                            onChange={(e) => setEditingProjectName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Escape') setEditingProjectId(null);
                             }}
-                            className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 hover:text-cyan-400 transition-opacity"
-                            title={`Create file in ${p.name}`}
-                          >
-                            <FilePlus className="w-3.5 h-3.5" />
+                            autoFocus
+                            className="flex-1 bg-slate-950 border border-cyan-500 rounded px-2 py-0.5 text-xs text-slate-100 focus:outline-none font-mono"
+                          />
+                          <button type="submit" className="p-0.5 text-emerald-400">
+                            <Check className="w-3.5 h-3.5" />
                           </button>
-
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openUploadChoice(p);
-                            }}
-                            className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 hover:text-cyan-400 transition-opacity"
-                            title={`Upload File(s) or Folder to ${p.name}`}
-                          >
-                            <Upload className="w-3.5 h-3.5" />
+                          <button type="button" onClick={() => setEditingProjectId(null)} className="p-0.5 text-slate-400">
+                            <X className="w-3.5 h-3.5" />
                           </button>
+                        </form>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-2 overflow-hidden mr-2">
+                            {isExpanded ? (
+                              <FolderOpen className="w-4 h-4 text-cyan-400 shrink-0" />
+                            ) : (
+                              <Folder className="w-4 h-4 text-slate-400 shrink-0" />
+                            )}
+                            <span className="whitespace-nowrap font-semibold text-slate-200 group-hover:text-cyan-300">{p.name}</span>
+                          </div>
 
-                          {onDownloadFixedFolder && (
+                          {/* Per-Project Action Icons: File+, Upload (File/Folder Choice), Rename & Delete */}
+                          <div className="flex items-center gap-1 ml-auto shrink-0">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                onDownloadFixedFolder(p.name);
+                                setCreatingFileForProj(p.id);
                               }}
-                              className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 hover:text-emerald-400 transition-opacity"
-                              title={`Download "${p.name}.zip" (Fixed Working Folder)`}
+                              className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 hover:text-cyan-400 transition-opacity"
+                              title={`Create file in ${p.name}`}
                             >
-                              <FolderDown className="w-3.5 h-3.5" />
+                              <FilePlus className="w-3.5 h-3.5" />
                             </button>
-                          )}
 
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              startRenameProject(p);
-                            }}
-                            className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 hover:text-cyan-400 transition-opacity"
-                            title={`Rename folder "${p.name}"`}
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openUploadChoice(p);
+                              }}
+                              className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 hover:text-cyan-400 transition-opacity"
+                              title={`Upload File(s) or Folder to ${p.name}`}
+                            >
+                              <Upload className="w-3.5 h-3.5" />
+                            </button>
 
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteProjectFolder(p);
-                            }}
-                            className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-500 hover:text-rose-400 transition-opacity"
-                            title={`Delete folder "${p.name}"`}
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                            {onDownloadFixedFolder && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onDownloadFixedFolder(p.name);
+                                }}
+                                className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 hover:text-emerald-400 transition-opacity"
+                                title={`Download "${p.name}.zip" (Fixed Working Folder)`}
+                              >
+                                <FolderDown className="w-3.5 h-3.5" />
+                              </button>
+                            )}
 
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleProjectExpand(p.name);
-                            }}
-                            className="p-0.5 text-slate-400 hover:text-slate-200"
-                          >
-                            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                startRenameProject(p);
+                              }}
+                              className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 hover:text-cyan-400 transition-opacity"
+                              title={`Rename folder "${p.name}"`}
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
 
-                  {/* Inline Create File Input inside specific Project Folder */}
-                  {creatingFileForProj === p.id && (
-                    <form 
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        handleCreateFileInProject(p);
-                      }}
-                      className="pl-6 pr-2 py-1.5 flex items-center gap-1 font-mono text-xs"
-                    >
-                      <input
-                        type="text"
-                        placeholder="e.g. app.py or server.js"
-                        value={newFileName}
-                        onChange={(e) => setNewFileName(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Escape') setCreatingFileForProj(null);
-                        }}
-                        autoFocus
-                        className="flex-1 bg-slate-950 border border-cyan-500 rounded px-2 py-0.5 text-xs text-slate-100 focus:outline-none"
-                      />
-                      <button type="submit" className="text-emerald-400 p-0.5">
-                        <Check className="w-3.5 h-3.5" />
-                      </button>
-                      <button type="button" onClick={() => setCreatingFileForProj(null)} className="text-slate-400 p-0.5">
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </form>
-                  )}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteProjectFolder(p);
+                              }}
+                              className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-500 hover:text-rose-400 transition-opacity"
+                              title={`Delete folder "${p.name}"`}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
 
-                  {/* Sub-item Files inside Project Folder with Rename & Delete */}
-                  {isExpanded && (
-                    <div className="pl-3 space-y-0.5 text-xs text-slate-300">
-                      {buildFileTree(projectFilesList, p.name).map((node) => (
-                        <ProjectTreeNode
-                          key={node.path}
-                          node={node}
-                          level={0}
-                          p={p}
-                          editingFileKey={editingFileKey}
-                          editingFileName={editingFileName}
-                          setEditingFileName={setEditingFileName}
-                          setEditingFileKey={setEditingFileKey}
-                          startRenameFile={startRenameFile}
-                          saveRenameFile={saveRenameFile}
-                          handleDeleteFileInProjectFolder={handleDeleteFileInProjectFolder}
-                          handleProjectClick={handleProjectClick}
-                        />
-                      ))}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleProjectExpand(p.name);
+                              }}
+                              className="p-0.5 text-slate-400 hover:text-slate-200"
+                            >
+                              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </div>
-                  )}
 
-                </div>
-              );
-            })}
+                    {/* Inline Create File Input inside specific Project Folder */}
+                    {creatingFileForProj === p.id && (
+                      <form 
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          handleCreateFileInProject(p);
+                        }}
+                        className="pl-6 pr-2 py-1.5 flex items-center gap-1 font-mono text-xs"
+                      >
+                        <input
+                          type="text"
+                          placeholder="e.g. app.py or src/services/api.js"
+                          value={newFileName}
+                          onChange={(e) => setNewFileName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Escape') setCreatingFileForProj(null);
+                          }}
+                          autoFocus
+                          className="flex-1 bg-slate-950 border border-cyan-500 rounded px-2 py-0.5 text-xs text-slate-100 focus:outline-none"
+                        />
+                        <button type="submit" className="text-emerald-400 p-0.5">
+                          <Check className="w-3.5 h-3.5" />
+                        </button>
+                        <button type="button" onClick={() => setCreatingFileForProj(null)} className="text-slate-400 p-0.5">
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </form>
+                    )}
+
+                    {/* Sub-item Files inside Project Folder with Nested Tree & Vertical Guide Lines */}
+                    {isExpanded && (
+                      <div className="ml-2 pl-2 border-l border-slate-800/80 hover:border-slate-700/80 space-y-0.5 text-xs text-slate-300 transition-colors">
+                        {buildFileTree(projectFilesList, p.name).map((node) => (
+                          <ProjectTreeNode
+                            key={node.path || node.name}
+                            node={node}
+                            level={0}
+                            p={p}
+                            activeFileName={activeFileName}
+                            activeFilePath={activeFilePath}
+                            activeProjectName={activeProjectName}
+                            editingFileKey={editingFileKey}
+                            editingFileName={editingFileName}
+                            setEditingFileName={setEditingFileName}
+                            setEditingFileKey={setEditingFileKey}
+                            startRenameFile={startRenameFile}
+                            saveRenameFile={saveRenameFile}
+                            handleDeleteFileInProjectFolder={handleDeleteFileInProjectFolder}
+                            handleProjectClick={handleProjectClick}
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* Dedicated Download Working Folder Action (Pinned: Always Visible Even After Scrolling) */}
