@@ -160,8 +160,7 @@ export const SAST_RULES = [
     cwe: "CWE-95",
     cweUrl: "https://cwe.mitre.org/data/definitions/95.html",
     owasp: "A03:2021 - Injection",
-    languages: ["all"],
-    pattern: /\beval\s*\(|new\s+Function\s*\(/i,
+    pattern: /\beval\s*\(|new\s+Function\s*\(|(?:window|globalThis|global|this|self)\[\s*(['"`].*?eval.*?['"`]|['"`]ev['"`]\s*\+\s*['"`]al['"`])\s*\]/i,
     description: "Evaluating arbitrary code dynamically using `eval()` or dynamic `Function()` constructor.",
     impact: "Arbitrary code execution within application environment context.",
     remediation: "Refactor logic to standard JSON parsing (`JSON.parse`) or structured lookups instead of dynamic code execution."

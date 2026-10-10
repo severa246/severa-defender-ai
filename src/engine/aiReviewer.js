@@ -409,7 +409,12 @@ function sanitizeVulnerableLine(lineText, finding, language) {
 
   const ruleId = (finding.ruleId || '').toUpperCase();
   const title = (finding.title || '').toLowerCase();
-  const lang = (language || 'javascript').toLowerCase();
+  const langRaw = (language || 'javascript').toLowerCase().trim();
+  const isJava = langRaw === 'java';
+  const isPython = langRaw === 'python' || langRaw === 'py';
+  const isGo = langRaw === 'go' || langRaw === 'golang';
+  const isCpp = langRaw === 'c' || langRaw === 'cpp' || langRaw === 'cxx' || langRaw === 'c++';
+  const isJs = !isJava && !isPython && !isGo && !isCpp;
 
   // 1. Syntax Errors (SYN-001, SYN-002, etc.)
   if (ruleId.includes('SYN') || title.includes('syntax')) {
@@ -441,7 +446,7 @@ function sanitizeVulnerableLine(lineText, finding, language) {
 
   // 3. SQL Injection (Python f-strings, format, concatenation, JS template literals, Java/Go string concatenations)
   if (ruleId.includes('SQL') || (title.includes('sql') && title.includes('injection'))) {
-    if (lang.includes('go')) {
+    if (isGo) {
       if (lineText.includes('SELECT') || lineText.includes('query')) {
         return lineText.includes(':=')
           ? 'query := "SELECT * FROM users WHERE username = ?" // SECURED: Parameterized query binding'
@@ -450,14 +455,14 @@ function sanitizeVulnerableLine(lineText, finding, language) {
       return '// SECURED: Consolidated parameterized query';
     }
 
-    if (lang.includes('java')) {
+    if (isJava) {
       if (lineText.includes('SELECT') || lineText.includes('query')) {
         return 'String query = "SELECT * FROM users WHERE username = ? AND password = ?"; // SECURED: Parameterized query binding';
       }
       return '// SECURED: Multi-line string concatenation consolidated';
     }
 
-    if (lang.includes('py') || lang.includes('python')) {
+    if (isPython) {
       if (lineText.includes('f"') || lineText.includes("f'")) {
         return lineText
           .replace(/f(["'])SELECT([\s\S]*?)WHERE([\s\S]*?)\1/i, '"SELECT * FROM users WHERE username = ? AND password = ?" # SECURED: Parameterized query binding')
@@ -481,22 +486,22 @@ function sanitizeVulnerableLine(lineText, finding, language) {
 
   // 4. Hardcoded Secrets & Credentials (SEC-SEC-001, SEC-SEC-002, SEC-SEC-003, CWE-798)
   if (ruleId.includes('SEC-SEC') || ruleId.includes('KEY') || ruleId.includes('PASS') || title.includes('secret') || title.includes('password') || title.includes('credential')) {
-    if (lang.includes('go')) {
+    if (isGo) {
       return lineText.replace(/[:=]+\s*["'][^"']+["']/, ':= os.Getenv("SECRET_KEY")') + ' // SECURED: Loaded secret from environment variable';
     }
-    if (lang.includes('c') || lang.includes('cpp')) {
+    if (isCpp) {
       return lineText.replace(/=\s*["'][^"']+["']/, '= std::getenv("SECRET_KEY")') + ' // SECURED: Loaded secret from environment variable';
     }
-    if (lang.includes('java')) {
+    if (isJava) {
       return lineText.replace(/=\s*["'][^"']+["']/, '= System.getenv("SECRET_KEY")') + ' // SECURED: Loaded secret from environment variable';
     }
-    if (lang.includes('py') || lang.includes('python')) {
+    if (isPython) {
       if (lineText.includes(':')) {
         return lineText.replace(/:\s*['"][^'"]+['"]/, ': os.environ.get("ADMIN_PASSWORD_HASH") # SECURED: Loaded secret from environment variable');
       }
       return lineText.replace(/=\s*['"][^'"]+['"]/, '= os.environ.get("SECRET_KEY") # SECURED: Loaded secret from environment variable');
     }
-    return lineText.replace(/=\s*['"][^'"]+['"]/, '= process.env.SECRET_KEY; // SECURED: Loaded secret from environment variable');
+    return lineText.replace(/=\s*["'][^"']+["']/, '= process.env.SECRET_KEY; // SECURED: Loaded secret from environment variable');
   }
 
   // 5. Dangerous C / C++ Functions & Buffer Overflow (CWE-676 / CWE-120)
