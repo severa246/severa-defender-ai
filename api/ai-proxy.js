@@ -1,10 +1,43 @@
 // Severa Defender AI - Serverless AI Proxy & Audit Provenance Engine
 // Connects to Hugging Face Qwen 2.5 Coder 32B, Gemini, and OpenRouter APIs.
 
+// Module-level in-memory sliding window rate limiter
+const rateLimitMap = new Map();
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const windowMs = 60000; // 1 minute window
+  const maxRequests = 20; // Max 20 requests per minute per IP
+
+  let record = rateLimitMap.get(ip);
+  if (!record || now - record.startTime > windowMs) {
+    record = { startTime: now, count: 1 };
+    rateLimitMap.set(ip, record);
+    return true;
+  }
+
+  if (record.count >= maxRequests) {
+    return false;
+  }
+
+  record.count += 1;
+  return true;
+}
+
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // 1. Strict CORS Origin Restriction
+  const allowedOrigins = [
+    'https://severa-defender-ai.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:3000'
+  ];
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', 'https://severa-defender-ai.vercel.app');
+  }
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -12,6 +45,18 @@ export default async function handler(req, res) {
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
+  }
+
+  // 2. Strict Payload Size Limit (Max 1MB / 1,048,576 bytes)
+  const contentLength = req.headers['content-length'];
+  if (contentLength && parseInt(contentLength, 10) > 1048576) {
+    return res.status(413).json({ error: 'Payload too large. Maximum allowed size is 1MB.' });
+  }
+
+  // 3. Sliding-Window IP Rate Limiter
+  const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || '127.0.0.1';
+  if (!checkRateLimit(clientIp)) {
+    return res.status(429).json({ error: 'Too many requests. Rate limit is 20 requests per minute.' });
   }
 
   const startTime = Date.now();
@@ -84,9 +129,10 @@ Return a single JSON object:
 }
 `;
 
-    // 1. Primary Route: Hugging Face Inference API with Default / User Access Token
-    const builtInToken = ['hf', 'PaywoKyZrRETtgbOJzJOcLEAqDvDuvbsvB'].join('_');
-    const activeHfToken = (apiKey && apiKey.startsWith('hf_')) ? apiKey : (process.env.HUGGINGFACE_API_KEY || builtInToken);
+    // 1. Primary Route: Pure Environment Variable Secret Token (Zero Hardcoded Secrets)
+    const activeHfToken = (apiKey && apiKey.startsWith('hf_')) 
+      ? apiKey 
+      : (process.env.HUGGINGFACE_API_KEY || process.env.HF_TOKEN);
 
     if (activeHfToken) {
       llmAttempted = true;
