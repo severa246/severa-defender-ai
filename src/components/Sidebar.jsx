@@ -48,11 +48,11 @@ function ProjectTreeNode({
       <div className="space-y-0.5 select-none">
         <div
           onClick={() => setIsExpanded(!isExpanded)}
-          style={{ paddingLeft: `${level * 10 + 4}px` }}
-          className="flex items-center gap-1 py-0.5 px-1 rounded hover:bg-slate-900 text-[10px] font-bold text-slate-300 hover:text-cyan-400 cursor-pointer"
+          style={{ paddingLeft: `${level * 12 + 4}px` }}
+          className="flex items-center gap-1.5 py-1 px-1.5 rounded hover:bg-slate-900 text-xs font-semibold text-slate-200 hover:text-cyan-300 cursor-pointer"
         >
-          <ChevronRight className={`w-3 h-3 transition-transform shrink-0 ${isExpanded ? 'rotate-90 text-cyan-400' : 'text-slate-500'}`} />
-          {isExpanded ? <FolderOpen className="w-3 h-3 text-cyan-400 shrink-0" /> : <Folder className="w-3 h-3 text-slate-400 shrink-0" />}
+          <ChevronRight className={`w-3.5 h-3.5 transition-transform shrink-0 ${isExpanded ? 'rotate-90 text-cyan-400' : 'text-slate-400'}`} />
+          {isExpanded ? <FolderOpen className="w-3.5 h-3.5 text-cyan-400 shrink-0" /> : <Folder className="w-3.5 h-3.5 text-slate-400 shrink-0" />}
           <span className="truncate">{node.name}</span>
         </div>
 
@@ -88,9 +88,9 @@ function ProjectTreeNode({
 
   return (
     <div
-      style={{ paddingLeft: `${level * 10 + 8}px` }}
+      style={{ paddingLeft: `${level * 12 + 8}px` }}
       onClick={() => handleProjectClick(p, fileObj)}
-      className="flex items-center justify-between p-1 rounded hover:bg-slate-900/80 hover:text-cyan-300 cursor-pointer group/file text-[10px]"
+      className="flex items-center justify-between py-1.5 px-2 rounded-md hover:bg-slate-900/90 hover:text-cyan-300 cursor-pointer group/file text-xs font-mono font-medium text-slate-200"
     >
       {isEditingFile ? (
         <form
@@ -110,25 +110,25 @@ function ProjectTreeNode({
               if (e.key === 'Escape') setEditingFileKey(null);
             }}
             autoFocus
-            className="flex-1 bg-slate-950 border border-cyan-500 rounded px-1 py-0.5 text-[10px] text-slate-100 focus:outline-none font-mono"
+            className="flex-1 bg-slate-950 border border-cyan-500 rounded px-2 py-0.5 text-xs text-slate-100 focus:outline-none font-mono"
           />
           <button type="submit" className="p-0.5 text-emerald-400">
-            <Check className="w-3 h-3" />
+            <Check className="w-3.5 h-3.5" />
           </button>
           <button type="button" onClick={() => setEditingFileKey(null)} className="p-0.5 text-slate-400">
-            <X className="w-3 h-3" />
+            <X className="w-3.5 h-3.5" />
           </button>
         </form>
       ) : (
         <>
-          <div className="flex items-center gap-1.5 truncate">
-            <FileCode className="w-3 h-3 text-cyan-400/80 shrink-0" />
-            <span className="truncate text-slate-300" title={fileObj.path || fileObj.name}>
+          <div className="flex items-center gap-2 truncate">
+            <FileCode className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+            <span className="truncate text-slate-200 group-hover/file:text-cyan-300" title={fileObj.path || fileObj.name}>
               {node.name}
             </span>
           </div>
 
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -137,7 +137,7 @@ function ProjectTreeNode({
               className="opacity-0 group-hover/file:opacity-100 p-0.5 text-slate-400 hover:text-cyan-400 transition-opacity"
               title={`Rename file "${node.name}"`}
             >
-              <Edit2 className="w-2.5 h-2.5" />
+              <Edit2 className="w-3 h-3" />
             </button>
 
             <button
@@ -148,10 +148,10 @@ function ProjectTreeNode({
               className="opacity-0 group-hover/file:opacity-100 p-0.5 text-slate-500 hover:text-rose-400 transition-opacity"
               title={`Delete file "${node.name}"`}
             >
-              <Trash2 className="w-2.5 h-2.5" />
+              <Trash2 className="w-3 h-3" />
             </button>
 
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shrink-0" />
+            <span className="w-2 h-2 rounded-full bg-cyan-400 shrink-0 shadow-sm shadow-cyan-400/50" />
           </div>
         </>
       )}
@@ -185,7 +185,7 @@ export default function Sidebar({
   onLogout,
 }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(256);
+  const [sidebarWidth, setSidebarWidth] = useState(285);
   const isDraggingSidebar = useRef(false);
 
   const handleSidebarMouseDown = (e) => {
@@ -196,8 +196,8 @@ export default function Sidebar({
 
     const onMouseMove = (moveEvt) => {
       if (!isDraggingSidebar.current) return;
-      // Strict min/max limit boundary: 180px min to 380px max
-      const newWidth = Math.max(180, Math.min(380, moveEvt.clientX));
+      // Generous min/max boundary: 220px min to 440px max
+      const newWidth = Math.max(220, Math.min(440, moveEvt.clientX));
       setSidebarWidth(newWidth);
     };
 
@@ -606,12 +606,12 @@ export default function Sidebar({
               </div>
               <div className="min-w-0 animate-fadeIn">
                 <div className="flex items-center gap-1.5">
-                  <h1 className="font-bold text-sm text-slate-100 tracking-tight truncate">Severa AI</h1>
-                  <span className="px-1.5 py-0.2 text-[8px] font-bold uppercase rounded bg-indigo-500/15 text-indigo-300 border border-indigo-500/20">
+                  <h1 className="font-bold text-[15px] text-slate-100 tracking-tight truncate">Severa AI</h1>
+                  <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                     PRO
                   </span>
                 </div>
-                <p className="text-[10px] text-slate-400 leading-none truncate">Continuous SAST Platform</p>
+                <p className="text-xs text-slate-400 font-medium leading-tight truncate">Continuous SAST Platform</p>
               </div>
             </div>
 
@@ -634,7 +634,7 @@ export default function Sidebar({
             setIsCreatingProject(true);
           }}
           title="Create New Project"
-          className={`w-full flex items-center justify-center gap-2 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-md shadow-indigo-950/50 transition-all cursor-pointer border border-indigo-500/30 ${
+          className={`w-full flex items-center justify-center gap-2 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold shadow-md shadow-indigo-950/50 transition-all cursor-pointer border border-indigo-500/30 ${
             isCollapsed ? 'px-0' : 'px-3'
           }`}
         >
@@ -643,9 +643,9 @@ export default function Sidebar({
         </button>
 
         {/* Main Navigation Menu */}
-        <nav className="space-y-1 pt-1 border-t border-slate-900">
+        <nav className="space-y-1.5 pt-1.5 border-t border-slate-900">
           {!isCollapsed && (
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider px-2">
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-2.5 py-1 block">
               Main Navigation
             </span>
           )}
@@ -659,16 +659,16 @@ export default function Sidebar({
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
                 title={isCollapsed ? item.label : undefined}
-                className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3 py-2'} rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-sm font-medium transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-indigo-500/15 text-indigo-300 border-l-2 border-indigo-500 font-semibold shadow-sm'
-                    : 'text-slate-400 hover:bg-slate-900 hover:text-slate-200'
+                    ? 'bg-indigo-500/20 text-indigo-200 border-l-2 border-indigo-400 font-semibold shadow-sm'
+                    : 'text-slate-300 hover:bg-slate-900 hover:text-white'
                 }`}
               >
                 <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-cyan-400' : 'text-slate-400'}`} />
                 {!isCollapsed && <span className="truncate">{item.label}</span>}
                 {!isCollapsed && item.badge !== undefined && item.badge > 0 && (
-                  <span className="ml-auto px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-bold">
+                  <span className="ml-auto px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-xs font-bold">
                     {item.badge}
                   </span>
                 )}
@@ -679,18 +679,18 @@ export default function Sidebar({
 
         {/* Projects Section (Filter, Create, Rename, Delete & Upload Choice) */}
         {!isCollapsed && (
-          <div className="space-y-1.5 pt-2 border-t border-slate-900 flex-1 flex flex-col min-h-0">
-            <div className="flex items-center justify-between px-2">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+          <div className="space-y-2 pt-2 border-t border-slate-900 flex-1 flex flex-col min-h-0">
+            <div className="flex items-center justify-between px-2.5">
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                 Project Explorer
               </span>
-            <div className="flex items-center gap-1 text-slate-400">
+            <div className="flex items-center gap-1.5 text-slate-400">
               <button 
                 onClick={() => setIsFilterActive(!isFilterActive)}
                 className={`p-1 rounded hover:bg-slate-800 transition-colors ${isFilterActive ? 'text-cyan-400' : 'text-slate-400'}`}
                 title="Filter Projects"
               >
-                <Filter className="w-3 h-3" />
+                <Filter className="w-3.5 h-3.5" />
               </button>
 
               <button 
@@ -698,7 +698,7 @@ export default function Sidebar({
                 className={`p-1 rounded hover:bg-slate-800 transition-colors ${isCreatingProject ? 'text-cyan-400' : 'text-slate-400'}`}
                 title="Create New Project Folder"
               >
-                <FolderPlus className="w-3 h-3" />
+                <FolderPlus className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
@@ -707,14 +707,14 @@ export default function Sidebar({
           {isFilterActive && (
             <div className="px-2 pt-1">
               <div className="relative flex items-center">
-                <Search className="w-3 h-3 text-slate-500 absolute left-2" />
+                <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5" />
                 <input
                   type="text"
                   placeholder="Filter projects..."
                   value={projectSearchQuery}
                   onChange={(e) => setProjectSearchQuery(e.target.value)}
                   autoFocus
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-7 pr-2 py-1 text-[10px] text-slate-100 focus:outline-none focus:border-cyan-500 font-mono"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-8 pr-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-cyan-500 font-mono"
                 />
               </div>
             </div>
@@ -739,7 +739,7 @@ export default function Sidebar({
                     if (e.key === 'Escape') setIsCreatingProject(false);
                   }}
                   autoFocus
-                  className="flex-1 bg-slate-950 border border-cyan-500 rounded-lg px-2 py-1 text-[10px] text-slate-100 focus:outline-none"
+                  className="flex-1 bg-slate-950 border border-cyan-500 rounded-lg px-2.5 py-1 text-xs text-slate-100 focus:outline-none font-mono"
                 />
                 <button type="submit" className="p-1 text-emerald-400">
                   <Check className="w-3.5 h-3.5" />
@@ -767,7 +767,7 @@ export default function Sidebar({
                       toggleProjectExpand(p.name);
                       handleProjectClick(p, projectFilesList[0]);
                     }}
-                    className="w-full flex items-center justify-between px-2 py-1 rounded-lg text-[11px] text-slate-300 hover:bg-slate-900 hover:text-cyan-400 transition-colors cursor-pointer group"
+                    className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium text-slate-200 hover:bg-slate-900 hover:text-cyan-300 transition-colors cursor-pointer group"
                   >
                     {isEditingProj ? (
                       <form
@@ -787,7 +787,7 @@ export default function Sidebar({
                             if (e.key === 'Escape') setEditingProjectId(null);
                           }}
                           autoFocus
-                          className="flex-1 bg-slate-950 border border-cyan-500 rounded px-1.5 py-0.5 text-[10px] text-slate-100 focus:outline-none font-mono"
+                          className="flex-1 bg-slate-950 border border-cyan-500 rounded px-2 py-0.5 text-xs text-slate-100 focus:outline-none font-mono"
                         />
                         <button type="submit" className="p-0.5 text-emerald-400">
                           <Check className="w-3.5 h-3.5" />
@@ -798,13 +798,13 @@ export default function Sidebar({
                       </form>
                     ) : (
                       <>
-                        <div className="flex items-center gap-1.5 overflow-hidden">
+                        <div className="flex items-center gap-2 overflow-hidden">
                           {isExpanded ? (
-                            <FolderOpen className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                            <FolderOpen className="w-4 h-4 text-cyan-400 shrink-0" />
                           ) : (
-                            <Folder className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <Folder className="w-4 h-4 text-slate-400 shrink-0" />
                           )}
-                          <span className="truncate font-bold text-slate-200 group-hover:text-cyan-300">{p.name}</span>
+                          <span className="truncate font-semibold text-slate-200 group-hover:text-cyan-300">{p.name}</span>
                         </div>
 
                         {/* Per-Project Action Icons: File+, Upload (File/Folder Choice), Rename & Delete */}
@@ -817,7 +817,7 @@ export default function Sidebar({
                             className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 hover:text-cyan-400 transition-opacity"
                             title={`Create file in ${p.name}`}
                           >
-                            <FilePlus className="w-3 h-3" />
+                            <FilePlus className="w-3.5 h-3.5" />
                           </button>
 
                           <button
@@ -828,7 +828,7 @@ export default function Sidebar({
                             className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 hover:text-cyan-400 transition-opacity"
                             title={`Upload File(s) or Folder to ${p.name}`}
                           >
-                            <Upload className="w-3 h-3" />
+                            <Upload className="w-3.5 h-3.5" />
                           </button>
 
                           <button
@@ -839,7 +839,7 @@ export default function Sidebar({
                             className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 hover:text-cyan-400 transition-opacity"
                             title={`Rename folder "${p.name}"`}
                           >
-                            <Edit2 className="w-3 h-3" />
+                            <Edit2 className="w-3.5 h-3.5" />
                           </button>
 
                           <button
@@ -850,7 +850,7 @@ export default function Sidebar({
                             className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-500 hover:text-rose-400 transition-opacity"
                             title={`Delete folder "${p.name}"`}
                           >
-                            <Trash2 className="w-3 h-3" />
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
 
                           <button
@@ -858,9 +858,9 @@ export default function Sidebar({
                               e.stopPropagation();
                               toggleProjectExpand(p.name);
                             }}
-                            className="p-0.5 text-slate-500 hover:text-slate-300"
+                            className="p-0.5 text-slate-400 hover:text-slate-200"
                           >
-                            <ChevronDown className={`w-3 h-3 transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
+                            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
                           </button>
                         </div>
                       </>
@@ -874,7 +874,7 @@ export default function Sidebar({
                         e.preventDefault();
                         handleCreateFileInProject(p);
                       }}
-                      className="pl-6 pr-2 py-1 flex items-center gap-1 font-mono text-[10px]"
+                      className="pl-6 pr-2 py-1.5 flex items-center gap-1 font-mono text-xs"
                     >
                       <input
                         type="text"
@@ -885,20 +885,20 @@ export default function Sidebar({
                           if (e.key === 'Escape') setCreatingFileForProj(null);
                         }}
                         autoFocus
-                        className="flex-1 bg-slate-950 border border-cyan-500 rounded px-1.5 py-0.5 text-slate-100 focus:outline-none"
+                        className="flex-1 bg-slate-950 border border-cyan-500 rounded px-2 py-0.5 text-xs text-slate-100 focus:outline-none"
                       />
                       <button type="submit" className="text-emerald-400 p-0.5">
-                        <Check className="w-3 h-3" />
+                        <Check className="w-3.5 h-3.5" />
                       </button>
                       <button type="button" onClick={() => setCreatingFileForProj(null)} className="text-slate-400 p-0.5">
-                        <X className="w-3 h-3" />
+                        <X className="w-3.5 h-3.5" />
                       </button>
                     </form>
                   )}
 
                   {/* Sub-item Files inside Project Folder with Rename & Delete */}
                   {isExpanded && (
-                    <div className="pl-3 space-y-1 text-[10px] text-slate-400">
+                    <div className="pl-3 space-y-0.5 text-xs text-slate-300">
                       {buildFileTree(projectFilesList, p.name).map((node) => (
                         <ProjectTreeNode
                           key={node.path}
@@ -947,15 +947,15 @@ export default function Sidebar({
                 <Cpu className="w-4 h-4 text-emerald-400 shrink-0" />
                 {!isCollapsed && (
                   <div className="text-left overflow-hidden">
-                    <div className="flex items-center gap-1">
-                      <span className="text-[9px] text-slate-400 uppercase tracking-wider block leading-none">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] text-slate-400 uppercase tracking-wider block leading-none font-semibold">
                         AI Provider
                       </span>
-                      <span className="text-[9px] font-bold text-emerald-400 flex items-center gap-0.5">
+                      <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Live HF Connected
                       </span>
                     </div>
-                    <span className="text-[11px] font-extrabold truncate block uppercase tracking-tight text-slate-100">
+                    <span className="text-xs font-bold truncate block uppercase tracking-tight text-slate-100 mt-0.5">
                       {hasKey ? `${selectedProvider} / ${selectedModel}` : 'Hugging Face (Qwen 2.5 32B)'}
                     </span>
                   </div>
@@ -976,7 +976,7 @@ export default function Sidebar({
                 title={`User Profile (${user.name || 'User'})`}
                 className="relative group/user p-1 rounded-xl hover:bg-slate-900 transition-all cursor-pointer"
               >
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-[10px] font-black text-white shadow-md group-hover/user:scale-105 transition-transform">
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-xs font-black text-white shadow-md group-hover/user:scale-105 transition-transform">
                   {(user.name || 'User').split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U'}
                 </div>
               </button>
@@ -984,15 +984,15 @@ export default function Sidebar({
           ) : (
             <div 
               onClick={() => setIsProfileModalOpen(true)}
-              className="flex items-center gap-2 p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 hover:bg-slate-800/80 transition-all cursor-pointer group/usercard"
+              className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 hover:bg-slate-800/80 transition-all cursor-pointer group/usercard"
               title="Click to view Account & Security Profile"
             >
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-[10px] font-black text-white shrink-0 shadow-md group-hover/usercard:scale-105 transition-transform">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-xs font-black text-white shrink-0 shadow-md group-hover/usercard:scale-105 transition-transform">
                 {(user.name || 'User').split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U'}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-semibold text-slate-200 truncate group-hover/usercard:text-cyan-300 transition-colors">{user.name || 'User'}</p>
-                <p className="text-[9px] text-slate-500 truncate">{user.email || ''}</p>
+                <p className="text-xs font-semibold text-slate-100 truncate group-hover/usercard:text-cyan-300 transition-colors">{user.name || 'User'}</p>
+                <p className="text-[11px] text-slate-400 truncate">{user.email || ''}</p>
               </div>
               <button
                 type="button"

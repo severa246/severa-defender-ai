@@ -19,6 +19,7 @@ import { CODE_TEMPLATES } from './engine/templates';
 import { cloudSyncService } from './services/cloudSyncService';
 import { storageService } from './services/storageService';
 import { downloadSarifFile } from './utils/sarifExporter';
+import { downloadProjectZip } from './utils/zipExporter';
 
 const INITIAL_SESSIONS = [
   { id: 'sess-1', name: 'Flask SQLi & Secret Audit', code: CODE_TEMPLATES[0].code, language: 'python', findings: [], timeAgo: '1h' },
@@ -234,6 +235,29 @@ jobs:
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+  };
+
+  // Download Remediated Working Folder as .zip Archive
+  const handleDownloadFixedFolder = () => {
+    const currentFolderObj = projectFolders.find((p) => p.name === activeProjectName);
+    const filesToExport = (currentFolderObj?.files && currentFolderObj.files.length > 0)
+      ? currentFolderObj.files.map((f) => {
+          let fCode = f.code;
+          if ((f.name === activeFileName || f.path === activeFilePath) && code && code.trim().length > 0) {
+            fCode = code;
+          } else if (fCode === undefined) {
+            const foundTpl = CODE_TEMPLATES.find((t) => t.id === f.templateId);
+            fCode = foundTpl ? foundTpl.code : `# Code file for ${f.name}\n`;
+          }
+          return {
+            path: f.path || f.name,
+            name: f.name,
+            code: fCode
+          };
+        })
+      : (projectFiles && projectFiles.length > 0 ? projectFiles : [{ name: activeFileName || 'main.py', code: code || '' }]);
+
+    downloadProjectZip(activeProjectName || 'severa-project', filesToExport);
   };
 
   // Persistent Workspace Load across Logins, Logouts, Sessions, & Devices (Strict User Isolation)
@@ -1556,6 +1580,7 @@ jobs:
           onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
           onExportSarif={handleExportSarif}
           onExportWorkflow={handleExportWorkflow}
+          onDownloadFixedFolder={handleDownloadFixedFolder}
         />
 
         {/* Full Project Scan Completed Toast Banner */}
@@ -1761,6 +1786,7 @@ jobs:
         onScanProject={handleScanFullProject}
         onExportSarif={handleExportSarif}
         onExportWorkflow={handleExportWorkflow}
+        onDownloadFixedFolder={handleDownloadFixedFolder}
         onOpenDefender={() => handleOpenDefenderWithFinding(null)}
         onGenerateAiFix={handleGenerateAiFix}
         findings={findings}

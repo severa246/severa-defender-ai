@@ -13,7 +13,8 @@ import {
   Activity, 
   X,
   CornerDownLeft,
-  ArrowRight
+  ArrowRight,
+  FolderDown
 } from 'lucide-react';
 
 export default function CommandPaletteModal({
@@ -23,6 +24,7 @@ export default function CommandPaletteModal({
   onScanProject,
   onExportSarif,
   onExportWorkflow,
+  onDownloadFixedFolder,
   onOpenDefender,
   onGenerateAiFix,
   findings = [],
@@ -101,6 +103,15 @@ export default function CommandPaletteModal({
       shortcut: 'Cmd + S',
       icon: Download,
       action: () => { onExportSarif && onExportSarif(); onClose(); }
+    },
+    {
+      id: 'download-fixed-folder',
+      category: 'Export & Compliance',
+      title: 'Download Fixed Working Folder (.zip)',
+      subtitle: 'Download clean, remediated project codebase as a standard ZIP archive',
+      shortcut: 'Cmd + Shift + D',
+      icon: FolderDown,
+      action: () => { onDownloadFixedFolder && onDownloadFixedFolder(); onClose(); }
     },
     {
       id: 'export-workflow',

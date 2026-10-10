@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   MessageSquare, Edit2, Check, X,
   Folder, FileCode, ChevronRight, ChevronDown, FileText, Cloud,
-  Search, Download
+  Search, Download, FolderDown
 } from 'lucide-react';
 
 export default function TopHeaderBar({
@@ -21,6 +21,7 @@ export default function TopHeaderBar({
   onOpenCommandPalette,
   onExportSarif,
   onExportWorkflow,
+  onDownloadFixedFolder,
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(activeSession?.name || 'Vulnerability Detection Audit');
@@ -327,6 +328,26 @@ export default function TopHeaderBar({
                   </div>
                   <div className="text-[11px] text-slate-500">
                     Executive report with cryptographic SHA-256 seal
+                  </div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsExportMenuOpen(false);
+                  if (onDownloadFixedFolder) onDownloadFixedFolder();
+                }}
+                className="w-full flex items-start gap-2.5 px-3 py-2 text-left hover:bg-white/[0.06] transition-colors group cursor-pointer border-t border-white/[0.04]"
+              >
+                <FolderDown className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
+                <div>
+                  <div className="text-xs font-medium text-slate-200 group-hover:text-white flex items-center gap-1.5">
+                    <span>Fixed Working Folder</span>
+                    <span className="text-[10px] font-mono text-emerald-400 px-1 py-0.2 rounded bg-emerald-500/10 border border-emerald-500/20">.zip</span>
+                  </div>
+                  <div className="text-[11px] text-slate-400">
+                    Download clean, remediated project archive
                   </div>
                 </div>
               </button>
