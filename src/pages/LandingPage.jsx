@@ -63,22 +63,22 @@ function Navbar({ navigate }) {
           onClick={() => scrollToSection('home')}
           className="flex items-center gap-3 shrink-0 cursor-pointer"
         >
-          <div className="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
-            <Shield size={16} className="text-emerald-400" />
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
+            <Shield size={20} className="text-emerald-400" />
           </div>
           <div>
-            <span className="text-base font-black text-white tracking-tight">SEVERA AI</span>
-            <span className="block text-xs font-bold text-emerald-400/90 uppercase tracking-wider">Enterprise Security</span>
+            <span className="text-lg sm:text-xl font-black text-white tracking-tight">SEVERA AI</span>
+            <span className="block text-xs sm:text-[13px] font-bold text-emerald-400/90 uppercase tracking-wider">Enterprise Security</span>
           </div>
         </div>
 
         {/* Desktop nav links */}
-        <div className="hidden lg:flex items-center gap-8 text-sm font-medium text-slate-300">
+        <div className="hidden lg:flex items-center gap-9 sm:gap-11 text-base lg:text-[17px] font-semibold text-slate-200">
           {navItems.map((item) => (
             <button
               key={item.label}
               onClick={item.action}
-              className="hover:text-emerald-400 transition-colors cursor-pointer font-medium"
+              className="hover:text-emerald-400 transition-colors cursor-pointer font-semibold"
             >
               {item.label}
             </button>
@@ -86,44 +86,53 @@ function Navbar({ navigate }) {
         </div>
 
         {/* Right actions */}
-        <div className="hidden md:flex items-center gap-3.5">
+        <div className="hidden md:flex items-center gap-4">
           <button
             onClick={() => navigate('/login')}
-            className="px-4 py-2 rounded-lg border border-white/10 hover:border-white/20 text-sm font-semibold text-slate-200 hover:text-white transition-all cursor-pointer"
+            className="px-5 py-2.5 rounded-xl border border-white/15 hover:border-white/30 text-sm sm:text-base font-bold text-slate-100 hover:text-white hover:bg-white/5 transition-all cursor-pointer"
           >
             Sign in
           </button>
           <button
             onClick={() => navigate('/login')}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-black transition-all shadow-lg shadow-emerald-500/20 cursor-pointer"
+            className="flex items-center gap-2.5 px-6 py-2.5 sm:py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-sm sm:text-base font-black transition-all shadow-lg shadow-emerald-500/25 cursor-pointer hover:shadow-emerald-500/40 hover:-translate-y-0.5"
           >
             Launch Platform
-            <ArrowRight size={14} />
+            <ArrowRight size={16} />
           </button>
         </div>
 
         <button className="md:hidden text-slate-400 hover:text-white" onClick={() => setMobileOpen(!mobileOpen)}>
-          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+          {mobileOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
 
       {mobileOpen && (
-        <div className="md:hidden border-t border-white/5 bg-[#0d0f18]/95 backdrop-blur-xl px-5 py-4 space-y-2">
+        <div className="md:hidden border-t border-white/5 bg-[#0d0f18]/95 backdrop-blur-xl px-6 py-5 space-y-3">
           {navItems.map((item) => (
             <button
               key={item.label}
-              onClick={item.action}
-              className="block w-full text-left text-sm text-slate-400 hover:text-white py-1.5"
+              onClick={() => { item.action(); setMobileOpen(false); }}
+              className="block w-full text-left text-base text-slate-300 hover:text-white py-2 font-medium"
             >
               {item.label}
             </button>
           ))}
-          <button
-            onClick={() => navigate('/login')}
-            className="w-full mt-2 py-2.5 rounded-lg bg-emerald-500 text-black text-sm font-black"
-          >
-            Launch Platform
-          </button>
+          <div className="pt-2 flex flex-col gap-2.5">
+            <button
+              onClick={() => navigate('/login')}
+              className="w-full py-2.5 rounded-xl border border-white/10 text-white text-base font-semibold"
+            >
+              Sign in
+            </button>
+            <button
+              onClick={() => navigate('/login')}
+              className="w-full py-3 rounded-xl bg-emerald-500 text-black text-base font-black flex items-center justify-center gap-2"
+            >
+              Launch Platform
+              <ArrowRight size={16} />
+            </button>
+          </div>
         </div>
       )}
     </nav>
@@ -133,9 +142,12 @@ function Navbar({ navigate }) {
 // ── Animated terminal ──────────────────────────────────────────────────────────
 const TERMINAL_STEPS = [
   {
+    stepNum: 'Step 1',
+    title: 'SAST Scan',
+    mobileTitle: 'SAST',
     tab: 'Step 1: SAST Scan',
     text: '$ severa scan run --repo github.com/acme/core-api --profile owasp-top10',
-    title: 'Code Ingestion & Vulnerability Detection',
+    headerTitle: 'Code Ingestion & Vulnerability Detection',
     info: '[INFO] Cloned 142 repository files (38,420 lines) · SAST Engine v2.4',
     items: [
       { label: 'Repository Cloned & AST Tree Indexed', value: 'Done', done: true },
@@ -147,9 +159,12 @@ const TERMINAL_STEPS = [
     ]
   },
   {
+    stepNum: 'Step 2',
+    title: 'AI Remediation',
+    mobileTitle: 'AI Fix',
     tab: 'Step 2: AI Remediation',
     text: '$ severa ai remediate --finding SEC-2024-89 --engine gemini-1.5-flash',
-    title: 'AI Auto-Patching & Code Refactoring',
+    headerTitle: 'AI Auto-Patching & Code Refactoring',
     info: '[INFO] Connected to Severa AI Engine (Gemini 1.5 Flash)',
     items: [
       { label: 'Targeting AST Sink Node: auth.py:L42', value: 'Done', done: true },
@@ -161,9 +176,12 @@ const TERMINAL_STEPS = [
     ]
   },
   {
+    stepNum: 'Step 3',
+    title: 'Severa Defender',
+    mobileTitle: 'Defender',
     tab: 'Step 3: Severa Defender',
     text: '$ severa defender explain --file auth.py --flaw SEC-2024-89',
-    title: 'AI Security Assistant & Prevention Strategy',
+    headerTitle: 'AI Security Assistant & Prevention Strategy',
     info: '[INFO] Severa Defender AI Agent inspecting vulnerability context',
     items: [
       { label: 'Analyzing Root Cause: Raw string concatenation in SQL query', value: 'Analyzed', done: true },
@@ -175,9 +193,12 @@ const TERMINAL_STEPS = [
     ]
   },
   {
+    stepNum: 'Step 4',
+    title: 'Audit & PR',
+    mobileTitle: 'Audit & PR',
     tab: 'Step 4: Audit & PR',
     text: '$ severa report generate --format pdf --pr-create',
-    title: 'Executive PDF Audit & GitHub PR Automation',
+    headerTitle: 'Executive PDF Audit & GitHub PR Automation',
     info: '[INFO] Generating Executive Security Audit & GitHub Pull Request',
     items: [
       { label: 'Generating Executive Compliance Summary', value: 'Done', done: true },
@@ -214,52 +235,63 @@ function DemoTerminal() {
   }, [revealedOutput, activeStep, step.items.length]);
 
   return (
-    <div className="bg-[#080b12] border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-black/80">
+    <div className="bg-[#080b12] border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-black/80 w-full">
       {/* Chrome bar */}
-      <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-white/10 bg-white/[0.03]">
+      <div className="flex items-center gap-2.5 px-4 sm:px-5 py-3 sm:py-3.5 border-b border-white/10 bg-white/[0.03]">
         <span className="w-3 h-3 rounded-full bg-red-500/80" />
         <span className="w-3 h-3 rounded-full bg-yellow-500/80" />
         <span className="w-3 h-3 rounded-full bg-emerald-500/80" />
-        <span className="ml-3 text-sm text-slate-300 font-mono flex-1">severa-cli — zsh</span>
-        <span className="text-xs font-bold px-2.5 py-1 rounded-md border border-emerald-500/40 text-emerald-400 bg-emerald-500/10">● LIVE DEMO</span>
+        <span className="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-300 font-mono flex-1 truncate">severa-cli — zsh</span>
+        <span className="text-[10px] sm:text-xs font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 shrink-0">● LIVE DEMO</span>
       </div>
 
-      {/* Step tabs */}
-      <div className="flex border-b border-white/10 overflow-x-auto bg-black/40">
-        {TERMINAL_STEPS.map((s, i) => (
-          <button
-            key={s.tab}
-            onClick={() => setActiveStep(i)}
-            className={`px-5 py-3 text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors border-b-2 cursor-pointer ${
-              i === activeStep
-                ? 'border-emerald-500 text-emerald-400 bg-emerald-500/10'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            {s.tab}
-          </button>
-        ))}
+      {/* Step tabs — 4 equal columns across the entire width, NO scrollbar */}
+      <div className="grid grid-cols-4 w-full border-b border-white/10 bg-black/40">
+        {TERMINAL_STEPS.map((s, i) => {
+          const isActive = i === activeStep;
+          return (
+            <button
+              key={s.stepNum}
+              type="button"
+              onClick={() => setActiveStep(i)}
+              className={`py-2 sm:py-2.5 px-1 sm:px-2 flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-1.5 text-center transition-all border-b-2 cursor-pointer select-none ${
+                isActive
+                  ? 'border-emerald-500 text-emerald-400 bg-emerald-500/10 font-bold'
+                  : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/[0.02] font-medium'
+              }`}
+            >
+              <span className={`text-[10px] sm:text-xs tracking-tight shrink-0 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`}>
+                {s.stepNum}
+                <span className="hidden md:inline">:</span>
+              </span>
+              <span className="text-[11px] sm:text-xs truncate max-w-full">
+                <span className="hidden sm:inline">{s.title}</span>
+                <span className="inline sm:hidden">{s.mobileTitle || s.title}</span>
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Command line */}
-      <div className="px-5 py-3.5 border-b border-white/10 bg-black/50">
-        <p className="font-mono text-sm sm:text-base text-emerald-300">{step.text}</p>
+      <div className="px-4 sm:px-5 py-2.5 sm:py-3.5 border-b border-white/10 bg-black/50 overflow-hidden">
+        <p className="font-mono text-xs sm:text-sm md:text-base text-emerald-300 truncate">{step.text}</p>
       </div>
 
       {/* Terminal Body */}
-      <div className="p-5 space-y-3 min-h-[240px]">
+      <div className="p-4 sm:p-5 space-y-2.5 sm:space-y-3 min-h-[240px]">
         {/* Header line */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded-md bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
-              <Shield size={14} className="text-emerald-400" />
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-md bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
+              <Shield size={13} className="text-emerald-400" />
             </div>
-            <span className="text-sm font-bold text-emerald-400">{step.title}</span>
+            <span className="text-xs sm:text-sm font-bold text-emerald-400 truncate">{step.headerTitle || step.title}</span>
           </div>
-          <span className="text-xs text-emerald-400 font-mono font-bold animate-pulse">● LIVE</span>
+          <span className="text-[10px] sm:text-xs text-emerald-400 font-mono font-bold animate-pulse shrink-0">● LIVE</span>
         </div>
 
-        <p className="text-xs sm:text-sm text-slate-300 font-mono mb-3">
+        <p className="text-[11px] sm:text-xs md:text-sm text-slate-300 font-mono mb-2.5 truncate">
           {step.info}
         </p>
 
@@ -267,19 +299,19 @@ function DemoTerminal() {
         {step.items.map((item, i) => (
           <div
             key={i}
-            className={`flex items-center justify-between text-xs sm:text-sm font-mono transition-all duration-300 ${
+            className={`flex items-center justify-between gap-2 text-[11px] sm:text-xs md:text-sm font-mono transition-all duration-300 ${
               i < revealedOutput ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'
             }`}
           >
-            <div className="flex items-center gap-2.5">
-              <span className={i < revealedOutput - 1 ? 'text-emerald-400 font-bold' : 'text-emerald-500/80 font-bold'}>
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <span className={`shrink-0 ${i < revealedOutput - 1 ? 'text-emerald-400 font-bold' : 'text-emerald-500/80 font-bold'}`}>
                 {i < revealedOutput - 1 ? '✓' : '⦿'}
               </span>
-              <span className={i < revealedOutput - 1 ? 'text-slate-200' : 'text-slate-300 font-medium'}>
+              <span className={`truncate ${i < revealedOutput - 1 ? 'text-slate-200' : 'text-slate-300 font-medium'}`}>
                 {item.label}
               </span>
             </div>
-            <span className={`text-xs sm:text-sm font-bold ${item.badge || (i < revealedOutput - 1 ? 'text-emerald-400' : 'text-slate-400')}`}>
+            <span className={`shrink-0 text-[10px] sm:text-xs md:text-sm font-bold ${item.badge || (i < revealedOutput - 1 ? 'text-emerald-400' : 'text-slate-400')}`}>
               {i < revealedOutput - 1 ? item.value : 'Processing...'}
             </span>
           </div>
@@ -350,42 +382,42 @@ export default function LandingPage() {
           {/* Left */}
           <div className="lg:col-span-7">
             {/* Info bar */}
-            <div className="flex flex-wrap items-center gap-3 mb-6 text-xs font-semibold">
-              <span className="flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 font-bold">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <div className="flex flex-wrap items-center gap-3 mb-5">
+              <span className="flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs sm:text-[13px] font-semibold">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 Open Source &amp; Self-Hostable Security Platform
               </span>
             </div>
 
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black leading-[1.05] tracking-tight mb-6">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight mb-5">
               Build Secure<br />
               Software{' '}
               <span className="text-emerald-400">Faster</span>
             </h1>
 
-            <p className="text-base sm:text-lg lg:text-xl text-slate-300 leading-relaxed mb-8 max-w-2xl font-normal">
+            <p className="text-sm sm:text-base lg:text-[17px] text-slate-300 leading-relaxed mb-6 max-w-xl font-normal">
               Open-source AI security platform for intelligent code review,
               vulnerability detection, automated remediation, and developer workflows.
             </p>
 
-            <div className="flex flex-wrap gap-4 mb-8">
+            <div className="flex flex-wrap gap-3.5 mb-7">
               <button
                 onClick={() => navigate('/login')}
-                className="flex items-center gap-2 px-7 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-base font-black transition-all shadow-xl shadow-emerald-500/30 hover:-translate-y-0.5"
+                className="flex items-center gap-2 px-5.5 py-2.5 sm:px-6 sm:py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-sm sm:text-base font-black transition-all shadow-lg shadow-emerald-500/25 hover:-translate-y-0.5 cursor-pointer"
               >
                 Get Started
                 <ArrowRight size={16} />
               </button>
               <button
                 onClick={() => navigate('/app')}
-                className="flex items-center gap-2 px-6 py-3.5 rounded-xl border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-white text-base font-semibold transition-all hover:-translate-y-0.5"
+                className="flex items-center gap-2 px-4.5 py-2.5 sm:px-5 sm:py-3 rounded-xl border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-white text-sm sm:text-base font-semibold transition-all hover:-translate-y-0.5 cursor-pointer"
               >
                 <Eye size={16} className="text-slate-300" />
                 View Demo
               </button>
               <button
                 onClick={() => {}}
-                className="flex items-center gap-2 px-6 py-3.5 rounded-xl border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-white text-base font-semibold transition-all hover:-translate-y-0.5"
+                className="flex items-center gap-2 px-4.5 py-2.5 sm:px-5 sm:py-3 rounded-xl border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-white text-sm sm:text-base font-semibold transition-all hover:-translate-y-0.5 cursor-pointer"
               >
                 <FileCode size={16} className="text-slate-300" />
                 Read Docs
@@ -393,7 +425,7 @@ export default function LandingPage() {
             </div>
 
             {/* Docker quick-start */}
-            <div className="flex items-center gap-3 bg-black/60 border border-white/10 rounded-xl px-5 py-3 font-mono text-sm text-slate-200 max-w-xl">
+            <div className="flex items-center gap-2.5 bg-black/60 border border-white/10 rounded-xl px-4 py-2.5 font-mono text-xs sm:text-sm text-slate-200 max-w-lg">
               <Terminal size={14} className="text-emerald-400 shrink-0" />
               <span className="flex-1 truncate">$ {DOCKER_CMD}</span>
               <CopyButton text={DOCKER_CMD} />
