@@ -4,29 +4,36 @@
  * Supports Python, JavaScript, TypeScript, Java, C/C++, C#, Go, Rust, PHP, Ruby, Shell, Dockerfile, YAML, SQL.
  */
 
+export function getLanguageFromFilename(filename = '') {
+  if (!filename) return null;
+  const cleanName = filename.split(/[/\\]/).pop().toLowerCase();
+  const ext = cleanName.includes('.') ? cleanName.split('.').pop().toLowerCase() : cleanName;
+  if (['py', 'pyw'].includes(ext)) return 'python';
+  if (['js', 'jsx', 'mjs', 'cjs'].includes(ext)) return 'javascript';
+  if (['ts', 'tsx'].includes(ext)) return 'typescript';
+  if (['dockerfile', 'dockerignore'].includes(ext) || cleanName === 'dockerfile') return 'dockerfile';
+  if (['java', 'class', 'jar'].includes(ext)) return 'java';
+  if (['go'].includes(ext)) return 'go';
+  if (['c', 'cpp', 'cc', 'h', 'hpp', 'cxx'].includes(ext)) return 'c';
+  if (['cs'].includes(ext)) return 'csharp';
+  if (['php', 'phtml', 'php5', 'php7', 'php8'].includes(ext)) return 'php';
+  if (['rs'].includes(ext)) return 'rust';
+  if (['rb', 'erb'].includes(ext)) return 'ruby';
+  if (['sh', 'bash', 'zsh', 'ash'].includes(ext)) return 'shell';
+  if (['yaml', 'yml'].includes(ext)) return 'yaml';
+  if (['html', 'htm'].includes(ext)) return 'html';
+  if (['sql'].includes(ext)) return 'sql';
+  if (['json', 'jsonl', 'csv', 'tsv'].includes(ext)) return 'json';
+  if (['md', 'markdown'].includes(ext)) return 'markdown';
+  if (['txt', 'log', 'env', 'example'].includes(ext)) return 'txt';
+  return null;
+}
+
 export function detectLanguage(code = '', filename = '') {
-  // 1. Extension-based detection
+  // 1. Extension-based detection (Absolute Priority when filename provided)
   if (filename) {
-    const ext = filename.split('.').pop().toLowerCase();
-    if (['joblib', 'pkl', 'bin', 'h5', 'onnx', 'pt', 'pth', 'dat', 'so', 'dll', 'exe', 'pyc', 'pyo', 'db', 'sqlite', 'sqlite3', 'mako', 'pb', 'model', 'weights', 'restored', 'bak', 'backup', 'tmp', 'old'].includes(ext)) return 'txt';
-    if (['py', 'pyw'].includes(ext)) return 'python';
-    if (['js', 'jsx', 'mjs', 'cjs'].includes(ext)) return 'javascript';
-    if (['ts', 'tsx'].includes(ext)) return 'typescript';
-    if (['dockerfile', 'dockerignore'].includes(ext) || filename.toLowerCase() === 'dockerfile') return 'dockerfile';
-    if (['java', 'class', 'jar'].includes(ext)) return 'java';
-    if (['go'].includes(ext)) return 'go';
-    if (['c', 'cpp', 'cc', 'h', 'hpp', 'cxx'].includes(ext)) return 'c';
-    if (['cs'].includes(ext)) return 'csharp';
-    if (['php', 'phtml', 'php5', 'php7', 'php8'].includes(ext)) return 'php';
-    if (['rs'].includes(ext)) return 'rust';
-    if (['rb', 'erb'].includes(ext)) return 'ruby';
-    if (['sh', 'bash', 'zsh', 'ash'].includes(ext)) return 'shell';
-    if (['yaml', 'yml'].includes(ext)) return 'yaml';
-    if (['html', 'htm'].includes(ext)) return 'html';
-    if (['sql'].includes(ext)) return 'sql';
-    if (['json', 'jsonl', 'csv', 'tsv'].includes(ext)) return 'json';
-    if (['md', 'markdown'].includes(ext)) return 'markdown';
-    if (['txt', 'log', 'env', 'example'].includes(ext)) return 'txt';
+    const fileLang = getLanguageFromFilename(filename);
+    if (fileLang) return fileLang;
   }
 
   const trimmed = code.trim();

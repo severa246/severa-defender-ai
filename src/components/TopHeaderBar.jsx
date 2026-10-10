@@ -22,6 +22,9 @@ export default function TopHeaderBar({
   onScanFullProject,
   onOpenCommandPalette,
   onExportSarif,
+  isDefenderOpen = false,
+  isSandboxOpen = false,
+  isReportOpen = false,
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(activeSession?.name || 'Vulnerability Detection Audit');
@@ -301,20 +304,25 @@ export default function TopHeaderBar({
         {onScanFullProject && (
           <button
             onClick={onScanFullProject}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/80 rounded-lg text-xs font-semibold shadow-sm transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-[#0e121d] hover:bg-white/[0.08] text-slate-300 hover:text-white border border-white/[0.08] hover:border-white/[0.16] rounded-lg text-xs font-medium transition-all cursor-pointer group shadow-sm"
             title="Scan all project files in active folder"
           >
-            <Folder className="w-3.5 h-3.5 text-indigo-400" />
-            <span className="hidden sm:inline">Scan Full Project</span>
+            <Folder className="w-3.5 h-3.5 text-sky-400 group-hover:text-sky-300 transition-colors" />
+            <span className="hidden sm:inline">Scan Project</span>
           </button>
         )}
 
         {/* Severa Defender AI Button */}
         <button
           onClick={() => onOpenDefender && onOpenDefender(null)}
-          className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow-sm shadow-indigo-950/50 transition-all cursor-pointer border border-indigo-500/30"
+          className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer group shadow-sm border ${
+            isDefenderOpen
+              ? 'bg-white/10 text-white border-white/20 ring-1 ring-white/10'
+              : 'bg-[#0e121d] hover:bg-white/[0.08] text-slate-300 hover:text-white border-white/[0.08] hover:border-white/[0.16]'
+          }`}
+          title="Open Severa Defender AI Copilot"
         >
-          <ShieldCheck className="w-3.5 h-3.5 text-indigo-100" />
+          <ShieldCheck className="w-3.5 h-3.5 text-indigo-400 group-hover:text-indigo-300 transition-colors" />
           <span>Severa Defender AI</span>
         </button>
 
@@ -322,10 +330,14 @@ export default function TopHeaderBar({
         {onOpenSandbox && (
           <button
             onClick={onOpenSandbox}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 rounded-lg text-xs font-semibold transition-all cursor-pointer"
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer group shadow-sm border ${
+              isSandboxOpen
+                ? 'bg-white/10 text-white border-white/20 ring-1 ring-white/10'
+                : 'bg-[#0e121d] hover:bg-white/[0.08] text-slate-300 hover:text-white border-white/[0.08] hover:border-white/[0.16]'
+            }`}
             title="Open Interactive Attack Payload Sandbox Simulator"
           >
-            <Cloud className="w-3.5 h-3.5 text-amber-400" />
+            <Cloud className="w-3.5 h-3.5 text-amber-400 group-hover:text-amber-300 transition-colors" />
             <span className="hidden md:inline">Attack Sandbox</span>
           </button>
         )}
@@ -333,10 +345,15 @@ export default function TopHeaderBar({
         {/* Generate Audit Report button */}
         <button
           onClick={onOpenReport}
-          className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/80 rounded-lg text-xs font-semibold shadow-sm transition-all cursor-pointer"
+          className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer group shadow-sm border ${
+            isReportOpen
+              ? 'bg-white/10 text-white border-white/20 ring-1 ring-white/10'
+              : 'bg-[#0e121d] hover:bg-white/[0.08] text-slate-300 hover:text-white border-white/[0.08] hover:border-white/[0.16]'
+          }`}
+          title="Generate CISO Security Audit Report"
         >
-          <FileText className="w-3.5 h-3.5 text-indigo-400" />
-          <span className="hidden md:inline">Generate Audit Report</span>
+          <FileText className="w-3.5 h-3.5 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
+          <span className="hidden md:inline">Audit Report</span>
         </button>
       </div>
     </div>

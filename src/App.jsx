@@ -1514,6 +1514,9 @@ export default function App({ user, onLogout }) {
           onScanFullProject={handleScanFullProject}
           onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
           onExportSarif={handleExportSarif}
+          isDefenderOpen={isDefenderOpen}
+          isSandboxOpen={isSandboxOpen}
+          isReportOpen={isReportOpen}
         />
 
         {/* Full Project Scan Completed Toast Banner */}

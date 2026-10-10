@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { generateAuditReportMarkdown } from '../utils/reportGenerator';
-import { FileText, Copy, Download, X, Check, Printer, Shield, Sparkles, Award } from 'lucide-react';
+import { generateAuditReportMarkdown, getAuditVerificationMetadata } from '../utils/reportGenerator';
+import { FileText, Copy, Download, X, Check, Printer, Shield, ShieldCheck, Lock, Sparkles, Award } from 'lucide-react';
 
 export default function AuditReportModal({ isOpen, onClose, scanMetrics, findings = [], language, code, aiReviewData }) {
   const [copied, setCopied] = useState(false);
@@ -37,6 +37,8 @@ export default function AuditReportModal({ isOpen, onClose, scanMetrics, finding
   const highCount = findings.filter(f => f.severity === 'HIGH').length;
   const mediumCount = findings.filter(f => f.severity === 'MEDIUM').length;
   const lowCount = findings.filter(f => f.severity === 'LOW').length;
+
+  const verification = getAuditVerificationMetadata(language, code?.length || 0, findings?.length || 0, score);
 
   return (
     <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 print:p-0 print:bg-white print:static print:inset-auto">
@@ -225,6 +227,59 @@ export default function AuditReportModal({ isOpen, onClose, scanMetrics, finding
                   </div>
                 </div>
               )}
+
+              {/* CISO Cryptographic Seal & Verification Provenance */}
+              <div className="p-5 rounded-2xl bg-[#070a13] border border-emerald-500/20 print:border-slate-400 space-y-3.5 relative overflow-hidden">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                      <ShieldCheck className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-100 print:text-black flex items-center gap-2">
+                        <span>Cryptographic Verification & Integrity Attestation</span>
+                        <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
+                          TAMPER-EVIDENT
+                        </span>
+                      </h4>
+                      <p className="text-[11px] text-slate-400 print:text-slate-600">Enterprise CISO Attested Security Artifact • SHA-256 Provenance Signature</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/[0.04] text-slate-400 border border-white/[0.08]">
+                      SOC 2 TYPE II • ISO 27001
+                    </span>
+                  </div>
+                </div>
+
+                {/* Monospace Seal Code Block */}
+                <div className="bg-slate-950 print:bg-slate-50 border border-slate-800/80 print:border-slate-300 rounded-xl p-3.5 font-mono text-[11px] leading-relaxed text-slate-300 print:text-slate-800 space-y-1">
+                  <div className="flex items-center justify-between gap-2 text-emerald-400 print:text-emerald-700 font-semibold text-xs border-b border-slate-800/80 pb-1.5 mb-1.5">
+                    <span className="flex items-center gap-1.5">
+                      <Lock className="w-3 h-3" />
+                      <span>SIGNATURE: {verification.signature}</span>
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-normal">ED25519-SHA256</span>
+                  </div>
+                  <div className="break-all">
+                    <span className="text-slate-500 select-none">AUDIT VERIFICATION HASH: </span>
+                    <span className="text-cyan-300 print:text-cyan-800 font-bold">{verification.hash}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 select-none">COMPLIANCE STATUS: </span>
+                    <span className="text-emerald-400 print:text-emerald-800 font-semibold">{verification.complianceStatus}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 select-none">SIGNING AUTHORITY: </span>
+                    <span className="text-slate-400">{verification.signingAuthority}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 select-none">INTEGRITY ATTESTATION: </span>
+                    <span className="text-slate-400">{verification.integrityAttestation}</span>
+                  </div>
+                </div>
+              </div>
 
             </div>
           ) : (

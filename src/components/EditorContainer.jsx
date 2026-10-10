@@ -16,7 +16,7 @@ import {
   GitBranch,
   Trash2
 } from 'lucide-react';
-import { detectLanguage } from '../engine/languageDetector';
+import { detectLanguage, getLanguageFromFilename } from '../engine/languageDetector';
 import GitHubPullModal from './GitHubPullModal';
 import FileTreeSidebar from './FileTreeSidebar';
 
@@ -234,12 +234,19 @@ export default function EditorContainer({
     }
   }, []);
 
-  // Code input handler with Auto Language Detection
+  // Code input handler with File Extension Priority
   const handleCodeChange = (newCode, filename = '') => {
     setCode(newCode);
 
-    if (autoDetectMode) {
-      const detected = detectLanguage(newCode, filename);
+    const targetFile = filename || activeFilePath || '';
+    const fileExtLang = getLanguageFromFilename(targetFile);
+
+    if (fileExtLang) {
+      // File extension locks the language mode to prevent foreign syntax from masking cross-language bugs
+      setLanguage(fileExtLang);
+      onScan(newCode, fileExtLang);
+    } else if (autoDetectMode) {
+      const detected = detectLanguage(newCode, targetFile);
       setLanguage(detected);
       onScan(newCode, detected);
     } else {
@@ -268,7 +275,7 @@ export default function EditorContainer({
     try {
       const text = await navigator.clipboard.readText();
       if (text) {
-        handleCodeChange(text);
+        handleCodeChange(text, activeFilePath);
       }
     } catch (err) {
       console.warn("Clipboard access declined:", err);
@@ -374,7 +381,8 @@ export default function EditorContainer({
                 const nextMode = !autoDetectMode;
                 setAutoDetectMode(nextMode);
                 if (nextMode) {
-                  const detected = detectLanguage(code);
+                  const fileExtLang = getLanguageFromFilename(activeFilePath);
+                  const detected = fileExtLang || detectLanguage(code, activeFilePath);
                   setLanguage(detected);
                   onScan(code, detected);
                 }
@@ -479,7 +487,7 @@ export default function EditorContainer({
             language={MONACO_LANG_MAP[language] || language || 'javascript'}
             value={code}
             theme="severa-dark"
-            onChange={(val) => handleCodeChange(val || '')}
+            onChange={(val) => handleCodeChange(val || '', activeFilePath)}
             onMount={handleEditorDidMount}
             loading={
               <div className="flex flex-col items-center justify-center h-full text-slate-500 font-mono text-xs gap-2">
