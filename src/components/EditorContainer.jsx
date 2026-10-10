@@ -322,7 +322,7 @@ export default function EditorContainer({
       )}
 
       {/* Main Code Editor Box */}
-      <div className="flex-1 bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden flex flex-col h-full shadow-2xl backdrop-blur-md">
+      <div className="flex-1 bg-[#191C23] border border-white/10 rounded-2xl overflow-hidden flex flex-col h-full shadow-2xl backdrop-blur-md">
         
         {/* Hidden File Input for Single File Upload */}
         <input
@@ -334,7 +334,7 @@ export default function EditorContainer({
         />
 
         {/* Professional Editor Toolbar Header */}
-        <div className="bg-[#0c0e15] px-3 sm:px-4 py-2 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-2">
+        <div className="bg-[#12141a] px-3 sm:px-4 py-2 border-b border-white/10 flex flex-wrap items-center justify-between gap-2">
           
           {/* Left Controls: Toggle Sidebar, Preset Templates & Language Dropdowns */}
           <div className="flex items-center gap-2 flex-wrap">
@@ -343,7 +343,7 @@ export default function EditorContainer({
             <button
               onClick={() => setShowSidebar(!showSidebar)}
               className={`p-1.5 rounded-lg border text-xs transition-all cursor-pointer ${
-                showSidebar ? 'bg-[#191C23] text-white border-white/20 shadow-sm' : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border-slate-800'
+                showSidebar ? 'bg-[#191C23] text-white border-white/20 shadow-sm' : 'bg-[#191C23] hover:bg-[#232732] text-slate-400 border-white/10'
               }`}
               title={showSidebar ? 'Hide Project Explorer' : 'Expand Project Explorer'}
             >
@@ -357,22 +357,22 @@ export default function EditorContainer({
                 setLanguage(e.target.value);
                 onScan(code, e.target.value);
               }}
-              className="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-lg text-xs text-slate-100 px-2.5 py-1 focus:outline-none uppercase font-semibold cursor-pointer"
+              className="bg-[#191C23] border border-white/10 hover:border-white/20 rounded-lg text-xs text-slate-100 px-2.5 py-1 focus:outline-none uppercase font-semibold cursor-pointer"
             >
-              <option value="python" className="bg-slate-900 text-slate-100 font-semibold">Python</option>
-              <option value="javascript" className="bg-slate-900 text-slate-100 font-semibold">JavaScript / React</option>
-              <option value="typescript" className="bg-slate-900 text-slate-100 font-semibold">TypeScript / Node</option>
-              <option value="java" className="bg-slate-900 text-slate-100 font-semibold">Java / Spring</option>
-              <option value="c" className="bg-slate-900 text-slate-100 font-semibold">C / C++</option>
-              <option value="csharp" className="bg-slate-900 text-slate-100 font-semibold">C# / .NET</option>
-              <option value="go" className="bg-slate-900 text-slate-100 font-semibold">Go (Golang)</option>
-              <option value="rust" className="bg-slate-900 text-slate-100 font-semibold">Rust</option>
-              <option value="php" className="bg-slate-900 text-slate-100 font-semibold">PHP / Laravel</option>
-              <option value="ruby" className="bg-slate-900 text-slate-100 font-semibold">Ruby / Rails</option>
-              <option value="shell" className="bg-slate-900 text-slate-100 font-semibold">Shell / Bash</option>
-              <option value="dockerfile" className="bg-slate-900 text-slate-100 font-semibold">Dockerfile</option>
-              <option value="yaml" className="bg-slate-900 text-slate-100 font-semibold">YAML / K8s</option>
-              <option value="sql" className="bg-slate-900 text-slate-100 font-semibold">SQL</option>
+              <option value="python" className="bg-[#191C23] text-slate-100 font-semibold">Python</option>
+              <option value="javascript" className="bg-[#191C23] text-slate-100 font-semibold">JavaScript / React</option>
+              <option value="typescript" className="bg-[#191C23] text-slate-100 font-semibold">TypeScript / Node</option>
+              <option value="java" className="bg-[#191C23] text-slate-100 font-semibold">Java / Spring</option>
+              <option value="c" className="bg-[#191C23] text-slate-100 font-semibold">C / C++</option>
+              <option value="csharp" className="bg-[#191C23] text-slate-100 font-semibold">C# / .NET</option>
+              <option value="go" className="bg-[#191C23] text-slate-100 font-semibold">Go (Golang)</option>
+              <option value="rust" className="bg-[#191C23] text-slate-100 font-semibold">Rust</option>
+              <option value="php" className="bg-[#191C23] text-slate-100 font-semibold">PHP / Laravel</option>
+              <option value="ruby" className="bg-[#191C23] text-slate-100 font-semibold">Ruby / Rails</option>
+              <option value="shell" className="bg-[#191C23] text-slate-100 font-semibold">Shell / Bash</option>
+              <option value="dockerfile" className="bg-[#191C23] text-slate-100 font-semibold">Dockerfile</option>
+              <option value="yaml" className="bg-[#191C23] text-slate-100 font-semibold">YAML / K8s</option>
+              <option value="sql" className="bg-[#191C23] text-slate-100 font-semibold">SQL</option>
             </select>
 
             {/* Auto-Detect Language Toggle Pill */}
@@ -390,7 +390,7 @@ export default function EditorContainer({
               className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer border ${
                 autoDetectMode
                   ? 'bg-[#191C23] text-emerald-400 border-emerald-500/30'
-                  : 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800'
+                  : 'bg-[#191C23] text-slate-400 border-white/10 hover:bg-[#232732]'
               }`}
               title="Toggle Automatic Language Detection"
             >
@@ -406,9 +406,9 @@ export default function EditorContainer({
             <button
               onClick={handleUndo}
               title="Undo edits in editor (Ctrl+Z)"
-              className="flex items-center gap-1 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 px-2 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer"
+              className="flex items-center gap-1 bg-[#191C23] hover:bg-[#232732] text-slate-200 border border-white/10 hover:border-white/20 px-2 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer"
             >
-              <Undo2 className="w-3.5 h-3.5 text-indigo-400" />
+              <Undo2 className="w-3.5 h-3.5 text-emerald-400" />
               <span className="hidden xl:inline">Undo</span>
             </button>
 
@@ -416,52 +416,52 @@ export default function EditorContainer({
             <button
               onClick={handleRedo}
               title="Redo edits in editor (Ctrl+Y / Cmd+Shift+Z)"
-              className="flex items-center gap-1 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 px-2 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer"
+              className="flex items-center gap-1 bg-[#191C23] hover:bg-[#232732] text-slate-200 border border-white/10 hover:border-white/20 px-2 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer"
             >
-              <Redo2 className="w-3.5 h-3.5 text-indigo-400" />
+              <Redo2 className="w-3.5 h-3.5 text-emerald-400" />
               <span className="hidden xl:inline">Redo</span>
             </button>
 
             <button
               onClick={handlePasteCode}
               title="Paste Code from Clipboard"
-              className="flex items-center gap-1 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 px-2 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer"
+              className="flex items-center gap-1 bg-[#191C23] hover:bg-[#232732] text-slate-300 border border-white/10 hover:border-white/20 px-2 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer"
             >
-              <ClipboardPaste className="w-3.5 h-3.5 text-indigo-400" />
+              <ClipboardPaste className="w-3.5 h-3.5 text-emerald-400" />
               <span className="hidden xl:inline">Paste</span>
             </button>
 
             <button
               onClick={() => singleFileInputRef.current?.click()}
               title="Upload Single Code File"
-              className="flex items-center gap-1 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 px-2 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer"
+              className="flex items-center gap-1 bg-[#191C23] hover:bg-[#232732] text-slate-300 border border-white/10 hover:border-white/20 px-2 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer"
             >
-              <Upload className="w-3.5 h-3.5 text-indigo-400" />
+              <Upload className="w-3.5 h-3.5 text-emerald-400" />
               <span className="hidden xl:inline">File</span>
             </button>
 
             <button
               onClick={() => onUploadFolder && onUploadFolder()}
               title="Upload Entire Directory / Folder"
-              className="flex items-center gap-1 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 px-2 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer"
+              className="flex items-center gap-1 bg-[#191C23] hover:bg-[#232732] text-slate-300 border border-white/10 hover:border-white/20 px-2 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer"
             >
-              <FolderPlus className="w-3.5 h-3.5 text-indigo-400" />
+              <FolderPlus className="w-3.5 h-3.5 text-emerald-400" />
               <span>Folder</span>
             </button>
 
             <button
               onClick={() => setShowGithubModal(true)}
               title="Pull Code from GitHub"
-              className="flex items-center gap-1 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 px-2 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer"
+              className="flex items-center gap-1 bg-[#191C23] hover:bg-[#232732] text-slate-300 border border-white/10 hover:border-white/20 px-2 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer"
             >
-              <GitBranch className="w-3.5 h-3.5 text-indigo-400" />
+              <GitBranch className="w-3.5 h-3.5 text-emerald-400" />
               <span className="hidden xl:inline">GitHub</span>
             </button>
 
             <button
               onClick={() => handleCodeChange('')}
               title="Clear Scratchpad"
-              className="p-1.5 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-rose-400 border border-slate-800 rounded-lg text-xs transition-all cursor-pointer"
+              className="p-1.5 bg-[#191C23] hover:bg-[#232732] text-slate-400 hover:text-rose-400 border border-white/10 rounded-lg text-xs transition-all cursor-pointer"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
