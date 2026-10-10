@@ -105,7 +105,7 @@ STRICT SECURITY INSTRUCTIONS:
    - Replace raw dynamic string concatenations with parameterized statements (SQLi).
    - Replace hardcoded secrets/keys with environment variable loaders (e.g., os.getenv(), process.env).
    - Replace shell command concatenations with safe sanitized execution functions.
-3. INLINE SECURITY COMMENTS: Add clear `# SECURITY FIX:` (or `// SECURITY FIX:`) comments on every remediated line explaining the exact security enhancement.
+3. INLINE SECURITY COMMENTS: Add clear "# SECURITY FIX:" (or "// SECURITY FIX:") comments on every remediated line explaining the exact security enhancement.
 4. JSON RESPONSE FORMAT ONLY: Return JSON with key "fixedCode", "status", "reviewComments", and "remediationDiffSummary". Do not include markdown outer wrappers outside the JSON.
 `;
 
