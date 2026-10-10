@@ -5,7 +5,7 @@ import {
   ArrowRight, ChevronRight, ChevronLeft, Code2, Cpu, Globe, Layers, BarChart3,
   ShieldCheck, AlertTriangle, FileCode, Sparkles, Menu, X,
   Terminal, Copy, Check, Package, GitPullRequest, FileText,
-  Users, Star, Tag, CheckCircle2
+  Users, Star, Tag
 } from 'lucide-react';
 
 // ── Copy button ────────────────────────────────────────────────────────────────
@@ -289,615 +289,266 @@ function DemoTerminal() {
   );
 }
 
-// ── Workflow Steps Definition ──────────────────────────────────────────────────
-const WORKFLOW_STEPS = [
+// ── 7-Stage End-to-End Workflow Stages Data (Matches Image 5 Design) ───────────────
+const WORKFLOW_STAGES = [
   {
-    step: 1,
-    title: 'Repository Analysis',
-    short: 'Repo AST Scan',
-    tag: 'AST Parsing Engine',
+    id: 1,
+    tab: '1 Repo AST Scan',
+    stageNumber: 'STAGE 01 / 07',
+    engineTag: 'AST PARSING ENGINE',
     icon: Code2,
     iconColor: 'text-blue-400',
     iconBg: 'bg-blue-500/10 border-blue-500/20',
-    headline: 'Multi-Language AST Call Graph & Syntax Indexing',
+    title: 'Repository Analysis',
+    subtitle: 'Multi-Language AST Call Graph & Syntax Indexing',
     desc: 'Analyzes project architecture across 30+ programming languages. Maps dangerous data flows from HTTP entry points directly into SQL queries, system commands, and deserialization sinks.',
-    points: [
+    bullets: [
       'Cross-file taint analysis & data flow tracking',
       'Instant AST indexing across 30+ languages',
       'Deterministic call-graph tracing with zero false positives'
     ],
-    previewType: 'ast',
+    preview: {
+      engine: 'AST Analysis Engine · Taint Call Graph',
+      badge: '30+ Languages',
+      target: 'src/api/auth.py',
+      meta: 'AST Parsed: 1,420 nodes',
+      code: [
+        { type: 'entry', label: 'ENTRY', text: "def login_route(request):" },
+        { type: 'source', label: 'SOURCE', text: "raw_email = request.args.get('email')" },
+        { type: 'taint', label: 'TAINT', text: "f\"SELECT * FROM users WHERE email='{raw_email}'\"" },
+        { type: 'sink', label: 'SINK', text: "cursor.execute(sql)" }
+      ],
+      alertIcon: '⚠️',
+      alertText: 'CWE-89: SQL Injection Taint Path Traced',
+      alertConfidence: 'CONFIDENCE: 99.8%',
+      alertType: 'warning'
+    }
   },
   {
-    step: 2,
-    title: 'Secret Detection',
-    short: 'Secret Scan',
-    tag: 'Entropy & Pattern Match',
+    id: 2,
+    tab: '2 Secret Scan',
+    stageNumber: 'STAGE 02 / 07',
+    engineTag: 'ENTROPY SCAN ENGINE',
     icon: Lock,
     iconColor: 'text-amber-400',
     iconBg: 'bg-amber-500/10 border-amber-500/20',
-    headline: 'Real-Time Hardcoded Token & Credential Interception',
-    desc: 'Catches private keys, AWS access secrets, JWT signing tokens, database passwords, and API keys before they ever reach remote Git repositories.',
-    points: [
-      'High-entropy regex and cloud provider credential masks',
-      'Live validation against token providers',
-      'Pre-commit hook & CI pipeline gatekeeper'
+    title: 'Secret & Token Detection',
+    subtitle: 'High-Entropy Real-Time API Key & Token Auditing',
+    desc: 'Detects exposed API keys, OAuth client secrets, AWS IAM tokens, private keys, and database passwords with zero false positives across full git history.',
+    bullets: [
+      'Real-time entropy and regex scanning across 200+ token providers',
+      'Git commit history & staged pre-commit shield verification',
+      'Automated secret revoking & rotation instructions'
     ],
-    previewType: 'secret',
+    preview: {
+      engine: 'Secret Scanner · High-Entropy Engine',
+      badge: '200+ Providers',
+      target: 'config/production.env',
+      meta: 'Entropy: 4.86 bits/byte',
+      code: [
+        { type: 'comment', label: 'CHECK', text: "# Production Environment Credentials" },
+        { type: 'taint', label: 'LEAK', text: "OPENAI_API_KEY = \"sk-proj-98dF843jK9200491xM...\"" },
+        { type: 'source', label: 'AWS', text: "AWS_SECRET_KEY = \"wJalrXUtnFEMI/K7MDENG/bPxRfi...\"" },
+        { type: 'sink', label: 'REVOKE', text: "STRIPE_SECRET_KEY = \"sk_live_51M8Xz92kL...\"" }
+      ],
+      alertIcon: '🚨',
+      alertText: 'High Entropy Production API Key Exposed',
+      alertConfidence: 'IMMEDIATE REVOCATION',
+      alertType: 'danger'
+    }
   },
   {
-    step: 3,
-    title: 'Dependency Analysis',
-    short: 'SCA Audit',
-    tag: 'CVE & OSV Database',
+    id: 3,
+    tab: '3 SCA Audit',
+    stageNumber: 'STAGE 03 / 07',
+    engineTag: 'DEPENDENCY AUDIT ENGINE',
     icon: Package,
     iconColor: 'text-violet-400',
     iconBg: 'bg-violet-500/10 border-violet-500/20',
-    headline: 'Automated Supply Chain & Vulnerable Package Shield',
-    desc: 'Scans package manifests against OSV, GitHub Advisory Database, and National Vulnerability Database (NVD) to identify vulnerable transitive dependencies.',
-    points: [
-      'Continuous OSV and CVE vulnerability scanning',
-      'Direct vs transitive dependency graph parsing',
-      'One-click safe version patch recommendations'
+    title: 'Dependency SCA Analysis',
+    subtitle: 'Vulnerability Detection across OSV, NVD & GitHub Advisory',
+    desc: 'Analyzes transitive package manifests to pinpoint vulnerable dependencies, CVE exposures, license violations, and poisoned package versions in your software supply chain.',
+    bullets: [
+      'Live CVE feeds from OSV, NVD & GitHub Security Advisories',
+      'Transitive call-path reachability verification',
+      'Automated safe version recommendation with zero breaking changes'
     ],
-    previewType: 'sca',
+    preview: {
+      engine: 'Supply Chain Analyzer · CVE Feed',
+      badge: 'NVD / OSV Live',
+      target: 'package.json',
+      meta: 'Dependencies: 42 audited',
+      code: [
+        { type: 'comment', label: 'MANIFEST', text: "\"dependencies\": {" },
+        { type: 'taint', label: 'VULN', text: "  \"jsonwebtoken\": \"^8.5.1\"   // CVE-2022-23529 (High)" },
+        { type: 'source', label: 'VULN', text: "  \"axios\": \"^0.21.1\"          // CVE-2021-3749 (Medium)" },
+        { type: 'sink', label: 'PATCH', text: "  \"lodash\": \"4.17.20\"          // CVE-2021-23337 (High)" }
+      ],
+      alertIcon: '🛡️',
+      alertText: 'CVE-2022-23529: Upgrade jsonwebtoken to ^9.0.2',
+      alertConfidence: 'CVSS 7.8 HIGH',
+      alertType: 'warning'
+    }
   },
   {
-    step: 4,
-    title: 'AI Review Engine',
-    short: 'AI Review',
-    tag: 'Multi-LLM Engine',
+    id: 4,
+    tab: '4 AI Review',
+    stageNumber: 'STAGE 04 / 07',
+    engineTag: 'LLM REASONING ENGINE',
     icon: Sparkles,
     iconColor: 'text-emerald-400',
     iconBg: 'bg-emerald-500/10 border-emerald-500/20',
-    headline: 'Context-Aware Security Analysis via Leading LLMs',
-    desc: 'Pairs static rule verification with deep LLM reasoning from Google Gemini 1.5 Pro, Claude 3.7 Sonnet, or local Ollama instances to eliminate false positives.',
-    points: [
-      'OWASP Top 10 & CWE threat classification',
-      'Full function context with sanitization verification',
-      'Choice of Cloud LLMs or 100% offline local models'
+    title: 'AI Security Review Engine',
+    subtitle: 'Context-Aware Multi-LLM Reasoning & Triage',
+    desc: 'Powered by Gemini 1.5 Pro, Claude 3.7, and local Ollama models. Analyzes full codebase business logic to catch subtle authentication bypasses, IDORs, and race conditions.',
+    bullets: [
+      'Deep context reasoning beyond simple static regex rules',
+      'Zero hallucination verified against parsed syntax call-graphs',
+      'Multi-model provider support: Gemini, Claude, Ollama & LM Studio'
     ],
-    previewType: 'ai',
+    preview: {
+      engine: 'Severa AI Core · Gemini 1.5 Pro',
+      badge: '128k Context',
+      target: 'controllers/payments.ts',
+      meta: 'Severity: Critical',
+      code: [
+        { type: 'comment', label: 'LOGIC', text: "// Insecure authorization business check:" },
+        { type: 'source', label: 'AUTH', text: "if (user.role === 'admin' || user.id === req.targetId) {" },
+        { type: 'taint', label: 'FLAW', text: "  processRefund(req.targetId, req.amount); // Bypasses 2FA!" },
+        { type: 'sink', label: 'RESULT', text: "}" }
+      ],
+      alertIcon: '🤖',
+      alertText: 'AI Agent Verdict: Broken Object Level Authorization (IDOR)',
+      alertConfidence: 'CONFIDENCE: 98.4%',
+      alertType: 'danger'
+    }
   },
   {
-    step: 5,
-    title: 'Automated Fixes',
-    short: 'Auto Patch',
-    tag: 'Diff Synthesis',
+    id: 5,
+    tab: '5 Auto Patch',
+    stageNumber: 'STAGE 05 / 07',
+    engineTag: 'PATCH SYNTHESIS ENGINE',
     icon: Zap,
     iconColor: 'text-cyan-400',
     iconBg: 'bg-cyan-500/10 border-cyan-500/20',
-    headline: 'Instant Context-Preserving Security Remediation Diffs',
-    desc: 'Synthesizes clean, production-ready code diffs that preserve indentation, variable naming, and type safety, replacing insecure calls with verified secure alternatives.',
-    points: [
-      'Parameterized query & sanitization replacement',
-      'Syntax-valid drop-in replacement diffs',
-      'Unit test verification to prevent functional regressions'
+    title: 'Automated Code Remediation',
+    subtitle: 'Context-Aware Verified Security Patch Synthesis',
+    desc: 'Synthesizes surgical, production-ready code diffs that eliminate vulnerabilities while preserving code readability, existing variable conventions, and type safety.',
+    bullets: [
+      'Generates unified patch diffs tested for regression stability',
+      'Preserves original coding style, import formatting, and types',
+      'Automated one-click in-browser patch verification'
     ],
-    previewType: 'fix',
+    preview: {
+      engine: 'Patch Synthesizer · Unified Diff',
+      badge: 'Auto-Generated',
+      target: 'src/api/auth.py',
+      meta: 'Lines: +3, -1',
+      code: [
+        { type: 'sink', label: 'DIFF -', text: "- cursor.execute(f\"SELECT * FROM users WHERE email='{raw_email}'\")" },
+        { type: 'source', label: 'DIFF +', text: "+ query = \"SELECT * FROM users WHERE email = %s\"" },
+        { type: 'source', label: 'DIFF +', text: "+ cursor.execute(query, (raw_email,))" },
+        { type: 'comment', label: 'VERIFY', text: "# Parameterized SQL query prevents arbitrary string injection" }
+      ],
+      alertIcon: '✅',
+      alertText: 'Patch Verified: SQL Injection remediated with prepared query',
+      alertConfidence: 'SYNTAX VALIDATED',
+      alertType: 'success'
+    }
   },
   {
-    step: 6,
-    title: 'Pull Request Synthesis',
-    short: 'PR Creation',
-    tag: 'Git Automation',
+    id: 6,
+    tab: '6 PR Creation',
+    stageNumber: 'STAGE 06 / 07',
+    engineTag: 'CI/CD DISPATCH ENGINE',
     icon: GitPullRequest,
     iconColor: 'text-rose-400',
     iconBg: 'bg-rose-500/10 border-rose-500/20',
-    headline: 'One-Click GitHub & GitLab Pull Request Synthesis',
-    desc: 'Packages remediation patches directly into signed Git commits and opens automated Pull Requests equipped with security explanations and test reproduction steps.',
-    points: [
-      'Automated branch creation & signed commits',
-      'Detailed PR description with vulnerability context',
-      'Ready for developer review and instant merge'
+    title: 'Pull Request Synthesis',
+    subtitle: 'Automated GitHub & GitLab PRs with Full Security Context',
+    desc: 'Generates structured pull requests complete with vulnerability explanations, OWASP and CWE classifications, remediation rationale, and test validation checklists.',
+    bullets: [
+      'One-click GitHub & GitLab PR creation from within Severa',
+      'Automated branch creation with signed remediation commits',
+      'Executive summary markdown generated for engineering review'
     ],
-    previewType: 'pr',
+    preview: {
+      engine: 'Git Integration · Branch: fix/sqli-cwe-89',
+      badge: 'GitHub PR #42',
+      target: 'severaai/severa-core',
+      meta: 'Ready to Merge',
+      code: [
+        { type: 'comment', label: 'TITLE', text: "## 🛡️ Security Fix: SQL Injection in auth.py (CWE-89)" },
+        { type: 'source', label: 'REASON', text: "- Problem: Unsanitized input interpolated into SQL query" },
+        { type: 'source', label: 'FIX', text: "- Solution: Parameterized prepared statement applied" },
+        { type: 'sink', label: 'TESTS', text: "- Test suite: 28/28 passed (Regression tests verified)" }
+      ],
+      alertIcon: '🚀',
+      alertText: 'Pull Request Ready: github.com/severaai/severa-core/pull/42',
+      alertConfidence: 'READY TO MERGE',
+      alertType: 'success'
+    }
   },
   {
-    step: 7,
-    title: 'Export Security Report',
-    short: 'Audit Report',
-    tag: 'Executive Compliance',
+    id: 7,
+    tab: '7 Audit Report',
+    stageNumber: 'STAGE 07 / 07',
+    engineTag: 'COMPLIANCE & EXPORT ENGINE',
     icon: FileText,
     iconColor: 'text-orange-400',
     iconBg: 'bg-orange-500/10 border-orange-500/20',
-    headline: 'Executive Summaries, OWASP Matrices & Compliance Exports',
-    desc: 'Generates comprehensive compliance audit reports in PDF, SARIF, JSON, and CSV formats, complete with OWASP Top 10 matrices and MITRE ATT&CK mappings.',
-    points: [
-      'Interactive executive scorecards & charts',
-      'Industry-standard SARIF format for CI/CD',
-      'OWASP Top 10 & SOC 2 audit readiness'
+    title: 'Export Security Reports',
+    subtitle: 'OWASP Top 10, MITRE ATT&CK & SARIF 2.1.0 Exports',
+    desc: 'Export standard compliance documents for CISO review, compliance audits, and GitHub code scanning integration in SARIF, PDF, JSON, and ZIP formats.',
+    bullets: [
+      'Standard SARIF 2.1.0 output for GitHub Advanced Security & CI/CD',
+      'OWASP Top 10 & MITRE ATT&CK matrix compliance mapping',
+      'One-click download of patched project code in folder .zip'
     ],
-    previewType: 'report',
-  },
+    preview: {
+      engine: 'Report Generator · SARIF & OWASP',
+      badge: 'Export Ready',
+      target: 'audit-report-2026.sarif',
+      meta: 'Score: 98/100 (A+)',
+      code: [
+        { type: 'comment', label: 'FORMAT', text: "{\n  \"version\": \"2.1.0\",\n  \"$schema\": \"https://sarif.json\"" },
+        { type: 'source', label: 'TOOL', text: "  \"tool\": { \"name\": \"Severa Defender AI\", \"version\": \"2.4.0\" }," },
+        { type: 'sink', label: 'STATUS', text: "  \"runs\": [{ \"results\": [], \"invocations\": [{ \"success\": true }] }]" },
+        { type: 'comment', label: 'END', text: "}" }
+      ],
+      alertIcon: '📊',
+      alertText: 'CISO Audit Ready: OWASP Compliant · Zero Critical Findings',
+      alertConfidence: 'GRADE: A+ (98/100)',
+      alertType: 'success'
+    }
+  }
 ];
 
-// ── Step Visual Preview Mockups ───────────────────────────────────────────────
-function StepVisualPreview({ step }) {
-  if (step.previewType === 'ast') {
-    return (
-      <div className="bg-[#050811] border border-white/10 rounded-xl overflow-hidden font-mono text-xs shadow-2xl">
-        <div className="px-4 py-2.5 bg-white/[0.03] border-b border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-500/80" />
-            <span className="text-slate-300 font-semibold">AST Analysis Engine · Taint Call Graph</span>
-          </div>
-          <span className="text-[11px] text-blue-400 font-bold bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded">
-            30+ Languages
-          </span>
-        </div>
-        <div className="p-4 space-y-2.5 text-xs">
-          <div className="flex items-center justify-between text-slate-400 border-b border-white/5 pb-2">
-            <span>Target: <strong className="text-slate-200">src/api/auth.py</strong></span>
-            <span className="text-emerald-400 font-semibold">AST Parsed: 1,420 nodes</span>
-          </div>
-          <div className="space-y-1.5 pl-2 border-l-2 border-blue-500/40">
-            <div className="text-slate-400 flex items-center gap-2">
-              <span className="text-blue-400 font-bold">ENTRY</span>
-              <span className="text-slate-200">def login_route(request):</span>
-            </div>
-            <div className="text-slate-400 flex items-center gap-2 pl-4">
-              <span className="text-amber-400 font-bold">SOURCE</span>
-              <span>raw_email = request.args.get('email')</span>
-            </div>
-            <div className="text-slate-400 flex items-center gap-2 pl-4">
-              <span className="text-rose-400 font-bold">TAINT</span>
-              <span className="text-rose-300 bg-rose-500/10 px-1 rounded">f"SELECT * FROM users WHERE email='&#123;raw_email&#125;'"</span>
-            </div>
-            <div className="text-slate-400 flex items-center gap-2 pl-4">
-              <span className="text-rose-400 font-bold">SINK</span>
-              <span className="text-rose-400 font-bold">cursor.execute(sql)</span>
-            </div>
-          </div>
-          <div className="mt-3 p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/30 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-rose-300">
-              <AlertTriangle size={15} className="text-rose-400 shrink-0" />
-              <span className="font-bold">CWE-89: SQL Injection Taint Path Traced</span>
-            </div>
-            <span className="text-[10px] text-rose-400 font-bold">CONFIDENCE: 99.8%</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (step.previewType === 'secret') {
-    return (
-      <div className="bg-[#050811] border border-white/10 rounded-xl overflow-hidden font-mono text-xs shadow-2xl">
-        <div className="px-4 py-2.5 bg-white/[0.03] border-b border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
-            <span className="text-slate-300 font-semibold">Real-Time Secret Interceptor</span>
-          </div>
-          <span className="text-[11px] text-amber-400 font-bold bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">
-            Pre-Commit Guard
-          </span>
-        </div>
-        <div className="p-4 space-y-3">
-          <div className="text-slate-400 text-xs flex items-center justify-between border-b border-white/5 pb-2">
-            <span>File: <strong className="text-slate-200">config/production_secrets.env</strong></span>
-            <span className="text-amber-400 font-bold">Line 14</span>
-          </div>
-          <div className="p-3 rounded-lg bg-black/60 border border-amber-500/20 font-mono text-xs space-y-1">
-            <div className="text-slate-500"># Cloud Provider Production Credentials</div>
-            <div className="text-slate-300">AWS_DEFAULT_REGION="us-east-1"</div>
-            <div className="text-rose-400 bg-rose-500/10 px-1 py-0.5 rounded">
-              AWS_SECRET_ACCESS_KEY="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-            </div>
-            <div className="text-slate-300">JWT_SIGNING_SECRET="shh-top-secret-signing-key-99"</div>
-          </div>
-          <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-amber-300">
-              <Lock size={15} className="text-amber-400 shrink-0" />
-              <span className="font-bold">CWE-798: Hardcoded AWS Secret Intercepted</span>
-            </div>
-            <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded">
-              AUTO-QUARANTINED
-            </span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (step.previewType === 'sca') {
-    return (
-      <div className="bg-[#050811] border border-white/10 rounded-xl overflow-hidden font-mono text-xs shadow-2xl">
-        <div className="px-4 py-2.5 bg-white/[0.03] border-b border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-violet-500/80" />
-            <span className="text-slate-300 font-semibold">Software Supply Chain (SCA) Match</span>
-          </div>
-          <span className="text-[11px] text-violet-400 font-bold bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded">
-            OSV &amp; NVD Indexed
-          </span>
-        </div>
-        <div className="p-4 space-y-3">
-          <div className="flex items-center justify-between text-slate-400 border-b border-white/5 pb-2">
-            <span>Manifest: <strong className="text-slate-200">package.json</strong></span>
-            <span className="text-violet-300">38 Packages Scanned</span>
-          </div>
-          <div className="p-3 rounded-lg bg-black/60 border border-violet-500/20 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-white font-bold">axios @ 0.21.1</span>
-              <span className="text-rose-400 font-bold text-[11px] bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded">
-                CVSS 7.5 HIGH
-              </span>
-            </div>
-            <p className="text-slate-300 text-xs font-sans">
-              CVE-2021-3749: Server-Side Request Forgery (SSRF) via insecure follow-redirect handling.
-            </p>
-            <div className="pt-1 flex items-center justify-between text-xs border-t border-white/5">
-              <span className="text-slate-400">Fixed in: <strong className="text-emerald-400">axios &gt;= 0.21.4</strong></span>
-              <span className="text-emerald-400 font-bold">0 Breaking Changes</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (step.previewType === 'ai') {
-    return (
-      <div className="bg-[#050811] border border-white/10 rounded-xl overflow-hidden font-mono text-xs shadow-2xl">
-        <div className="px-4 py-2.5 bg-white/[0.03] border-b border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
-            <span className="text-slate-300 font-semibold">Gemini 1.5 Pro Security Reasoner</span>
-          </div>
-          <span className="text-[11px] text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">
-            99.4% Precision
-          </span>
-        </div>
-        <div className="p-4 space-y-3 font-sans">
-          <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/20 space-y-2">
-            <div className="flex items-center gap-2">
-              <Sparkles size={16} className="text-emerald-400" />
-              <h5 className="font-bold text-white text-sm">Security Impact &amp; Rationale</h5>
-            </div>
-            <p className="text-xs text-slate-300 leading-relaxed font-mono">
-              "The HTTP query parameter 'email' flows directly into SQL statement construction without escaping. An attacker can inject ' OR 1=1 -- to bypass authentication."
-            </p>
-          </div>
-          <div className="grid grid-cols-3 gap-2 text-center text-xs font-mono">
-            <div className="p-2 rounded bg-black/40 border border-white/5">
-              <div className="text-[10px] text-slate-500 uppercase">CWE ID</div>
-              <div className="text-white font-bold">CWE-89</div>
-            </div>
-            <div className="p-2 rounded bg-black/40 border border-white/5">
-              <div className="text-[10px] text-slate-500 uppercase">OWASP</div>
-              <div className="text-amber-400 font-bold">A03:2021</div>
-            </div>
-            <div className="p-2 rounded bg-black/40 border border-white/5">
-              <div className="text-[10px] text-slate-500 uppercase">Remediation</div>
-              <div className="text-emerald-400 font-bold">Synthesized</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (step.previewType === 'fix') {
-    return (
-      <div className="bg-[#050811] border border-white/10 rounded-xl overflow-hidden font-mono text-xs shadow-2xl">
-        <div className="px-4 py-2.5 bg-white/[0.03] border-b border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-cyan-500/80" />
-            <span className="text-slate-300 font-semibold">Synthesized Patch Diff · auth.py</span>
-          </div>
-          <span className="text-[11px] text-cyan-400 font-bold bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded">
-            Type-Safe Patch
-          </span>
-        </div>
-        <div className="p-4 space-y-2 font-mono text-xs">
-          <div className="text-slate-500">@@ -18,4 +18,4 @@ def authenticate_user(email):</div>
-          <div className="p-2 rounded bg-rose-500/10 text-rose-300 border-l-2 border-rose-500 line-through">
-            - cursor.execute("SELECT * FROM users WHERE email = '" + email + "'")
-          </div>
-          <div className="p-2 rounded bg-emerald-500/10 text-emerald-300 border-l-2 border-emerald-500 font-bold">
-            + cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
-          </div>
-          <div className="p-2.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-between text-xs mt-3">
-            <span className="text-cyan-300 font-semibold">✓ Style preserved · PEP-8 checked</span>
-            <span className="text-emerald-400 font-bold">READY TO APPLY</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (step.previewType === 'pr') {
-    return (
-      <div className="bg-[#050811] border border-white/10 rounded-xl overflow-hidden font-mono text-xs shadow-2xl">
-        <div className="px-4 py-2.5 bg-white/[0.03] border-b border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
-            <span className="text-slate-300 font-semibold">GitHub Pull Request Automation</span>
-          </div>
-          <span className="text-[11px] text-rose-400 font-bold bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded">
-            Open PR #42
-          </span>
-        </div>
-        <div className="p-4 space-y-3 font-sans">
-          <div className="flex items-start gap-2.5">
-            <GitPullRequest size={18} className="text-emerald-400 shrink-0 mt-0.5" />
-            <div>
-              <h5 className="font-bold text-white text-sm">
-                fix(security): resolve CWE-89 SQL injection via parameterized query
-              </h5>
-              <p className="text-xs text-slate-400 font-mono mt-0.5">
-                severa:patch-cwe89-auth → main · by severa-ai[bot]
-              </p>
-            </div>
-          </div>
-          <div className="p-2.5 rounded-lg bg-black/60 border border-white/10 font-mono text-xs space-y-1">
-            <div className="text-emerald-400 font-semibold">✓ Security CI Checks: 14/14 Passed</div>
-            <div className="text-slate-400">✓ Unit tests: 88 passing (0 regressions)</div>
-            <div className="text-slate-400">✓ Signed commit verified by GPG</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // default: report
+// ── Contributor avatar row ─────────────────────────────────────────────────────
+const CONTRIB_COLORS = ['from-blue-500 to-violet-500','from-emerald-500 to-cyan-500','from-rose-500 to-pink-500','from-amber-500 to-orange-500','from-purple-500 to-indigo-500'];
+function ContribAvatars({ count = 5 }) {
   return (
-    <div className="bg-[#050811] border border-white/10 rounded-xl overflow-hidden font-mono text-xs shadow-2xl">
-      <div className="px-4 py-2.5 bg-white/[0.03] border-b border-white/10 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-orange-500/80" />
-          <span className="text-slate-300 font-semibold">Severa Executive Security Scorecard</span>
+    <div className="flex items-center">
+      {Array(count).fill(0).map((_, i) => (
+        <div
+          key={i}
+          style={{ zIndex: count - i, marginLeft: i === 0 ? 0 : -8 }}
+          className={`w-6 h-6 rounded-full bg-gradient-to-br ${CONTRIB_COLORS[i % CONTRIB_COLORS.length]} border-2 border-[#0d0f18] flex items-center justify-center text-[9px] font-black text-white`}
+        >
+          {String.fromCharCode(65 + i)}
         </div>
-        <span className="text-[11px] text-orange-400 font-bold bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 rounded">
-          SOC 2 &amp; SARIF
-        </span>
-      </div>
-      <div className="p-4 space-y-3 font-sans">
-        <div className="grid grid-cols-3 gap-2 text-center font-mono">
-          <div className="p-2.5 rounded bg-black/50 border border-white/10">
-            <div className="text-[10px] text-slate-400 uppercase">Security Score</div>
-            <div className="text-xl font-black text-emerald-400">98/100</div>
-          </div>
-          <div className="p-2.5 rounded bg-black/50 border border-white/10">
-            <div className="text-[10px] text-slate-400 uppercase">OWASP Matrix</div>
-            <div className="text-xl font-black text-cyan-400">100%</div>
-          </div>
-          <div className="p-2.5 rounded bg-black/50 border border-white/10">
-            <div className="text-[10px] text-slate-400 uppercase">Open High CWEs</div>
-            <div className="text-xl font-black text-slate-200">0</div>
-          </div>
-        </div>
-        <div className="p-2.5 rounded-lg bg-orange-500/10 border border-orange-500/25 flex items-center justify-between text-xs">
-          <span className="text-orange-300 font-semibold">Export Formats: PDF · SARIF 2.1.0 · JSON · CSV</span>
-          <span className="text-emerald-400 font-bold">READY TO EXPORT</span>
-        </div>
-      </div>
+      ))}
     </div>
-  );
-}
-
-// ── Interactive Workflow Pipeline Section ─────────────────────────────────────
-function WorkflowPipelineSection({ navigate }) {
-  const [activeStepIdx, setActiveStepIdx] = useState(0);
-  const scrollRef = useRef(null);
-
-  const activeStep = WORKFLOW_STEPS[activeStepIdx];
-
-  const handleSelectStep = (idx) => {
-    setActiveStepIdx(idx);
-    if (scrollRef.current) {
-      const cards = scrollRef.current.children;
-      if (cards && cards[idx]) {
-        cards[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-      }
-    }
-  };
-
-  const handlePrev = () => {
-    const nextIdx = activeStepIdx === 0 ? WORKFLOW_STEPS.length - 1 : activeStepIdx - 1;
-    handleSelectStep(nextIdx);
-  };
-
-  const handleNext = () => {
-    const nextIdx = activeStepIdx === WORKFLOW_STEPS.length - 1 ? 0 : activeStepIdx + 1;
-    handleSelectStep(nextIdx);
-  };
-
-  return (
-    <section id="features" className="relative z-10 py-24 border-t border-white/10">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs sm:text-sm font-bold mb-4">
-            <Layers size={14} />
-            Developer Workflow Pipeline
-          </span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-4 tracking-tight">
-            End-to-End Automated Code Defense
-          </h2>
-          <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
-            Switch or scroll through the 7 automated security defense stages built specifically for modern developer teams.
-          </p>
-        </div>
-
-        {/* Step Switcher Tabs (01 - 07) */}
-        <div className="flex items-center justify-center gap-2 overflow-x-auto pb-4 mb-8 custom-scrollbar">
-          <div className="flex items-center gap-2 min-w-max">
-            {WORKFLOW_STEPS.map((s, idx) => {
-              const isActive = idx === activeStepIdx;
-              return (
-                <button
-                  key={s.step}
-                  onClick={() => handleSelectStep(idx)}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                    isActive
-                      ? 'bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 shadow-lg shadow-emerald-500/10'
-                      : 'bg-white/[0.03] border border-white/10 text-slate-400 hover:text-white hover:bg-white/[0.06]'
-                  }`}
-                >
-                  <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                    isActive ? 'bg-emerald-500 text-black' : 'bg-white/10 text-slate-300'
-                  }`}>
-                    {s.step}
-                  </span>
-                  <span>{s.short}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Main Active Step Showcase (2 Columns: Details + Interactive Mockup) */}
-        <div className="relative bg-gradient-to-b from-[#0f1422] to-[#0a0d16] border border-white/10 rounded-2xl p-6 sm:p-8 lg:p-10 shadow-2xl mb-8 overflow-hidden">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/5 blur-3xl pointer-events-none rounded-full" />
-          
-          <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-            {/* Left: Step Information */}
-            <div className="lg:col-span-5 space-y-6">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 tracking-wider">
-                  STAGE {String(activeStep.step).padStart(2, '0')} / 07
-                </span>
-                <span className="text-xs font-mono text-slate-400 uppercase tracking-widest">
-                  {activeStep.tag}
-                </span>
-              </div>
-
-              <div>
-                <h3 className="text-2xl sm:text-3xl font-black text-white mb-2 flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 ${activeStep.iconBg} ${activeStep.iconColor}`}>
-                    <activeStep.icon size={20} />
-                  </div>
-                  {activeStep.title}
-                </h3>
-                <h4 className="text-sm sm:text-base font-semibold text-emerald-400/90 mb-3">
-                  {activeStep.headline}
-                </h4>
-                <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal">
-                  {activeStep.desc}
-                </p>
-              </div>
-
-              {/* Key capabilities list */}
-              <div className="space-y-2.5 pt-2">
-                {activeStep.points.map((pt, i) => (
-                  <div key={i} className="flex items-center gap-2.5 text-xs sm:text-sm text-slate-200">
-                    <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
-                    <span>{pt}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Switcher Controls (Prev / Next & CTA) */}
-              <div className="flex items-center gap-3 pt-4 border-t border-white/5">
-                <button
-                  onClick={handlePrev}
-                  className="px-3.5 py-2 rounded-lg border border-white/10 hover:border-white/20 bg-white/[0.04] text-xs font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-1 cursor-pointer"
-                  title="Previous Stage"
-                >
-                  <ChevronLeft size={14} />
-                  Prev
-                </button>
-                <button
-                  onClick={handleNext}
-                  className="px-4 py-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-xs font-bold text-emerald-300 transition-all flex items-center gap-1 cursor-pointer"
-                  title="Next Stage"
-                >
-                  Next Stage
-                  <ChevronRight size={14} />
-                </button>
-
-                <button
-                  onClick={() => navigate('/login')}
-                  className="ml-auto text-xs font-semibold text-slate-400 hover:text-emerald-400 transition-colors flex items-center gap-1 cursor-pointer"
-                >
-                  Launch Workspace <ArrowRight size={12} />
-                </button>
-              </div>
-            </div>
-
-            {/* Right: Interactive Security Preview Visual */}
-            <div className="lg:col-span-7">
-              <StepVisualPreview step={activeStep} />
-            </div>
-          </div>
-        </div>
-
-        {/* Horizontal Scrolling Card Track ("scrolling it from one to one") */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between text-xs text-slate-400 px-1 font-mono">
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              Scroll or click any stage to switch:
-            </span>
-            <div className="flex items-center gap-1.5">
-              <button
-                onClick={handlePrev}
-                className="p-1.5 rounded-lg border border-white/10 bg-white/[0.03] hover:bg-white/[0.08] text-slate-300 hover:text-white transition-all cursor-pointer"
-                title="Scroll Previous"
-              >
-                <ChevronLeft size={14} />
-              </button>
-              <span className="text-slate-400 font-bold px-1.5">{activeStepIdx + 1} / 7</span>
-              <button
-                onClick={handleNext}
-                className="p-1.5 rounded-lg border border-white/10 bg-white/[0.03] hover:bg-white/[0.08] text-slate-300 hover:text-white transition-all cursor-pointer"
-                title="Scroll Next"
-              >
-                <ChevronRight size={14} />
-              </button>
-            </div>
-          </div>
-
-          <div
-            ref={scrollRef}
-            className="flex items-stretch gap-4 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory custom-scrollbar"
-          >
-            {WORKFLOW_STEPS.map((s, idx) => {
-              const isSelected = idx === activeStepIdx;
-              const CardIcon = s.icon;
-              return (
-                <div
-                  key={s.step}
-                  onClick={() => handleSelectStep(idx)}
-                  className={`snap-center shrink-0 w-72 p-5 rounded-xl border transition-all cursor-pointer text-left ${
-                    isSelected
-                      ? 'bg-emerald-500/15 border-emerald-500/50 shadow-lg shadow-emerald-500/10 translate-y-[-2px]'
-                      : 'bg-white/[0.02] border-white/5 hover:border-white/15 hover:bg-white/[0.04]'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className={`w-9 h-9 rounded-lg border flex items-center justify-center ${s.iconBg} ${s.iconColor}`}>
-                      <CardIcon size={18} />
-                    </div>
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded ${
-                      isSelected ? 'bg-emerald-500 text-black' : 'bg-white/10 text-slate-400'
-                    }`}>
-                      0{s.step}
-                    </span>
-                  </div>
-                  <h4 className={`text-base font-bold mb-1.5 ${isSelected ? 'text-emerald-300' : 'text-white'}`}>
-                    {s.title}
-                  </h4>
-                  <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
-                    {s.desc}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    </section>
   );
 }
 
 // ── Main ───────────────────────────────────────────────────────────────────────
 export default function LandingPage() {
   const { navigate } = useRouter();
+  const [activeStage, setActiveStage] = useState(0);
 
   const DOCKER_CMD = 'docker run -d -p 3000:3000 severaai/severa:latest';
+  const currentStage = WORKFLOW_STAGES[activeStage] || WORKFLOW_STAGES[0];
 
   return (
     <div className="min-h-screen bg-[#0d0f18] text-white font-sans overflow-x-hidden relative">
@@ -914,7 +565,7 @@ export default function LandingPage() {
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
       <section className="relative z-10 pt-28 pb-20">
 
-        <div className="relative max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-12 gap-10 xl:gap-12 items-center">
+        <div className="relative max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-12 gap-10 xl:gap-14 items-center">
           {/* Left */}
           <div className="lg:col-span-7">
             {/* Info bar */}
@@ -925,7 +576,7 @@ export default function LandingPage() {
               </span>
             </div>
 
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black leading-[1.05] tracking-tight mb-6">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black leading-[1.05] tracking-tight mb-6">
               Build Secure<br />
               Software{' '}
               <span className="text-emerald-400">Faster</span>
@@ -976,60 +627,270 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── WORKFLOW PIPELINE (INTERACTIVE SWITCHER & SCROLLER) ─────────────── */}
-      <WorkflowPipelineSection navigate={navigate} />
+      {/* ── WORKFLOW PIPELINE (INTERACTIVE 7-STAGE SWITCHER / SCROLLER - IMAGE 5) ──────────────── */}
+      <section id="features" className="relative z-10 py-20 border-t border-white/10">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs sm:text-sm font-bold mb-4">
+              <Layers size={14} />
+              Developer Workflow Pipeline
+            </span>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-4">End-to-End Automated Code Defense</h2>
+            <p className="text-sm sm:text-base text-slate-300 max-w-3xl mx-auto leading-relaxed">
+              Switch or scroll through the 7 automated security defense stages built specifically for modern developer teams.
+            </p>
+          </div>
+
+          {/* 7 Stage Pills / Tabs */}
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-8 overflow-x-auto pb-2">
+            {WORKFLOW_STAGES.map((s, idx) => {
+              const isActive = idx === activeStage;
+              return (
+                <button
+                  key={s.id}
+                  onClick={() => setActiveStage(idx)}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-full border text-xs sm:text-sm font-medium transition-all cursor-pointer whitespace-nowrap ${
+                    isActive
+                      ? 'border-emerald-500/60 bg-emerald-500/15 text-emerald-300 font-bold shadow-lg shadow-emerald-500/10'
+                      : 'border-white/5 bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                  }`}
+                >
+                  <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${
+                    isActive ? 'bg-emerald-500 text-black' : 'bg-slate-800 text-slate-400'
+                  }`}>
+                    {idx + 1}
+                  </span>
+                  <span>{s.tab.replace(/^\d+\s*/, '')}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Active Stage Showcase Card */}
+          <div className="bg-[#090c15] border border-white/10 rounded-2xl p-6 sm:p-8 lg:p-10 shadow-2xl relative overflow-hidden transition-all duration-300">
+            {/* Top Meta Line */}
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
+              <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded">
+                {currentStage.stageNumber}
+              </span>
+              <span className="text-xs font-mono uppercase tracking-widest text-slate-400">
+                {currentStage.engineTag}
+              </span>
+            </div>
+
+            <div className="grid lg:grid-cols-12 gap-8 items-center">
+              {/* Left Column (Stage Information) */}
+              <div className="lg:col-span-5 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl border flex items-center justify-center ${currentStage.iconBg} ${currentStage.iconColor}`}>
+                    <currentStage.icon size={20} />
+                  </div>
+                  <h3 className="text-2xl font-black text-white">{currentStage.title}</h3>
+                </div>
+
+                <p className="text-sm font-semibold text-emerald-400">
+                  {currentStage.subtitle}
+                </p>
+
+                <p className="text-sm text-slate-300 leading-relaxed font-normal">
+                  {currentStage.desc}
+                </p>
+
+                {/* Bullets with green check */}
+                <div className="space-y-2.5 pt-2">
+                  {currentStage.bullets.map((bullet, idx) => (
+                    <div key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-300 font-medium">
+                      <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">
+                        ✓
+                      </span>
+                      <span>{bullet}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Navigation Buttons */}
+                <div className="flex items-center gap-3 pt-4">
+                  <button
+                    onClick={() => setActiveStage((prev) => (prev - 1 + WORKFLOW_STAGES.length) % WORKFLOW_STAGES.length)}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-white/10 bg-white/[0.03] hover:bg-white/[0.08] text-xs sm:text-sm font-semibold text-slate-300 hover:text-white transition-all cursor-pointer"
+                  >
+                    <ChevronLeft size={14} />
+                    Prev
+                  </button>
+                  <button
+                    onClick={() => setActiveStage((prev) => (prev + 1) % WORKFLOW_STAGES.length)}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/30 text-xs sm:text-sm font-bold transition-all cursor-pointer"
+                  >
+                    Next Stage
+                    <ChevronRight size={14} />
+                  </button>
+                  <button
+                    onClick={() => navigate('/login')}
+                    className="ml-auto text-xs sm:text-sm text-slate-400 hover:text-emerald-400 font-medium transition-colors cursor-pointer"
+                  >
+                    Launch Workspace →
+                  </button>
+                </div>
+              </div>
+
+              {/* Right Column (Code & Live Analysis Preview) */}
+              <div className="lg:col-span-7 bg-[#05070d] border border-white/10 rounded-xl overflow-hidden shadow-xl font-mono text-xs">
+                {/* Chrome header */}
+                <div className="px-4 py-2.5 bg-white/[0.02] border-b border-white/10 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-500/80" />
+                    <span className="text-slate-300 text-xs font-semibold">{currentStage.preview.engine}</span>
+                  </div>
+                  <span className="text-[10px] text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded font-bold">
+                    {currentStage.preview.badge}
+                  </span>
+                </div>
+
+                {/* Target line */}
+                <div className="px-4 py-2 bg-black/40 border-b border-white/5 flex items-center justify-between text-slate-400 text-xs">
+                  <span>Target: <span className="text-slate-200">{currentStage.preview.target}</span></span>
+                  <span className="text-emerald-400 font-semibold">{currentStage.preview.meta}</span>
+                </div>
+
+                {/* Code body */}
+                <div className="p-4 space-y-2 bg-[#05070d] min-h-[170px] font-mono text-xs sm:text-sm">
+                  {currentStage.preview.code.map((line, lIdx) => (
+                    <div key={lIdx} className="flex items-start gap-2.5">
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase shrink-0 ${
+                        line.type === 'entry' ? 'bg-blue-500/20 text-blue-400' :
+                        line.type === 'source' ? 'bg-emerald-500/20 text-emerald-400' :
+                        line.type === 'taint' ? 'bg-amber-500/20 text-amber-400' :
+                        line.type === 'sink' ? 'bg-rose-500/20 text-rose-400' :
+                        'bg-slate-800 text-slate-400'
+                      }`}>
+                        {line.label}
+                      </span>
+                      <span className={`leading-relaxed ${
+                        line.type === 'taint' ? 'text-amber-300 font-semibold' :
+                        line.type === 'sink' ? 'text-rose-300 font-semibold' :
+                        line.type === 'source' ? 'text-emerald-300' :
+                        'text-slate-300'
+                      }`}>
+                        {line.text}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Alert banner */}
+                <div className={`px-4 py-2.5 border-t flex items-center justify-between text-xs font-semibold ${
+                  currentStage.preview.alertType === 'danger'
+                    ? 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+                    : currentStage.preview.alertType === 'warning'
+                    ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+                    : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                }`}>
+                  <div className="flex items-center gap-2">
+                    <span>{currentStage.preview.alertIcon}</span>
+                    <span>{currentStage.preview.alertText}</span>
+                  </div>
+                  <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-black/40">
+                    {currentStage.preview.alertConfidence}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Switcher Controls */}
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-slate-400">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Scroll or click any stage to switch:</span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setActiveStage((prev) => (prev - 1 + WORKFLOW_STAGES.length) % WORKFLOW_STAGES.length)}
+                className="p-1.5 rounded hover:bg-white/5 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                title="Previous Stage"
+              >
+                <ChevronLeft size={16} />
+              </button>
+
+              <div className="flex items-center gap-1.5">
+                {WORKFLOW_STAGES.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActiveStage(i)}
+                    className={`h-2 rounded-full transition-all cursor-pointer ${
+                      i === activeStage ? 'w-6 bg-emerald-400' : 'w-2 bg-slate-700 hover:bg-slate-500'
+                    }`}
+                    title={`Go to Stage ${i + 1}`}
+                  />
+                ))}
+              </div>
+
+              <span className="text-slate-300 font-bold ml-1">
+                {activeStage + 1} / {WORKFLOW_STAGES.length}
+              </span>
+
+              <button
+                onClick={() => setActiveStage((prev) => (prev + 1) % WORKFLOW_STAGES.length)}
+                className="p-1.5 rounded hover:bg-white/5 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                title="Next Stage"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ── CTA / QUICK START ─────────────────────────────────────────────── */}
       <section id="quickstart" className="relative z-10 py-24 border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center">
-          <div className="max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs sm:text-sm font-bold mb-6">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              Free &amp; Open Source Security Platform
-            </div>
-            <h2 className="text-4xl sm:text-5xl font-black text-white mb-4">Start securing your codebase today</h2>
-            <p className="text-base sm:text-lg text-slate-300 mb-8 leading-relaxed">
-              Deploy in minutes. No vendor lock-in. No usage limits.
-              Your code stays on your infrastructure.
-            </p>
-            <div className="flex flex-wrap gap-4 justify-center">
-              <button
-                onClick={() => navigate('/login')}
-                className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-base font-black transition-all shadow-xl shadow-emerald-500/30 hover:-translate-y-0.5 cursor-pointer"
-              >
-                Get Started
-                <ArrowRight size={16} />
-              </button>
-              <button
-                onClick={() => navigate('/app')}
-                className="flex items-center gap-2 px-8 py-3.5 rounded-xl border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-white text-base font-semibold transition-all hover:-translate-y-0.5 cursor-pointer"
-              >
-                <Eye size={15} />
-                Live Demo
-              </button>
-            </div>
+        <div className="w-full max-w-5xl mx-auto px-6 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs sm:text-sm font-bold mb-6">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            Free &amp; Open Source Security Platform
+          </div>
+          <h2 className="text-4xl sm:text-5xl font-black text-white mb-4">Start securing your codebase today</h2>
+          <p className="text-base sm:text-lg text-slate-300 mb-8 leading-relaxed">
+            Deploy in minutes. No vendor lock-in. No usage limits.
+            Your code stays on your infrastructure.
+          </p>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <button
+              onClick={() => navigate('/login')}
+              className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-base font-black transition-all shadow-xl shadow-emerald-500/30 hover:-translate-y-0.5 cursor-pointer"
+            >
+              Get Started
+              <ArrowRight size={16} />
+            </button>
+            <button
+              onClick={() => navigate('/app')}
+              className="flex items-center gap-2 px-8 py-3.5 rounded-xl border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-white text-base font-semibold transition-all hover:-translate-y-0.5 cursor-pointer"
+            >
+              <Eye size={15} />
+              Live Demo
+            </button>
+          </div>
 
-            {/* Quick-start block */}
-            <div className="mt-12 text-left bg-black/60 border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
-              <div className="px-5 py-3 border-b border-white/10 flex items-center gap-2.5 bg-white/[0.02]">
-                <span className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
-                <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/70" />
-                <span className="ml-2 text-xs text-slate-300 font-mono font-semibold">Quick Start CLI</span>
-              </div>
-              <div className="p-6 space-y-3 font-mono text-sm sm:text-base">
-                {[
-                  { prompt: '$', cmd: 'git clone https://github.com/severaai/severa-core', color: 'text-slate-200' },
-                  { prompt: '$', cmd: 'cd severa-core && docker compose up -d', color: 'text-slate-200' },
-                  { prompt: '$', cmd: 'open http://localhost:3000', color: 'text-emerald-300 font-bold' },
-                ].map(({ prompt, cmd, color }) => (
-                  <div key={cmd} className="flex items-center gap-3 group">
-                    <span className="text-emerald-400 font-bold shrink-0">{prompt}</span>
-                    <span className={color}>{cmd}</span>
-                    <CopyButton text={cmd} />
-                  </div>
-                ))}
-              </div>
+          {/* Quick-start block */}
+          <div className="mt-12 text-left bg-black/60 border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+            <div className="px-5 py-3 border-b border-white/10 flex items-center gap-2.5 bg-white/[0.02]">
+              <span className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
+              <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/70" />
+              <span className="ml-2 text-xs text-slate-300 font-mono font-semibold">Quick Start CLI</span>
+            </div>
+            <div className="p-6 space-y-3 font-mono text-sm sm:text-base">
+              {[
+                { prompt: '$', cmd: 'git clone https://github.com/severaai/severa-core', color: 'text-slate-200' },
+                { prompt: '$', cmd: 'cd severa-core && docker compose up -d', color: 'text-slate-200' },
+                { prompt: '$', cmd: 'open http://localhost:3000', color: 'text-emerald-300 font-bold' },
+              ].map(({ prompt, cmd, color }) => (
+                <div key={cmd} className="flex items-center gap-3 group">
+                  <span className="text-emerald-400 font-bold shrink-0">{prompt}</span>
+                  <span className={color}>{cmd}</span>
+                  <CopyButton text={cmd} />
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -1047,7 +908,7 @@ export default function LandingPage() {
               <span className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Open-Source Platform</span>
             </div>
           </div>
-          <p className="text-sm text-slate-400">© 2026 Severa AI · Enterprise Application Security Platform</p>
+          <p className="text-sm text-slate-400">© 2026 Severa AI. All rights reserved.</p>
           <div className="flex gap-6 text-sm text-slate-300">
             <button
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
