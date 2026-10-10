@@ -1702,9 +1702,9 @@ jobs:
                 <div
                   onMouseDown={handleFindingsMouseDown}
                   title="Drag left or right to resize security inspector panel (Min: 280px, Max: 580px limit)"
-                  className="hidden lg:flex w-2 hover:w-2.5 bg-transparent hover:bg-indigo-500/50 cursor-col-resize shrink-0 items-center justify-center transition-all group/resizer"
+                  className="hidden lg:flex w-2 hover:w-2.5 bg-transparent hover:bg-slate-700/50 cursor-col-resize shrink-0 items-center justify-center transition-all group/resizer"
                 >
-                  <div className="w-0.5 h-10 bg-slate-800 group-hover/resizer:bg-indigo-300 rounded-full" />
+                  <div className="w-0.5 h-10 bg-slate-800 group-hover/resizer:bg-slate-400 rounded-full" />
                 </div>
 
                 {/* Right Side Security Inspector Panel */}

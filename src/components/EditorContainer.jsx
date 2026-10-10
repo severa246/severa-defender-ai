@@ -12,6 +12,7 @@ import {
   FolderTree,
   ClipboardPaste,
   Upload,
+  Folder,
   FolderPlus,
   GitBranch,
   Trash2
@@ -466,7 +467,7 @@ export default function EditorContainer({
               <Trash2 className="w-3.5 h-3.5" />
             </button>
 
-            {/* Primary Action: Scan Active File */}
+            {/* Primary Action 1: Scan Active File */}
             <button
               type="button"
               onClick={() => onScan(code, language)}
@@ -477,6 +478,20 @@ export default function EditorContainer({
               <Play className={`w-3.5 h-3.5 ${isScanning ? 'animate-spin text-black' : 'text-black fill-black'}`} />
               <span>{isScanning ? 'Scanning...' : 'Scan File'}</span>
             </button>
+
+            {/* Primary Action 2: Scan All Project Files — Always visible, never hidden */}
+            {onScanFullProject && (
+              <button
+                type="button"
+                onClick={onScanFullProject}
+                disabled={isScanning}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black rounded-lg text-xs font-bold transition-all cursor-pointer shadow-md shadow-emerald-500/20 disabled:opacity-50"
+                title="Scan all project files in active folder"
+              >
+                <Folder className="w-3.5 h-3.5 text-black" />
+                <span>Scan All</span>
+              </button>
+            )}
           </div>
         </div>
 

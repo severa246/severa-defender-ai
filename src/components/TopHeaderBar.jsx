@@ -198,7 +198,7 @@ export default function TopHeaderBar({
         {onOpenCommandPalette && (
           <button
             onClick={onOpenCommandPalette}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#0e121d] hover:bg-white/[0.08] text-slate-300 border border-white/[0.08] hover:border-white/[0.16] rounded-lg text-xs font-medium transition-all cursor-pointer group shadow-sm"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#191C23] hover:bg-[#232732] text-slate-300 border border-white/10 hover:border-white/20 rounded-lg text-xs font-medium transition-all cursor-pointer group shadow-sm"
             title="Open Command Palette (Cmd + K / Ctrl + K)"
           >
             <Search className="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition-colors" />
@@ -209,15 +209,15 @@ export default function TopHeaderBar({
           </button>
         )}
 
-        {/* 2. Scan Full Project Button */}
+        {/* 2. Scan All Project Files Button — Always visible at all times */}
         {onScanFullProject && (
           <button
             onClick={onScanFullProject}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-[#0e121d] hover:bg-white/[0.08] text-slate-300 hover:text-white border border-white/[0.08] hover:border-white/[0.16] rounded-lg text-xs font-medium transition-all cursor-pointer group shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#191C23] hover:bg-[#232732] text-emerald-400 hover:text-emerald-300 border border-emerald-500/30 hover:border-emerald-500/60 rounded-lg text-xs font-bold transition-all cursor-pointer group shadow-sm"
             title="Scan all project files in active folder"
           >
-            <Folder className="w-3.5 h-3.5 text-sky-400 group-hover:text-sky-300 transition-colors" />
-            <span className="hidden sm:inline">Scan Project</span>
+            <Folder className="w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition-transform" />
+            <span className="inline font-bold">Scan All</span>
           </button>
         )}
 
@@ -226,7 +226,7 @@ export default function TopHeaderBar({
           <button
             type="button"
             onClick={() => setIsExportMenuOpen((prev) => !prev)}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-[#0e121d] hover:bg-white/[0.08] text-slate-300 hover:text-white border border-white/[0.08] hover:border-white/[0.16] rounded-lg text-xs font-medium transition-all cursor-pointer group shadow-sm"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-[#191C23] hover:bg-[#232732] text-slate-300 hover:text-white border border-white/10 hover:border-white/20 rounded-lg text-xs font-medium transition-all cursor-pointer group shadow-sm"
             title="Export Security Compliance Artifacts"
           >
             <Download className="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition-colors" />
@@ -235,8 +235,8 @@ export default function TopHeaderBar({
           </button>
 
           {isExportMenuOpen && (
-            <div className="absolute right-0 top-full mt-1.5 w-72 bg-[#0e111a] border border-white/[0.1] rounded-xl shadow-2xl z-50 py-1.5 animate-fadeIn">
-              <div className="px-3 py-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-white/[0.06] mb-1">
+            <div className="absolute right-0 top-full mt-1.5 w-72 bg-[#191C23] border border-white/10 rounded-xl shadow-2xl z-50 py-1.5 animate-fadeIn">
+              <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-white/10 mb-1">
                 Export & Compliance Artifacts
               </div>
 

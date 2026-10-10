@@ -107,11 +107,11 @@ export default function FindingsPanel({
                   setViewMode('PROJECT_WIDE');
                   onScanFullProject();
                 }}
-                className="flex items-center gap-1.5 bg-white/[0.05] hover:bg-white/[0.1] text-slate-300 border border-white/[0.08] px-2.5 py-1 rounded-md text-[10px] font-medium transition-all cursor-pointer"
+                className="flex items-center gap-1.5 bg-[#191C23] hover:bg-[#232732] text-emerald-400 border border-white/10 hover:border-emerald-500/40 px-2.5 py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer shadow-sm"
                 title="Scan all files in active project folder"
               >
-                <FolderSearch className="w-3 h-3 text-slate-400" />
-                <span>Scan Full Project</span>
+                <FolderSearch className="w-3 h-3 text-emerald-400" />
+                <span>Scan All</span>
               </button>
             )}
 
