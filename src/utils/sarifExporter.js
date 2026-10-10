@@ -128,9 +128,14 @@ export function downloadSarifFile(findings, options = {}) {
   const a = document.createElement('a');
   a.href = url;
   const filename = `${options.projectName || 'severa-scan'}-${new Date().toISOString().slice(0, 10)}.sarif`;
-  a.download = filename;
+  a.setAttribute('download', filename);
+  a.style.display = 'none';
   document.body.appendChild(a);
   a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  setTimeout(() => {
+    try {
+      if (a.parentNode) document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {}
+  }, 2500);
 }

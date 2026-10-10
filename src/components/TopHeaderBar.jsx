@@ -343,11 +343,11 @@ export default function TopHeaderBar({
                 <FolderDown className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
                 <div>
                   <div className="text-xs font-medium text-slate-200 group-hover:text-white flex items-center gap-1.5">
-                    <span>Fixed Working Folder</span>
-                    <span className="text-[10px] font-mono text-emerald-400 px-1 py-0.2 rounded bg-emerald-500/10 border border-emerald-500/20">.zip</span>
+                    <span className="truncate max-w-[170px]">{activeProjectName || 'Project Folder'}</span>
+                    <span className="text-[10px] font-mono text-emerald-400 px-1 py-0.2 rounded bg-emerald-500/10 border border-emerald-500/20 shrink-0">.zip</span>
                   </div>
                   <div className="text-[11px] text-slate-400">
-                    Download clean, remediated project archive
+                    Download {activeProjectName ? `"${activeProjectName}.zip"` : 'current folder as .zip'}
                   </div>
                 </div>
               </button>

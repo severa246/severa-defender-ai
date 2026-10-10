@@ -120,18 +120,36 @@ export function createZipBuffer(files = []) {
   return out;
 }
 
-export function downloadProjectZip(projectName = 'severa-project', files = []) {
+export function downloadProjectZip(projectName = 'project', files = []) {
   if (!files || files.length === 0) return;
 
   const zipBytes = createZipBuffer(files);
   const blob = new Blob([zipBytes], { type: 'application/zip' });
   const url = URL.createObjectURL(blob);
+  
+  // Use exact current folder name with .zip extension
+  const rawName = (projectName || 'project').trim();
+  const cleanName = rawName.replace(/[/\\?%*:|"<>]/g, '_').trim() || 'project';
+  const fileName = `${cleanName}.zip`;
+
   const link = document.createElement('a');
-  const safeName = (projectName || 'severa-project').toLowerCase().replace(/[^a-z0-9-_]/g, '-');
-  link.setAttribute('href', url);
-  link.setAttribute('download', `${safeName}-fixed.zip`);
+  link.href = url;
+  link.download = fileName;
+  link.setAttribute('download', fileName);
+  link.style.display = 'none';
   document.body.appendChild(link);
+  
   link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+
+  // Safely defer revoking to prevent browser from losing filename and falling back to UUID
+  setTimeout(() => {
+    try {
+      if (link.parentNode) {
+        document.body.removeChild(link);
+      }
+      URL.revokeObjectURL(url);
+    } catch {
+      // Ignore cleanup error
+    }
+  }, 2500);
 }
