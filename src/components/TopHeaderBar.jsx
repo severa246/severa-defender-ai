@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   MessageSquare, ShieldCheck, Edit2, Check, X, Terminal,
-  Folder, FileCode, ChevronRight, ChevronDown, FileText, Cloud
+  Folder, FileCode, ChevronRight, ChevronDown, FileText, Cloud,
+  Search, Download
 } from 'lucide-react';
 
 export default function TopHeaderBar({
@@ -19,6 +20,8 @@ export default function TopHeaderBar({
   onOpenDefender,
   onOpenSandbox,
   onScanFullProject,
+  onOpenCommandPalette,
+  onExportSarif,
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(activeSession?.name || 'Vulnerability Detection Audit');
@@ -266,6 +269,33 @@ export default function TopHeaderBar({
             </span>
           );
         })()}
+
+        {/* Spotlight Command Palette Trigger (Cmd+K) */}
+        {onOpenCommandPalette && (
+          <button
+            onClick={onOpenCommandPalette}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#0e121d] hover:bg-white/[0.08] text-slate-300 border border-white/[0.08] hover:border-white/[0.16] rounded-lg text-xs font-medium transition-all cursor-pointer group shadow-sm"
+            title="Open Command Palette (Cmd + K / Ctrl + K)"
+          >
+            <Search className="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition-colors" />
+            <span className="hidden xl:inline text-slate-300 group-hover:text-white">Spotlight</span>
+            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white/[0.06] text-slate-400 border border-white/[0.08]">
+              ⌘K
+            </span>
+          </button>
+        )}
+
+        {/* OASIS SARIF 2.1.0 Export Button */}
+        {onExportSarif && (
+          <button
+            onClick={onExportSarif}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#0e121d] hover:bg-white/[0.08] text-slate-300 border border-white/[0.08] hover:border-white/[0.16] rounded-lg text-xs font-medium transition-all cursor-pointer group shadow-sm"
+            title="Export findings as OASIS SARIF 2.1.0 (.sarif) for GitHub Code Scanning"
+          >
+            <Download className="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition-colors" />
+            <span className="hidden sm:inline text-slate-300 group-hover:text-white">SARIF</span>
+          </button>
+        )}
 
         {/* Scan Full Project Button */}
         {onScanFullProject && (

@@ -547,3 +547,39 @@ export const OWASP_CATEGORIES = [
   "A10:2021 - Server-Side Request Forgery"
 ];
 
+export function getCvssAndEpss(cwe, severity) {
+  const normCwe = (cwe || '').toUpperCase();
+  const normSev = (severity || 'HIGH').toUpperCase();
+
+  const cweMap = {
+    'CWE-89': { score: 9.8, vector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H', epss: '94.2%', percentile: '99th' },
+    'CWE-78': { score: 9.8, vector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H', epss: '96.8%', percentile: '99th' },
+    'CWE-94': { score: 9.8, vector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H', epss: '95.1%', percentile: '99th' },
+    'CWE-502': { score: 9.8, vector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H', epss: '91.0%', percentile: '98th' },
+    'CWE-918': { score: 8.6, vector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N', epss: '88.4%', percentile: '97th' },
+    'CWE-22': { score: 7.5, vector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N', epss: '79.1%', percentile: '95th' },
+    'CWE-798': { score: 8.9, vector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:L/A:N', epss: '82.5%', percentile: '96th' },
+    'CWE-79': { score: 6.1, vector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N', epss: '61.2%', percentile: '88th' },
+    'CWE-639': { score: 7.5, vector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N', epss: '54.3%', percentile: '85th' },
+    'CWE-284': { score: 7.5, vector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N', epss: '54.3%', percentile: '85th' },
+    'CWE-250': { score: 7.8, vector: 'CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H', epss: '45.0%', percentile: '80th' },
+    'CWE-732': { score: 7.5, vector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N', epss: '65.4%', percentile: '90th' },
+    'CWE-327': { score: 7.4, vector: 'CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N', epss: '38.2%', percentile: '75th' },
+    'CWE-312': { score: 7.5, vector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N', epss: '41.5%', percentile: '78th' }
+  };
+
+  if (cweMap[normCwe]) {
+    return cweMap[normCwe];
+  }
+
+  if (normSev === 'CRITICAL') {
+    return { score: 9.8, vector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H', epss: '92.4%', percentile: '98th' };
+  } else if (normSev === 'HIGH') {
+    return { score: 8.2, vector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:L/A:N', epss: '78.6%', percentile: '94th' };
+  } else if (normSev === 'MEDIUM') {
+    return { score: 6.1, vector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:L/I:L/A:N', epss: '42.1%', percentile: '79th' };
+  }
+  return { score: 3.7, vector: 'CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N', epss: '12.3%', percentile: '45th' };
+}
+
+

@@ -12,6 +12,7 @@ import AuditReportModal from './components/AuditReportModal';
 import ManageModelsModal from './components/ManageModelsModal';
 import SeveraDefenderChat from './components/SeveraDefenderChat';
 import PayloadSandboxModal from './components/PayloadSandboxModal';
+import CommandPaletteModal from './components/CommandPaletteModal';
 import { Shield, Sparkles } from 'lucide-react';
 
 import { analyzeCode } from './engine/scannerEngine';
@@ -20,6 +21,7 @@ import { detectLanguage } from './engine/languageDetector';
 import { CODE_TEMPLATES } from './engine/templates';
 import { cloudSyncService } from './services/cloudSyncService';
 import { storageService } from './services/storageService';
+import { downloadSarifFile } from './utils/sarifExporter';
 
 const INITIAL_SESSIONS = [
   { id: 'sess-1', name: 'Flask SQLi & Secret Audit', code: CODE_TEMPLATES[0].code, language: 'python', findings: [], timeAgo: '1h' },
@@ -82,6 +84,7 @@ export default function App({ user, onLogout }) {
   const [selectedModel, setSelectedModel] = useState('');
   const [isModelsModalOpen, setIsModelsModalOpen] = useState(false);
   const [isSandboxOpen, setIsSandboxOpen] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
 
   // Resizable Security Inspector Panel State (280px - 580px)
   const [findingsWidth, setFindingsWidth] = useState(380);
@@ -162,6 +165,27 @@ export default function App({ user, onLogout }) {
       if (modelCfg.endpoint !== undefined) setCustomEndpoint(modelCfg.endpoint);
     } catch {}
   }, [user?.email]);
+
+  // Global Command Palette (Cmd + K / Ctrl + K) Shortcut Listener
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
+
+  // Export Scan Results to OASIS SARIF 2.1.0 JSON File
+  const handleExportSarif = () => {
+    const currentList = findings.length > 0 ? findings : (projectFiles?.flatMap(f => f.findings || []) || []);
+    downloadSarifFile(currentList, {
+      projectName: activeProjectName || 'severa-project',
+      activeFileName: activeFileName || 'main.py'
+    });
+  };
 
   // Persistent Workspace Load across Logins, Logouts, Sessions, & Devices (Strict User Isolation)
   useEffect(() => {
@@ -1488,6 +1512,8 @@ export default function App({ user, onLogout }) {
           onOpenDefender={() => handleOpenDefenderWithFinding(null)}
           onOpenSandbox={() => setIsSandboxOpen(true)}
           onScanFullProject={handleScanFullProject}
+          onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+          onExportSarif={handleExportSarif}
         />
 
         {/* Full Project Scan Completed Toast Banner */}
@@ -1699,6 +1725,23 @@ export default function App({ user, onLogout }) {
       <PayloadSandboxModal
         isOpen={isSandboxOpen}
         onClose={() => setIsSandboxOpen(false)}
+      />
+
+      {/* Global Command Palette (Cmd+K) Spotlight Modal */}
+      <CommandPaletteModal
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        onScanFile={() => handleScanCode(code, language)}
+        onScanProject={handleScanFullProject}
+        onExportSarif={handleExportSarif}
+        onGenerateAiFix={handleGenerateAiFix}
+        findings={findings}
+        onSelectFinding={(f) => {
+          setSelectedFinding(f);
+        }}
+        onSwitchTab={(tab) => setActiveTab(tab)}
+        projectFiles={projectFiles}
+        onSelectFile={handleSelectFile}
       />
 
       {/* Floating Severa Defender Quick Launcher Trigger Button */}

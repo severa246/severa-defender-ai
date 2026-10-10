@@ -6,6 +6,7 @@
  */
 
 import { buildCallGraph } from './callGraphBuilder.js';
+import { getCvssAndEpss } from './sastRules.js';
 
 export function analyzeDataFlow(code, language = 'javascript', callGraph = null) {
   const lines = code.split('\n');
@@ -478,6 +479,7 @@ export function analyzeDataFlow(code, language = 'javascript', callGraph = null)
     for (const [taintedVar, info] of taintMap.entries()) {
       SINK_DEFINITIONS.forEach((sinkDef) => {
         if (sinkDef.pattern.test(trimmed) && sinkDef.isSink(trimmed, taintedVar, info)) {
+          const intel = getCvssAndEpss(sinkDef.cwe, sinkDef.severity);
           flowFindings.push({
             id: `TAINT-${sinkDef.cwe}-L${lineNum}`,
             ruleId: `FLOW-${sinkDef.cwe}`,
@@ -487,6 +489,15 @@ export function analyzeDataFlow(code, language = 'javascript', callGraph = null)
             title: sinkDef.title,
             severity: sinkDef.severity,
             confidence: 'CONFIRMED',
+            cvssScore: intel.score,
+            cvssVector: intel.vector,
+            epssScore: intel.epss,
+            epssPercentile: intel.percentile,
+            taintTrace: {
+              source: { name: info.name, line: info.line, snippet: info.originSnippet || `Input source: ${info.name}` },
+              propagation: { variable: taintedVar, line: lineNum },
+              sink: { snippet: trimmed, line: lineNum }
+            },
             cwe: sinkDef.cwe,
             cweUrl: `https://cwe.mitre.org/data/definitions/${sinkDef.cwe.replace('CWE-', '')}.html`,
             owasp: 'A03:2021 - Injection & Data Flow',

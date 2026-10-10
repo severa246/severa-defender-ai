@@ -1,5 +1,17 @@
 import React, { useState } from 'react';
-import { ShieldAlert, ExternalLink, ChevronRight, CheckCircle2, Layers, Sparkles, AlertCircle, FolderSearch, Check, CheckCheck } from 'lucide-react';
+import { 
+  ShieldAlert, 
+  ExternalLink, 
+  ChevronRight, 
+  ChevronDown, 
+  CheckCircle2, 
+  Layers, 
+  FolderSearch, 
+  Check, 
+  CheckCheck,
+  ShieldCheck,
+  ArrowRight
+} from 'lucide-react';
 
 export default function FindingsPanel({ 
   findings = [], 
@@ -15,6 +27,13 @@ export default function FindingsPanel({
 }) {
   const [filter, setFilter] = useState('ALL');
   const [viewMode, setViewMode] = useState('ACTIVE'); // 'ACTIVE' or 'PROJECT_WIDE'
+  const [expandedTraceIds, setExpandedTraceIds] = useState({});
+
+  // Toggle collapsible trace drawer
+  const toggleTrace = (id, e) => {
+    e.stopPropagation();
+    setExpandedTraceIds((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   // Calculate project-wide total findings
   const allProjectFindings = React.useMemo(() => {
@@ -36,34 +55,47 @@ export default function FindingsPanel({
     return f.severity === filter;
   });
 
-  const getSeverityBadge = (severity) => {
+  const getSeverityBadge = (severity, cvssScore) => {
+    const scoreText = cvssScore ? ` • CVSS ${cvssScore}` : '';
     switch (severity) {
       case 'CRITICAL':
-        return 'bg-rose-500/15 text-rose-400 border-rose-500/30';
+        return {
+          label: `CRITICAL${scoreText}`,
+          classes: 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+        };
       case 'HIGH':
-        return 'bg-amber-500/15 text-amber-400 border-amber-500/30';
+        return {
+          label: `HIGH${scoreText}`,
+          classes: 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+        };
       case 'MEDIUM':
-        return 'bg-yellow-500/15 text-yellow-300 border-yellow-500/30';
+        return {
+          label: `MEDIUM${scoreText}`,
+          classes: 'bg-yellow-500/10 text-yellow-300 border-yellow-500/20'
+        };
       default:
-        return 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30';
+        return {
+          label: `LOW${scoreText}`,
+          classes: 'bg-slate-500/10 text-slate-400 border-slate-500/20'
+        };
     }
   };
 
   return (
-    <div className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-3.5 sm:p-4 flex flex-col h-full max-h-full overflow-hidden shadow-xl">
+    <div className="bg-[#090D16] border border-white/[0.08] rounded-xl p-3.5 sm:p-4 flex flex-col h-full max-h-full overflow-hidden shadow-2xl">
       
       {/* Inspector Panel Top Header */}
-      <div className="shrink-0 space-y-3 pb-3 border-b border-slate-800/80">
+      <div className="shrink-0 space-y-3 pb-3 border-b border-white/[0.06]">
         
-        {/* Title & Overall Count & Scan Full Project Button */}
+        {/* Title, Overall Count & Scan Project Button */}
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
-              <ShieldAlert className="w-4 h-4" />
+            <div className="p-1.5 rounded-lg bg-white/[0.05] border border-white/[0.08] text-slate-300">
+              <ShieldAlert className="w-4 h-4 text-slate-300" />
             </div>
             <div>
-              <h2 className="text-xs font-bold text-slate-100 uppercase tracking-wider">Security Inspector</h2>
-              <p className="text-[10px] text-slate-400">Real-time Vulnerability Analysis</p>
+              <h2 className="text-xs font-semibold text-slate-100 uppercase tracking-wider">Findings Inspector</h2>
+              <p className="text-[10px] text-slate-400 font-mono">SAST & Data-Flow Taint Engine</p>
             </div>
           </div>
 
@@ -75,50 +107,50 @@ export default function FindingsPanel({
                   setViewMode('PROJECT_WIDE');
                   onScanFullProject();
                 }}
-                className="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/80 px-2 py-1 rounded-lg text-[10px] font-semibold transition-all cursor-pointer"
+                className="flex items-center gap-1.5 bg-white/[0.05] hover:bg-white/[0.1] text-slate-300 border border-white/[0.08] px-2.5 py-1 rounded-md text-[10px] font-medium transition-all cursor-pointer"
                 title="Scan all files in active project folder"
               >
-                <FolderSearch className="w-3 h-3 text-indigo-400" />
+                <FolderSearch className="w-3 h-3 text-slate-400" />
                 <span>Scan Full Project</span>
               </button>
             )}
 
-            <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border shadow-sm ${
+            <span className={`px-2 py-0.5 rounded text-[11px] font-mono font-medium border ${
               filteredFindings.length > 0 ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
             }`}>
-              {filter === 'ALL' ? `${activeList.length} Flaws` : `${filteredFindings.length} ${filter} Flaws`}
+              {filter === 'ALL' ? `${activeList.length} Flaws` : `${filteredFindings.length} ${filter}`}
             </span>
           </div>
         </div>
 
-        {/* View Mode Toggle (Active File vs Project-Wide) */}
-        <div className="grid grid-cols-2 bg-slate-900 p-1 rounded-lg border border-slate-800 text-[10px] gap-1">
+        {/* View Mode Toggle: Current File vs Project Wide */}
+        <div className="grid grid-cols-2 bg-[#0c101a] p-0.5 rounded-lg border border-white/[0.06] text-[11px] gap-1 font-mono">
           <button
             onClick={() => setViewMode('ACTIVE')}
-            className={`py-1 rounded font-semibold transition-all ${
-              viewMode === 'ACTIVE' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+            className={`py-1 rounded font-medium transition-all cursor-pointer ${
+              viewMode === 'ACTIVE' ? 'bg-white/[0.1] text-white border border-white/[0.08]' : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            Current File ({findings.length})
+            Active File ({findings.length})
           </button>
           <button
             onClick={() => setViewMode('PROJECT_WIDE')}
-            className={`py-1 rounded font-semibold transition-all ${
-              viewMode === 'PROJECT_WIDE' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+            className={`py-1 rounded font-medium transition-all cursor-pointer ${
+              viewMode === 'PROJECT_WIDE' ? 'bg-white/[0.1] text-white border border-white/[0.08]' : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            All Folder Files ({allProjectFindings.length})
+            Project-Wide ({allProjectFindings.length})
           </button>
         </div>
 
         {/* Severity Filter Pills */}
-        <div className="flex items-center bg-slate-900 p-1 rounded-lg border border-slate-800 gap-1 text-[10px]">
+        <div className="flex items-center bg-[#0c101a] p-0.5 rounded-lg border border-white/[0.06] gap-1 text-[11px] font-mono">
           {['ALL', 'CRITICAL', 'HIGH', 'MEDIUM'].map((sev) => (
             <button
               key={sev}
               onClick={() => setFilter(sev)}
-              className={`flex-1 py-1 rounded font-semibold transition-all text-center ${
-                filter === sev ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+              className={`flex-1 py-1 rounded font-medium transition-all text-center cursor-pointer ${
+                filter === sev ? 'bg-white/[0.1] text-white border border-white/[0.08]' : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               {sev}
@@ -129,9 +161,9 @@ export default function FindingsPanel({
 
       {/* File-Wise Security Summary Bar (when in Project-Wide mode) */}
       {viewMode === 'PROJECT_WIDE' && projectFiles.length > 0 && (
-        <div className="shrink-0 pt-2 pb-1 space-y-1 border-b border-slate-800">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-            <Layers className="w-3 h-3 text-cyan-400" /> File Breakdown:
+        <div className="shrink-0 pt-2 pb-1 space-y-1 border-b border-white/[0.06]">
+          <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider flex items-center gap-1 font-mono">
+            <Layers className="w-3 h-3 text-slate-400" /> File Breakdown:
           </span>
           <div className="flex gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
             {projectFiles.map((file) => {
@@ -140,12 +172,12 @@ export default function FindingsPanel({
                 <button
                   key={file.path}
                   onClick={() => onSelectFile && onSelectFile(file)}
-                  className={`px-2 py-0.5 rounded-lg text-[10px] font-mono border whitespace-nowrap flex items-center gap-1 transition-all cursor-pointer ${
-                    flaws > 0 ? 'bg-rose-500/10 text-rose-300 border-rose-500/30' : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                  className={`px-2 py-0.5 rounded text-[10px] font-mono border whitespace-nowrap flex items-center gap-1 transition-all cursor-pointer ${
+                    flaws > 0 ? 'bg-rose-500/10 text-rose-300 border-rose-500/20' : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20'
                   }`}
                 >
                   <span>{file.name}</span>
-                  <span className="font-bold">({flaws})</span>
+                  <span className="font-semibold">({flaws})</span>
                 </button>
               );
             })}
@@ -153,140 +185,172 @@ export default function FindingsPanel({
         </div>
       )}
 
-      {/* Findings List */}
-      <div className="flex-1 min-h-0 overflow-y-auto space-y-3 mt-3 pr-1.5 custom-scrollbar">
+      {/* Findings List (Snyk / GitHub Security Enterprise Cards) */}
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-2.5 mt-3 pr-1 custom-scrollbar">
         {filteredFindings.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center text-slate-500 space-y-2">
-            <CheckCircle2 className="w-10 h-10 text-emerald-400/80" />
+          <div className="flex flex-col items-center justify-center py-16 text-center text-slate-500 space-y-2">
+            <CheckCircle2 className="w-9 h-9 text-emerald-400" />
             {activeList.length === 0 ? (
               <>
-                <p className="text-xs font-bold text-slate-200">Zero Flaws Detected</p>
+                <p className="text-xs font-semibold text-slate-200">Zero Flaws Detected</p>
                 <p className="text-[11px] text-slate-400 max-w-xs">
-                  Code passes Severa AI SAST security rulesets.
+                  Source code passes all Severa SAST security quality gates.
                 </p>
               </>
             ) : (
               <>
-                <p className="text-xs font-bold text-slate-200">
-                  0 {filter === 'CRITICAL' ? 'Critical' : filter === 'HIGH' ? 'High' : filter === 'MEDIUM' ? 'Medium' : filter} Flaws
+                <p className="text-xs font-semibold text-slate-200">
+                  0 {filter} Flaws
                 </p>
                 <p className="text-[11px] text-slate-400 max-w-xs">
-                  No {filter.toLowerCase()} severity vulnerabilities found ({activeList.length} flaw{activeList.length === 1 ? '' : 's'} in other categories).
+                  No {filter.toLowerCase()} severity vulnerabilities found ({activeList.length} in other categories).
                 </p>
               </>
             )}
           </div>
         ) : (
-          filteredFindings.map((finding) => (
-            <div
-              key={finding.id}
-              onClick={() => onSelectFinding && onSelectFinding(finding)}
-              className="bg-slate-950/90 border border-slate-800 hover:border-slate-700 rounded-xl p-3.5 space-y-2 transition-all cursor-pointer group shadow-lg"
-            >
-              {/* Card Header: Severity & Line Jump */}
-              <div className="flex items-center justify-between flex-wrap gap-1">
-                <div className="flex items-center gap-1.5">
-                  <span
-                    className={`px-2.5 py-0.5 text-[10px] font-extrabold uppercase rounded-full border ${getSeverityBadge(
-                      finding.severity
-                    )}`}
-                  >
-                    {finding.severity}
-                  </span>
+          filteredFindings.map((finding) => {
+            const sevBadge = getSeverityBadge(finding.severity, finding.cvssScore);
+            const isTraceExpanded = expandedTraceIds[finding.id];
 
-                  <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 flex items-center gap-0.5">
-                    {finding.aiBadge || (finding.isVerifiedByAi ? '🤖 AI Verified' : '⚡ SAST Engine')}
-                  </span>
-
-                  <span className="text-[9px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    {finding.confidence || 'CORROBORATED'}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-1">
-                  {finding.fileName && (
-                    <span className="text-[10px] font-mono text-cyan-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
-                      {finding.fileName}
+            return (
+              <div
+                key={finding.id}
+                onClick={() => onSelectFinding && onSelectFinding(finding)}
+                className="group border border-white/[0.06] hover:border-white/[0.12] bg-[#0c101a] rounded-lg p-3.5 space-y-2.5 transition-all cursor-pointer"
+              >
+                {/* Card Header: Badges & Location */}
+                <div className="flex items-center justify-between pb-2 border-b border-white/[0.04]">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className={`text-[11px] font-mono font-medium px-2 py-0.5 rounded border ${sevBadge.classes}`}>
+                      {sevBadge.label}
                     </span>
-                  )}
-                  <span className="text-[10px] font-mono font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
-                    Line {finding.line}
+                    <span className="text-[11px] font-mono text-slate-400">
+                      {finding.cwe}
+                    </span>
+                    {finding.owasp && (
+                      <span className="text-[11px] font-mono text-slate-500">
+                        {finding.owasp.split(' - ')[0]}
+                      </span>
+                    )}
+                    {finding.epssScore && (
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/[0.04] text-slate-300 border border-white/[0.06]" title="Exploit Prediction Scoring System probability">
+                        EPSS {finding.epssScore}
+                      </span>
+                    )}
+                  </div>
+
+                  <span className="text-[11px] font-mono text-slate-400">
+                    {finding.fileName ? `${finding.fileName}:${finding.line}` : `Line ${finding.line}`}
                   </span>
                 </div>
-              </div>
 
-              {/* Title & CWE */}
-              <div>
-                <h3 className="text-xs font-bold text-slate-100 group-hover:text-cyan-400 transition-colors flex items-center justify-between">
-                  <span>{finding.title}</span>
-                  <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-cyan-400" />
-                </h3>
-                
-                <div className="flex items-center gap-2 mt-1 flex-wrap">
-                  <a
-                    href={finding.cweUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-[10px] font-mono text-cyan-400 hover:underline flex items-center gap-0.5"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <span>{finding.cwe}</span>
-                    <ExternalLink className="w-2.5 h-2.5" />
-                  </a>
-                  <span className="text-[10px] text-slate-500">•</span>
-                  <span className="text-[10px] text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800">
-                    {finding.owasp}
+                {/* Finding Title */}
+                <div>
+                  <h4 className="text-sm font-semibold text-slate-100 group-hover:text-white transition-colors flex items-center justify-between">
+                    <span>{finding.title}</span>
+                    <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400" />
+                  </h4>
+
+                  {/* CWE Link & Metadata */}
+                  <div className="flex items-center gap-2 mt-1">
+                    {finding.cweUrl && (
+                      <a
+                        href={finding.cweUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[10px] font-mono text-slate-400 hover:text-slate-200 flex items-center gap-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <span>MITRE Advisory</span>
+                        <ExternalLink className="w-2.5 h-2.5" />
+                      </a>
+                    )}
+                    {finding.cvssVector && (
+                      <>
+                        <span className="text-[10px] text-slate-600">•</span>
+                        <span className="text-[10px] font-mono text-slate-500 truncate max-w-[200px]" title={finding.cvssVector}>
+                          {finding.cvssVector}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Interactive Taint Trace Breadcrumb (Source -> Propagation -> Sink) */}
+                {finding.taintTrace && (
+                  <div className="p-2 rounded bg-black/50 border border-white/[0.06] text-[11px] font-mono text-slate-300 space-y-1">
+                    <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider flex items-center gap-1">
+                      <span>Dataflow Taint Trace:</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-wrap text-slate-400">
+                      <span className="text-amber-400 bg-amber-500/10 px-1 rounded border border-amber-500/20">
+                        Src: {finding.taintTrace.source?.name} (L{finding.taintTrace.source?.line})
+                      </span>
+                      <ArrowRight className="w-3 h-3 text-slate-500" />
+                      <span className="text-slate-300">
+                        Var: {finding.taintTrace.propagation?.variable}
+                      </span>
+                      <ArrowRight className="w-3 h-3 text-slate-500" />
+                      <span className="text-rose-400 bg-rose-500/10 px-1 rounded border border-rose-500/20">
+                        Sink (L{finding.line})
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Code Snippet Box */}
+                {finding.codeSnippet && (
+                  <div className="p-2 rounded bg-black/40 border border-white/[0.04] font-mono text-xs text-rose-300 overflow-x-auto">
+                    <code>{finding.codeSnippet}</code>
+                  </div>
+                )}
+
+                {/* Description */}
+                <p className="text-xs text-slate-400 leading-snug">
+                  {finding.description}
+                </p>
+
+                {/* Clean Enterprise Action Row */}
+                <div className="flex items-center justify-between pt-2 border-t border-white/[0.04]">
+                  <span className="text-xs text-slate-400 flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Auto-patch verified</span>
                   </span>
-                </div>
-              </div>
 
-              {/* Vulnerable Code Line Snippet (Highlighted Red) */}
-              <div className="bg-rose-950/40 border border-rose-500/30 rounded-lg p-2 font-mono text-[11px] text-rose-200 overflow-x-auto">
-                <code>{finding.codeSnippet}</code>
-              </div>
-
-              {/* Description */}
-              <p className="text-[11px] text-slate-400 leading-snug">
-                {finding.description}
-              </p>
-
-              {/* Fix Guidance & Actions */}
-              <div className="pt-2 border-t border-slate-800/80 text-[11px] flex flex-col gap-2">
-                <div className="text-emerald-400">
-                  <span className="font-bold text-slate-300">Remediation: </span>
-                  <span>{finding.remediation}</span>
-                </div>
-                {onOpenDefender && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      onOpenDefender(finding);
+                      if (onOpenDefender) {
+                        onOpenDefender(finding);
+                      } else if (onSelectFinding) {
+                        onSelectFinding(finding);
+                      }
                     }}
-                    className="self-start flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 text-emerald-300 font-semibold text-[10px] transition-all cursor-pointer"
+                    className="px-3 py-1 bg-white hover:bg-slate-200 text-black text-xs font-semibold rounded-md transition-all shadow-sm cursor-pointer"
                   >
-                    <Sparkles className="w-3 h-3 text-emerald-400" />
-                    <span>Ask Severa Defender AI</span>
+                    Review Patch
                   </button>
-                )}
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
-      {/* Footer 1-Click AI Repair Callouts */}
+      {/* Footer 1-Click AI Repair Callouts with Restrained Enterprise Action Hierarchy */}
       {(findings.length > 0 || allProjectFindings.length > 0) && (
-        <div className="shrink-0 pt-3 border-t border-slate-800 space-y-2 mt-auto">
+        <div className="shrink-0 pt-3 border-t border-white/[0.06] space-y-2 mt-auto">
           
-          {/* Apply Fix to All Folder Files */}
+          {/* Apply Fix to All Project Files */}
           {onApplyFixAll && (
             <button
               onClick={onApplyFixAll}
-              className="w-full py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer border border-emerald-400/40"
+              className="w-full py-2 bg-white/[0.05] hover:bg-white/[0.1] text-slate-200 rounded-lg text-xs font-medium border border-white/[0.08] flex items-center justify-center gap-2 transition-all cursor-pointer"
               title="Apply AI Security Fixes Across ALL Files in Project Folder"
             >
-              <CheckCheck className="w-4 h-4 text-emerald-200" />
-              <span>Apply Fix to All Project Files ({projectFiles.length > 0 ? projectFiles.length : 1} File{projectFiles.length > 1 ? 's' : ''})</span>
+              <CheckCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Apply Fix to All Project Files ({projectFiles.length > 0 ? projectFiles.length : 1})</span>
             </button>
           )}
 
@@ -294,19 +358,20 @@ export default function FindingsPanel({
           {aiReviewData?.fixedCode && onApplyFix && (
             <button
               onClick={() => onApplyFix(aiReviewData.fixedCode)}
-              className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer border border-slate-700"
+              className="w-full py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 rounded-lg text-xs font-medium border border-emerald-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
             >
-              <Check className="w-4 h-4 text-cyan-400" />
+              <Check className="w-3.5 h-3.5 text-emerald-400" />
               <span>Apply Active File Only ({findings.length} Flaws)</span>
             </button>
           )}
 
+          {/* Primary Action Button: Solid White, text-black */}
           <button
             onClick={onGenerateAiFix}
-            className="w-full py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
+            className="w-full py-2.5 bg-white hover:bg-slate-200 text-black rounded-lg text-xs font-semibold shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer"
           >
-            <Sparkles className="w-4 h-4" />
-            <span>{aiReviewData?.fixedCode ? 'Re-Generate AI Fix Patch' : 'Generate 1-Click AI Auto-Fix Patch'}</span>
+            <ShieldCheck className="w-4 h-4 text-black" />
+            <span>{aiReviewData?.fixedCode ? 'Re-Generate Enterprise Patch' : 'Generate Enterprise Security Patch'}</span>
           </button>
         </div>
       )}

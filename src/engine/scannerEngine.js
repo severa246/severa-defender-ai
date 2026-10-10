@@ -1,4 +1,4 @@
-import { SAST_RULES } from './sastRules.js';
+import { SAST_RULES, getCvssAndEpss } from './sastRules.js';
 import { analyzeDataFlow } from './dataFlowEngine.js';
 import { parseCst } from './cstParser.js';
 import { runIastSandboxFuzz } from './iastSandboxFuzzer.js';
@@ -206,6 +206,7 @@ export function analyzeCode(code, language = 'javascript', customRules = []) {
           return;
         }
 
+        const intel = getCvssAndEpss(rule.cwe, rule.severity);
         findings.push({
           id: `${rule.id}-L${lineNumber}`,
           ruleId: rule.id,
@@ -215,6 +216,10 @@ export function analyzeCode(code, language = 'javascript', customRules = []) {
           title: rule.title,
           severity: rule.severity,
           confidence: rule.confidence || 'CORROBORATED',
+          cvssScore: rule.cvssScore || intel.score,
+          cvssVector: rule.cvssVector || intel.vector,
+          epssScore: rule.epssScore || intel.epss,
+          epssPercentile: rule.epssPercentile || intel.percentile,
           cwe: rule.cwe,
           cweUrl: rule.cweUrl,
           owasp: rule.owasp,
@@ -228,6 +233,7 @@ export function analyzeCode(code, language = 'javascript', customRules = []) {
 
   // --- DOCKERFILE ROOT USER CHECK ---
   if (normalizedLangs.includes('dockerfile') && !code.match(/^\s*USER\s+/im)) {
+    const intel = getCvssAndEpss('CWE-250', 'HIGH');
     findings.push({
       id: 'SEC-DOCKER-001-L1',
       ruleId: 'SEC-DOCKER-001',
@@ -237,6 +243,10 @@ export function analyzeCode(code, language = 'javascript', customRules = []) {
       title: 'Container Running as Root User',
       severity: 'HIGH',
       confidence: 'CORROBORATED',
+      cvssScore: intel.score,
+      cvssVector: intel.vector,
+      epssScore: intel.epss,
+      epssPercentile: intel.percentile,
       cwe: 'CWE-250',
       cweUrl: 'https://cwe.mitre.org/data/definitions/250.html',
       owasp: 'A05:2021 - Security Misconfiguration',
