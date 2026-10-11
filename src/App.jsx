@@ -109,6 +109,7 @@ export default function App({ user, onLogout }) {
   // Resizable Security Inspector Panel State (280px - 580px)
   const [findingsWidth, setFindingsWidth] = useState(380);
   const isDraggingFindings = useRef(false);
+  const hasInitialScanned = useRef(false);
 
   const handleFindingsMouseDown = (e) => {
     e.preventDefault();
@@ -332,6 +333,7 @@ jobs:
         }
 
         if (saved) {
+          setAiReviewData(null);
           if (saved.code !== undefined && saved.code.trim().length > 0) setCode(saved.code);
           if (saved.language) setLanguage(saved.language);
           if (saved.activeProjectName) setActiveProjectName(saved.activeProjectName);
@@ -475,6 +477,10 @@ jobs:
   const handleCodeChange = (newCode) => {
     setCode(newCode);
     setFixedLineNumbers([]);
+    if (!newCode || newCode.trim().length === 0) {
+      setAiReviewData(null);
+      setFindings([]);
+    }
 
     if (activeFileName && activeProjectName) {
       setProjectFiles((prev) =>
@@ -499,6 +505,7 @@ jobs:
   // Select project & file from breadcrumbs or sidebar
   const handleSelectProjectFile = (projectName, fileName) => {
     setActiveTab('workbench');
+    setAiReviewData(null);
 
     if (activeFileName && code) {
       const currentCode = code;
@@ -627,8 +634,8 @@ jobs:
     setFindings(finalFindings);
     setScanMetrics(result.metrics);
 
-    // Trigger AI remediation review generation (works offline locally & online via API key)
-    if (finalFindings.length > 0 || (apiKey && apiKey.trim().length > 5)) {
+    // Trigger AI remediation review generation (only when active code actually has flaws)
+    if (finalFindings.length > 0 && activeCode && activeCode.trim().length > 0) {
       setIsAiLoading(true);
       generateAiReview(activeCode, activeLang, finalFindings, apiKey)
         .then((aiRes) => {
@@ -730,10 +737,14 @@ jobs:
     }, 350);
   }, [code, language, customRules, activeFilePath, activeFileName, activeProjectName, activeSessionId, apiKey, setFindings, setScanMetrics, setIsAiLoading, setAiReviewData, setProjectFiles, setProjectFolders, setScanSessions, setIsScanning]);
 
-  // Initial Scan on Mount
+  // Initial Scan once workspace is loaded
   useEffect(() => {
-    handleScan(code, language);
-  }, [code, language, handleScan]);
+    if (!isWorkspaceLoaded) return;
+    if (!hasInitialScanned.current) {
+      hasInitialScanned.current = true;
+      handleScan(code, language);
+    }
+  }, [isWorkspaceLoaded, code, language, handleScan]);
 
   // Scan Full Project across all project files in folder
   const handleScanFullProject = () => {
@@ -877,6 +888,7 @@ jobs:
 
   // Create Blank New Project Folder (Fresh Blank File Initialization)
   const handleCreateBlankProject = (projectName, fileName) => {
+    setAiReviewData(null);
     setActiveProjectName(projectName);
     setActiveFileName(fileName);
     setActiveFilePath(fileName);
@@ -902,6 +914,7 @@ jobs:
 
   // Create New File inside Project
   const handleCreateFileInProject = (projectName, fileName) => {
+    setAiReviewData(null);
     setActiveProjectName(projectName);
     setActiveFileName(fileName);
     setActiveFilePath(fileName);
@@ -957,6 +970,9 @@ jobs:
 
   // Rename Project Handler
   const handleRenameProject = (oldName, newName) => {
+    setProjectFolders((prev) =>
+      prev.map((p) => (p.name === oldName ? { ...p, name: newName } : p))
+    );
     if (activeProjectName === oldName) {
       setActiveProjectName(newName);
     }
@@ -964,6 +980,7 @@ jobs:
 
   // Delete Project Handler
   const handleDeleteProject = (deletedProjectName) => {
+    setAiReviewData(null);
     setProjectFolders((prev) => {
       const remaining = prev.filter((p) => p.name !== deletedProjectName);
       if (activeProjectName === deletedProjectName) {
@@ -995,8 +1012,31 @@ jobs:
 
   // Rename File Handler
   const handleRenameFileInProject = (projectName, oldFileName, newFileName) => {
-    if (activeProjectName === projectName && activeFileName === oldFileName) {
+    setProjectFolders((prev) =>
+      prev.map((folder) => {
+        if (folder.name === projectName) {
+          const updatedFiles = (folder.files || []).map((f) =>
+            f.name === oldFileName || f.path === oldFileName
+              ? { ...f, name: newFileName, path: newFileName }
+              : f
+          );
+          return { ...folder, files: updatedFiles };
+        }
+        return folder;
+      })
+    );
+
+    setProjectFiles((prev) =>
+      prev.map((f) =>
+        f.name === oldFileName || f.path === oldFileName
+          ? { ...f, name: newFileName, path: newFileName }
+          : f
+      )
+    );
+
+    if (activeProjectName === projectName && (activeFileName === oldFileName || activeFilePath === oldFileName)) {
       setActiveFileName(newFileName);
+      setActiveFilePath(newFileName);
     }
   };
 
@@ -1036,6 +1076,7 @@ jobs:
 
   // Select Project Sample from Sidebar
   const handleSelectProjectSample = (templateId, projectName = 'ai project', fileName = 'main.py') => {
+    setAiReviewData(null);
     // 1. Save current active file code to projectFiles & projectFolders before switching
     if (activeFileName && code) {
       const currentCode = code;
@@ -1095,6 +1136,7 @@ jobs:
   // Select File from Project Tree Sidebar
   const handleSelectFile = (file) => {
     if (!file) return;
+    setAiReviewData(null);
 
     if (activeFileName && code && activeFileName !== file.name) {
       const currentCode = code;
@@ -1727,8 +1769,8 @@ jobs:
                 </div>
               </div>
 
-              {/* AI Auto-Fix Diff Panel */}
-              {aiReviewData && (
+              {/* AI Auto-Fix Diff Panel — Only show when findings exist and review matches current code */}
+              {aiReviewData && findings.length > 0 && (aiReviewData.originalCode === code || aiReviewData.fixedCode === code) && (
                 <DiffViewer
                   aiReviewData={aiReviewData}
                   onApplyFix={handleApplyFix}
