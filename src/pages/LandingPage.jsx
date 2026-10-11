@@ -26,8 +26,36 @@ function CopyButton({ text }) {
   );
 }
 
+// ── Navigation items with distinct signature colors ────────────────────────────
+const NAV_ITEMS = [
+  {
+    id: 'home',
+    label: 'Home',
+    activeClass: 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-emerald-500/35',
+    activeMobile: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40',
+    dotColor: 'bg-slate-950',
+    indicatorDot: 'bg-emerald-400',
+  },
+  {
+    id: 'features',
+    label: 'Features',
+    activeClass: 'bg-cyan-400 text-slate-950 border-cyan-300 shadow-cyan-400/35',
+    activeMobile: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
+    dotColor: 'bg-slate-950',
+    indicatorDot: 'bg-cyan-400',
+  },
+  {
+    id: 'quickstart',
+    label: 'Quick Start',
+    activeClass: 'bg-amber-400 text-slate-950 border-amber-300 shadow-amber-400/35',
+    activeMobile: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+    dotColor: 'bg-slate-950',
+    indicatorDot: 'bg-amber-400',
+  },
+];
+
 // ── Navbar ─────────────────────────────────────────────────────────────────────
-function Navbar({ navigate }) {
+function Navbar({ navigate, activeSection = 'home', onSelectSection }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -37,33 +65,17 @@ function Navbar({ navigate }) {
     return () => window.removeEventListener('scroll', fn);
   }, []);
 
-  const scrollToSection = (id) => {
-    if (id === 'home') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      const el = document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
-    }
-    setMobileOpen(false);
-  };
-
-  const navItems = [
-    { label: 'Home', action: () => scrollToSection('home') },
-    { label: 'Features', action: () => scrollToSection('features') },
-    { label: 'Quick Start', action: () => scrollToSection('quickstart') },
-  ];
-
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
-      scrolled ? 'bg-[#191C23]/95 backdrop-blur-xl border-b border-white/5' : ''
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      scrolled ? 'bg-[#191C23]/95 backdrop-blur-xl border-b border-white/10 shadow-lg' : 'bg-[#191C23]/80 backdrop-blur-md border-b border-white/5'
     }`}>
-      <div className="w-full px-6 sm:px-10 lg:px-14 xl:px-20 py-4 flex items-center justify-between gap-6">
+      <div className="w-full px-6 sm:px-10 lg:px-14 xl:px-20 py-3 sm:py-4 flex items-center justify-between gap-6">
         {/* Logo */}
         <div
-          onClick={() => scrollToSection('home')}
-          className="flex items-center gap-3 shrink-0 cursor-pointer"
+          onClick={() => onSelectSection('home')}
+          className="flex items-center gap-3 shrink-0 cursor-pointer group"
         >
-          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center group-hover:scale-105 transition-transform">
             <Shield size={20} className="text-emerald-400" />
           </div>
           <div>
@@ -72,17 +84,27 @@ function Navbar({ navigate }) {
           </div>
         </div>
 
-        {/* Desktop nav links */}
-        <div className="hidden lg:flex items-center gap-9 sm:gap-11 text-base lg:text-[17px] font-semibold text-slate-200">
-          {navItems.map((item) => (
-            <button
-              key={item.label}
-              onClick={item.action}
-              className="hover:text-emerald-400 transition-colors cursor-pointer font-semibold"
-            >
-              {item.label}
-            </button>
-          ))}
+        {/* Desktop nav links / pills */}
+        <div className="hidden lg:flex items-center gap-1.5 p-1.5 rounded-2xl bg-[#0d1017]/90 border border-white/10 backdrop-blur-xl shadow-lg">
+          {NAV_ITEMS.map((item) => {
+            const isActive = activeSection === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => onSelectSection(item.id)}
+                className={`px-5 py-2 rounded-xl text-sm sm:text-base font-bold transition-all duration-300 flex items-center gap-2 cursor-pointer border ${
+                  isActive
+                    ? `${item.activeClass} shadow-md scale-105 font-black`
+                    : 'border-transparent text-slate-300 hover:text-white hover:bg-white/5 font-semibold'
+                }`}
+              >
+                {isActive && (
+                  <span className={`w-2 h-2 rounded-full ${item.dotColor} animate-pulse`} />
+                )}
+                {item.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Right actions */}
@@ -108,16 +130,34 @@ function Navbar({ navigate }) {
       </div>
 
       {mobileOpen && (
-        <div className="md:hidden border-t border-white/5 bg-[#191C23]/95 backdrop-blur-xl px-6 py-5 space-y-3">
-          {navItems.map((item) => (
-            <button
-              key={item.label}
-              onClick={() => { item.action(); setMobileOpen(false); }}
-              className="block w-full text-left text-base text-slate-300 hover:text-white py-2 font-medium"
-            >
-              {item.label}
-            </button>
-          ))}
+        <div className="md:hidden border-t border-white/5 bg-[#191C23]/95 backdrop-blur-xl px-6 py-5 space-y-2.5">
+          {NAV_ITEMS.map((item) => {
+            const isActive = activeSection === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  onSelectSection(item.id);
+                  setMobileOpen(false);
+                }}
+                className={`w-full text-left px-4 py-2.5 rounded-xl text-base flex items-center justify-between border transition-all ${
+                  isActive
+                    ? `${item.activeMobile} font-black shadow-sm`
+                    : 'border-transparent text-slate-300 hover:text-white hover:bg-white/5 font-medium'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  {isActive && <span className="w-2 h-2 rounded-full bg-current animate-pulse" />}
+                  <span>{item.label}</span>
+                </div>
+                {isActive && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-white/10 font-bold uppercase tracking-wider">
+                    Current
+                  </span>
+                )}
+              </button>
+            );
+          })}
           <div className="pt-2 flex flex-col gap-2.5">
             <button
               onClick={() => navigate('/login')}
@@ -324,17 +364,17 @@ function DemoTerminal() {
 // ── Step card ─────────────────────────────────────────────────────────────────
 function StepCard({ number, icon: Icon, title, desc, iconColor = 'text-emerald-400', iconBg = 'bg-emerald-500/10 border-emerald-500/20' }) {
   return (
-    <div className="p-6 rounded-2xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.05] hover:border-emerald-500/30 transition-all group">
-      <div className="flex items-start justify-between mb-4">
-        <div className={`w-12 h-12 rounded-xl border flex items-center justify-center ${iconBg} ${iconColor}`}>
-          <Icon size={22} />
+    <div className="p-3.5 sm:p-4 lg:p-4.5 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-cyan-500/30 transition-all group">
+      <div className="flex items-start justify-between mb-2">
+        <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg border flex items-center justify-center ${iconBg} ${iconColor}`}>
+          <Icon size={18} />
         </div>
-        <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-md tracking-wider">
+        <span className="text-[10px] sm:text-xs font-bold text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded tracking-wider">
           STEP {String(number).padStart(2,'0')}
         </span>
       </div>
-      <h3 className="text-lg font-bold text-white mb-2">{title}</h3>
-      <p className="text-sm text-slate-300 leading-relaxed font-normal">{desc}</p>
+      <h3 className="text-sm sm:text-base font-bold text-white mb-1">{title}</h3>
+      <p className="text-xs sm:text-[13px] text-slate-300 leading-snug font-normal line-clamp-2 sm:line-clamp-3">{desc}</p>
     </div>
   );
 }
@@ -360,12 +400,126 @@ function ContribAvatars({ count = 5 }) {
 // ── Main ───────────────────────────────────────────────────────────────────────
 export default function LandingPage() {
   const { navigate } = useRouter();
+  const [activeSection, setActiveSection] = useState('home');
+  const isScrollingRef = useRef(false);
+  const activeSectionRef = useRef(activeSection);
+  activeSectionRef.current = activeSection;
 
   const DOCKER_CMD = 'docker run -d -p 3000:3000 severaai/severa:latest';
 
+  const scrollToSection = (id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setActiveSection(id);
+    }
+  };
+
+  // Add scroll-snap styling class to documentElement/body
+  useEffect(() => {
+    document.documentElement.classList.add('landing-snap-page');
+    document.body.classList.add('landing-snap-page');
+    return () => {
+      document.documentElement.classList.remove('landing-snap-page');
+      document.body.classList.remove('landing-snap-page');
+    };
+  }, []);
+
+  // Track active section via IntersectionObserver
+  useEffect(() => {
+    const ids = ['home', 'features', 'quickstart'];
+    const elements = ids.map((id) => document.getElementById(id)).filter(Boolean);
+    if (!elements.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        let bestEntry = null;
+        let maxRatio = 0;
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio > maxRatio) {
+            maxRatio = entry.intersectionRatio;
+            bestEntry = entry;
+          }
+        });
+        if (bestEntry && maxRatio >= 0.35) {
+          setActiveSection(bestEntry.target.id);
+        }
+      },
+      {
+        threshold: [0.35, 0.5, 0.7, 0.9],
+      }
+    );
+
+    elements.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
+  // Wheel listener to guarantee single slide transition at a time
+  useEffect(() => {
+    const SLIDES = ['home', 'features', 'quickstart'];
+
+    const handleWheel = (e) => {
+      if (Math.abs(e.deltaY) < 25) return;
+      if (isScrollingRef.current) {
+        e.preventDefault();
+        return;
+      }
+
+      const current = activeSectionRef.current;
+      const currentIndex = SLIDES.indexOf(current);
+      if (currentIndex === -1) return;
+
+      if (e.deltaY > 0 && currentIndex < SLIDES.length - 1) {
+        e.preventDefault();
+        isScrollingRef.current = true;
+        const target = SLIDES[currentIndex + 1];
+        scrollToSection(target);
+        setTimeout(() => {
+          isScrollingRef.current = false;
+        }, 750);
+      } else if (e.deltaY < 0 && currentIndex > 0) {
+        e.preventDefault();
+        isScrollingRef.current = true;
+        const target = SLIDES[currentIndex - 1];
+        scrollToSection(target);
+        setTimeout(() => {
+          isScrollingRef.current = false;
+        }, 750);
+      }
+    };
+
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      const SLIDES = ['home', 'features', 'quickstart'];
+      const currentIndex = SLIDES.indexOf(activeSectionRef.current);
+      if (currentIndex === -1) return;
+
+      if (['ArrowDown', 'PageDown'].includes(e.key) && currentIndex < SLIDES.length - 1) {
+        e.preventDefault();
+        scrollToSection(SLIDES[currentIndex + 1]);
+      } else if (['ArrowUp', 'PageUp'].includes(e.key) && currentIndex > 0) {
+        e.preventDefault();
+        scrollToSection(SLIDES[currentIndex - 1]);
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        scrollToSection(SLIDES[0]);
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        scrollToSection(SLIDES[SLIDES.length - 1]);
+      }
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen bg-[#191C23] text-white font-sans overflow-x-hidden relative">
-      {/* Seamless fixed background grid design throughout the home page */}
+    <div className="min-h-screen bg-[#191C23] text-white font-sans relative">
+      {/* Seamless fixed background grid design throughout the landing page */}
       <div
         className="fixed inset-0 pointer-events-none z-0"
         style={{
@@ -373,34 +527,74 @@ export default function LandingPage() {
           backgroundSize: '48px 48px',
         }}
       />
-      <Navbar navigate={navigate} />
 
-      {/* ── HERO ──────────────────────────────────────────────────────────── */}
-      <section className="relative z-10 pt-28 pb-20">
+      {/* Top Navbar */}
+      <Navbar
+        navigate={navigate}
+        activeSection={activeSection}
+        onSelectSection={scrollToSection}
+      />
 
-        <div className="relative w-full max-w-[1720px] mx-auto px-6 sm:px-10 lg:px-14 xl:px-20 grid lg:grid-cols-2 gap-10 lg:gap-14 xl:gap-20 items-center">
-          {/* Left */}
+      {/* Floating Right Slide Navigator */}
+      <div className="hidden md:flex fixed right-6 top-1/2 -translate-y-1/2 z-40 flex-col items-end gap-3.5 pointer-events-auto">
+        {NAV_ITEMS.map((item) => {
+          const isActive = activeSection === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => scrollToSection(item.id)}
+              aria-label={`Jump to ${item.label}`}
+              className="group flex items-center gap-3 cursor-pointer py-1"
+            >
+              <span
+                className={`text-xs font-bold transition-all duration-200 px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 ${
+                  isActive
+                    ? 'bg-white/10 text-white opacity-100 shadow-sm'
+                    : 'bg-black/70 text-slate-300'
+                }`}
+              >
+                {item.label}
+              </span>
+              <span
+                className={`transition-all duration-300 rounded-full border ${
+                  isActive
+                    ? `w-3.5 h-3.5 ${item.indicatorDot} border-white shadow-lg ring-4 ring-white/10 scale-125`
+                    : 'w-2.5 h-2.5 bg-white/20 border-white/30 group-hover:bg-white/60 group-hover:scale-110'
+                }`}
+              />
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── SLIDE 1: HOME (HERO) ────────────────────────────────────────── */}
+      <section
+        id="home"
+        className="h-screen min-h-screen w-full snap-slide-section flex flex-col justify-center relative shrink-0 pt-20 pb-6 px-0 overflow-y-auto lg:overflow-hidden"
+      >
+        <div className="relative w-full max-w-[1720px] mx-auto px-6 sm:px-10 lg:px-14 xl:px-20 grid lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16 items-center">
+          {/* Left Column */}
           <div className="w-full">
-            {/* Info bar */}
-            <div className="flex flex-wrap items-center gap-3 mb-5">
+            {/* Info Badge */}
+            <div className="flex flex-wrap items-center gap-3 mb-4 sm:mb-5">
               <span className="flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs sm:text-[13px] font-semibold">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 Open Source &amp; Self-Hostable Security Platform
               </span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-6xl xl:text-7xl font-black leading-[1.08] tracking-tight mb-5">
+            <h1 className="text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-black leading-[1.08] tracking-tight mb-4 sm:mb-5">
               Build Secure<br />
               Software{' '}
               <span className="text-emerald-400">Faster</span>
             </h1>
 
-            <p className="text-base sm:text-lg lg:text-xl text-slate-300 leading-relaxed mb-6 max-w-2xl font-normal">
+            <p className="text-sm sm:text-base lg:text-lg text-slate-300 leading-relaxed mb-5 sm:mb-6 max-w-2xl font-normal">
               Open-source AI security platform for intelligent code review,
               vulnerability detection, automated remediation, and developer workflows.
             </p>
 
-            <div className="flex flex-wrap gap-3.5 mb-7">
+            <div className="flex flex-wrap gap-3.5 mb-6 sm:mb-7">
               <button
                 onClick={() => navigate('/login')}
                 className="flex items-center gap-2 px-6 py-3 sm:px-7 sm:py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-sm sm:text-base font-black transition-all shadow-lg shadow-emerald-500/25 hover:-translate-y-0.5 cursor-pointer"
@@ -425,14 +619,14 @@ export default function LandingPage() {
             </div>
 
             {/* Docker quick-start */}
-            <div className="flex items-center gap-2.5 bg-black/60 border border-white/10 rounded-xl px-4 py-3 font-mono text-xs sm:text-sm text-slate-200 max-w-xl">
+            <div className="flex items-center gap-2.5 bg-black/60 border border-white/10 rounded-xl px-4 py-2.5 font-mono text-xs sm:text-sm text-slate-200 max-w-xl">
               <Terminal size={14} className="text-emerald-400 shrink-0" />
               <span className="flex-1 truncate">$ {DOCKER_CMD}</span>
               <CopyButton text={DOCKER_CMD} />
             </div>
           </div>
 
-          {/* Right — terminal */}
+          {/* Right Column — Demo Terminal */}
           <div className="relative w-full">
             <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-emerald-500/15 to-transparent blur-xl pointer-events-none" />
             <DemoTerminal />
@@ -440,22 +634,27 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── WORKFLOW PIPELINE ─────────────────────────────────────────────── */}
-      <section id="features" className="relative z-10 py-20 border-t border-white/10">
-        <div className="w-full px-6 sm:px-10 lg:px-14 xl:px-20">
-          <div className="text-center mb-14">
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs sm:text-sm font-bold mb-4">
+      {/* ── SLIDE 2: FEATURES (PIPELINE) ────────────────────────────────── */}
+      <section
+        id="features"
+        className="h-screen min-h-screen w-full snap-slide-section flex flex-col justify-center relative shrink-0 pt-20 pb-6 px-6 sm:px-10 lg:px-14 xl:px-20 overflow-y-auto lg:overflow-hidden border-t border-white/10"
+      >
+        <div className="w-full max-w-[1720px] mx-auto">
+          <div className="text-center mb-4 sm:mb-6">
+            <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 text-xs sm:text-sm font-bold mb-2">
               <Layers size={14} />
               Developer Workflow Pipeline
             </span>
-            <h2 className="text-4xl sm:text-5xl font-black text-white mb-4">End-to-End Automated Code Defense</h2>
-            <p className="text-base sm:text-lg text-slate-300 max-w-3xl mx-auto leading-relaxed">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-2">
+              End-to-End Automated Code Defense
+            </h2>
+            <p className="text-xs sm:text-sm lg:text-base text-slate-300 max-w-3xl mx-auto leading-relaxed">
               Severa replaces fragmented security scanners with a unified open-source workflow
               pipeline built specifically for modern developer teams.
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 mb-3.5 sm:mb-4">
             <StepCard number={1} icon={Code2} iconColor="text-slate-200" iconBg="bg-white/5 border-white/10"
               title="Repository Analysis"
               desc="Deep AST parsing across 30+ languages. Automatically indexes dependencies, branches, and code call graphs." />
@@ -469,7 +668,7 @@ export default function LandingPage() {
               title="AI Review Engine"
               desc="LLM-powered security reviews using Google Gemini 1.5 Pro, Anthropic Claude 3.7, or local Ollama / LM Studio." />
           </div>
-          <div className="grid sm:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-3 gap-3.5 sm:gap-4">
             <StepCard number={5} icon={Zap} iconColor="text-cyan-400" iconBg="bg-cyan-500/10 border-cyan-500/20"
               title="Automated Fixes"
               desc="Context-aware security patch synthesis. Generates clean, tested code diffs that preserve style and type safety." />
@@ -483,29 +682,35 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── CTA / QUICK START ─────────────────────────────────────────────── */}
-      <section id="quickstart" className="relative z-10 py-24 border-t border-white/10">
-        <div className="w-full max-w-5xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs sm:text-sm font-bold mb-6">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+      {/* ── SLIDE 3: QUICK START & FOOTER ───────────────────────────────── */}
+      <section
+        id="quickstart"
+        className="h-screen min-h-screen w-full snap-slide-section flex flex-col justify-between relative shrink-0 pt-20 overflow-y-auto lg:overflow-hidden border-t border-white/10"
+      >
+        {/* Center content */}
+        <div className="flex-1 flex flex-col justify-center items-center w-full max-w-5xl mx-auto px-6 py-6 text-center">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-xs sm:text-sm font-bold mb-4">
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
             Free &amp; Open Source Security Platform
           </div>
-          <h2 className="text-4xl sm:text-5xl font-black text-white mb-4">Start securing your codebase today</h2>
-          <p className="text-base sm:text-lg text-slate-300 mb-8 leading-relaxed">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-3">
+            Start securing your codebase today
+          </h2>
+          <p className="text-sm sm:text-base text-slate-300 mb-6 max-w-2xl leading-relaxed">
             Deploy in minutes. No vendor lock-in. No usage limits.
             Your code stays on your infrastructure.
           </p>
-          <div className="flex flex-wrap gap-4 justify-center">
+          <div className="flex flex-wrap gap-3.5 justify-center">
             <button
               onClick={() => navigate('/login')}
-              className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-base font-black transition-all shadow-xl shadow-emerald-500/30 hover:-translate-y-0.5 cursor-pointer"
+              className="flex items-center gap-2 px-7 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-sm sm:text-base font-black transition-all shadow-xl shadow-amber-400/25 hover:-translate-y-0.5 cursor-pointer"
             >
               Get Started
               <ArrowRight size={16} />
             </button>
             <button
               onClick={() => navigate('/app')}
-              className="flex items-center gap-2 px-8 py-3.5 rounded-xl border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-white text-base font-semibold transition-all hover:-translate-y-0.5 cursor-pointer"
+              className="flex items-center gap-2 px-6 py-3 rounded-xl border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-white text-sm sm:text-base font-semibold transition-all hover:-translate-y-0.5 cursor-pointer"
             >
               <Eye size={15} />
               Live Demo
@@ -513,71 +718,74 @@ export default function LandingPage() {
           </div>
 
           {/* Quick-start block */}
-          <div className="mt-12 text-left bg-black/60 border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
-            <div className="px-5 py-3 border-b border-white/10 flex items-center gap-2.5 bg-white/[0.02]">
+          <div className="mt-7 text-left bg-black/60 border border-white/10 rounded-2xl overflow-hidden shadow-2xl max-w-2xl w-full">
+            <div className="px-5 py-2.5 border-b border-white/10 flex items-center gap-2.5 bg-white/[0.02]">
               <span className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
               <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/70" />
               <span className="ml-2 text-xs text-slate-300 font-mono font-semibold">Quick Start CLI</span>
             </div>
-            <div className="p-6 space-y-3 font-mono text-sm sm:text-base">
+            <div className="p-4 sm:p-5 space-y-2.5 font-mono text-xs sm:text-sm">
               {[
                 { prompt: '$', cmd: 'git clone https://github.com/severaai/severa-core', color: 'text-slate-200' },
                 { prompt: '$', cmd: 'cd severa-core && docker compose up -d', color: 'text-slate-200' },
-                { prompt: '$', cmd: 'open http://localhost:3000', color: 'text-emerald-300 font-bold' },
+                { prompt: '$', cmd: 'open http://localhost:3000', color: 'text-amber-300 font-bold' },
               ].map(({ prompt, cmd, color }) => (
                 <div key={cmd} className="flex items-center gap-3 group">
-                  <span className="text-emerald-400 font-bold shrink-0">{prompt}</span>
-                  <span className={color}>{cmd}</span>
+                  <span className="text-amber-400 font-bold shrink-0">{prompt}</span>
+                  <span className={`flex-1 truncate ${color}`}>{cmd}</span>
                   <CopyButton text={cmd} />
                 </div>
               ))}
             </div>
           </div>
         </div>
-      </section>
 
-      {/* ── FOOTER ────────────────────────────────────────────────────────── */}
-      <footer className="relative z-10 border-t border-white/10 py-12">
-        <div className="w-full px-6 sm:px-10 lg:px-14 xl:px-20 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
-              <Shield size={16} className="text-emerald-400" />
+        {/* Footer pinned to bottom of Slide 3 */}
+        <footer className="w-full border-t border-white/10 py-4 sm:py-5 px-6 sm:px-10 lg:px-14 xl:px-20 shrink-0 bg-[#14171e]/80 backdrop-blur-md">
+          <div className="max-w-[1720px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div
+              className="flex items-center gap-3 cursor-pointer"
+              onClick={() => scrollToSection('home')}
+            >
+              <div className="w-7 h-7 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
+                <Shield size={15} className="text-emerald-400" />
+              </div>
+              <div>
+                <span className="text-sm font-black text-white">SEVERA AI</span>
+                <span className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Open-Source Platform</span>
+              </div>
             </div>
-            <div>
-              <span className="text-sm font-black text-white">SEVERA AI</span>
-              <span className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Open-Source Platform</span>
+            <p className="text-xs sm:text-sm text-slate-400">© 2026 Severa AI</p>
+            <div className="flex items-center gap-5 sm:gap-6 text-xs sm:text-sm text-slate-300">
+              <button
+                onClick={() => scrollToSection('home')}
+                className="hover:text-emerald-400 transition-colors cursor-pointer font-medium"
+              >
+                Home
+              </button>
+              <button
+                onClick={() => scrollToSection('features')}
+                className="hover:text-cyan-400 transition-colors cursor-pointer font-medium"
+              >
+                Features
+              </button>
+              <button
+                onClick={() => scrollToSection('quickstart')}
+                className="hover:text-amber-400 transition-colors cursor-pointer font-medium"
+              >
+                Quick Start
+              </button>
+              <button
+                onClick={() => navigate('/login')}
+                className="hover:text-emerald-400 font-bold transition-colors cursor-pointer text-emerald-400"
+              >
+                Launch Platform →
+              </button>
             </div>
           </div>
-          <p className="text-sm text-slate-400">© 2026 Severa AI</p>
-          <div className="flex gap-6 text-sm text-slate-300">
-            <button
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="hover:text-white transition-colors cursor-pointer"
-            >
-              Home
-            </button>
-            <button
-              onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-              className="hover:text-white transition-colors cursor-pointer"
-            >
-              Features
-            </button>
-            <button
-              onClick={() => document.getElementById('quickstart')?.scrollIntoView({ behavior: 'smooth' })}
-              className="hover:text-white transition-colors cursor-pointer"
-            >
-              Quick Start
-            </button>
-            <button
-              onClick={() => navigate('/login')}
-              className="hover:text-emerald-400 font-bold transition-colors cursor-pointer text-emerald-400"
-            >
-              Launch Platform →
-            </button>
-          </div>
-        </div>
-      </footer>
+        </footer>
+      </section>
     </div>
   );
 }

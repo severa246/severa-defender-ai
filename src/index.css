@@ -73,3 +73,17 @@
   background: rgba(16, 185, 129, 0.12) !important;
   border-left: 3px solid #10b981 !important;
 }
+
+/* ── Fullpage Slide Snapping ──────────────────────────────────────────────── */
+html.landing-snap-page,
+body.landing-snap-page {
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+  overflow-y: scroll;
+}
+
+.snap-slide-section {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
