@@ -175,20 +175,20 @@ export default function SeveraDefenderChat({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-4xl h-[85vh] bg-[#070b14] border border-cyan-500/30 rounded-2xl shadow-2xl shadow-cyan-500/10 flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fadeIn">
+      <div className="relative w-full max-w-4xl h-[85vh] bg-[#12141a] border border-white/10 rounded-2xl shadow-2xl shadow-black/80 flex flex-col overflow-hidden">
         
         {/* Top Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/80 backdrop-blur-md shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-[#191C23] shrink-0">
           <div className="flex items-center gap-3">
-            <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/25">
-              <Shield className="w-5 h-5 text-white" />
-              <Sparkles className="w-3 h-3 text-amber-300 absolute -top-1 -right-1 animate-pulse" />
+            <div className="relative w-9 h-9 rounded-xl bg-[#232732] border border-white/10 flex items-center justify-center shadow-md shadow-black/40">
+              <Shield className="w-5 h-5 text-emerald-400" />
+              <Sparkles className="w-3 h-3 text-emerald-300 absolute -top-1 -right-1 animate-pulse" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-black text-white tracking-tight">Severa Defender AI</h2>
-                <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+                <h2 className="text-base font-bold text-white tracking-tight">Severa Defender AI</h2>
+                <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#232732] border border-white/10 text-emerald-400">
                   <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-emerald-400" />
                   {hasKey ? `LIVE AI: ${(selectedProvider || 'CONNECTED').toUpperCase()}` : 'HUGGING FACE QWEN 2.5 32B ACTIVE'}
                 </span>
@@ -212,15 +212,15 @@ export default function SeveraDefenderChat({
                 setInput('');
               }}
               title="Reset conversation and start fresh chat"
-              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-xs font-medium border border-slate-700/80 transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#232732] hover:bg-[#2c3240] text-slate-300 hover:text-white rounded-lg text-xs font-semibold border border-white/10 transition-all cursor-pointer"
             >
-              <RefreshCw className="w-3.5 h-3.5 text-cyan-400" />
+              <RefreshCw className="w-3.5 h-3.5 text-emerald-400" />
               <span>New Chat</span>
             </button>
 
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-[#232732] transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -228,14 +228,14 @@ export default function SeveraDefenderChat({
         </div>
 
         {/* Active Context Strip */}
-        <div className="px-6 py-2.5 bg-slate-950 border-b border-slate-800/80 flex items-center justify-between gap-4 font-mono text-xs shrink-0">
+        <div className="px-6 py-2.5 bg-[#16181f] border-b border-white/10 flex items-center justify-between gap-4 font-mono text-xs shrink-0">
           <div className="flex items-center gap-2 text-slate-300">
-            <Code2 className="w-4 h-4 text-cyan-400" />
+            <Code2 className="w-4 h-4 text-emerald-400" />
             <span className="text-slate-400">Target File:</span>
-            <span className="font-bold text-white bg-slate-900 px-2 py-0.5 rounded border border-slate-800">{activeFileName}</span>
+            <span className="font-bold text-white bg-[#191C23] px-2 py-0.5 rounded border border-white/10">{activeFileName}</span>
             <span className="text-slate-600">|</span>
             <span className="text-slate-400">Language:</span>
-            <span className="font-semibold text-cyan-400 uppercase">{language}</span>
+            <span className="font-semibold text-emerald-400 uppercase">{language}</span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -260,11 +260,11 @@ export default function SeveraDefenderChat({
         </div>
 
         {/* Preset Quick Actions */}
-        <div className="px-6 py-3 bg-slate-900/40 border-b border-slate-800/60 flex flex-wrap gap-2 shrink-0">
+        <div className="px-6 py-3 bg-[#191C23] border-b border-white/10 flex flex-wrap gap-2 shrink-0">
           <button
             onClick={() => setInput("Explain why this vulnerability happened in detail.")}
             disabled={isTyping}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/25 text-amber-300 text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#12141a] hover:bg-[#232732] border border-amber-500/30 text-amber-300 text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
             title="Pre-fill prompt: Why did this happen?"
           >
             <HelpCircle className="w-3.5 h-3.5" />
@@ -274,7 +274,7 @@ export default function SeveraDefenderChat({
           <button
             onClick={() => setInput("Show me how to refactor and fix this code safely.")}
             disabled={isTyping}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/25 text-cyan-300 text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#12141a] hover:bg-[#232732] border border-white/10 text-slate-200 hover:text-white text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
             title="Pre-fill prompt: How can we fix it?"
           >
             <Wrench className="w-3.5 h-3.5" />
@@ -284,7 +284,7 @@ export default function SeveraDefenderChat({
           <button
             onClick={() => setInput("How can we overcome and prevent this vulnerability in the future after fix?")}
             disabled={isTyping}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 text-emerald-300 text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#12141a] hover:bg-[#232732] border border-emerald-500/30 text-emerald-400 text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
             title="Pre-fill prompt: How to overcome in future?"
           >
             <ShieldCheck className="w-3.5 h-3.5" />
@@ -293,23 +293,23 @@ export default function SeveraDefenderChat({
         </div>
 
         {/* Messages Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4 font-sans">
+        <div className="flex-1 overflow-y-auto p-6 space-y-4 font-sans bg-[#12141a]">
           {messages.map((msg, i) => (
             <div
               key={msg.id}
               className={`flex gap-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               {msg.sender === 'defender' && (
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white shrink-0 mt-1 shadow-md shadow-cyan-500/20">
+                <div className="w-8 h-8 rounded-xl bg-[#191C23] border border-white/10 flex items-center justify-center text-emerald-400 shrink-0 mt-1 shadow-md shadow-black/30">
                   <Shield className="w-4 h-4" />
                 </div>
               )}
 
               <div
-                className={`max-w-2xl rounded-2xl p-4 text-xs leading-relaxed space-y-2 ${
+                className={`max-w-2xl rounded-2xl p-4 text-xs leading-relaxed space-y-2 shadow-md shadow-black/30 ${
                   msg.sender === 'user'
-                    ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-tr-none shadow-lg shadow-cyan-600/20'
-                    : 'bg-slate-900 border border-slate-800 text-slate-200 rounded-tl-none'
+                    ? 'bg-[#232732] border border-white/15 text-white rounded-tr-none'
+                    : 'bg-[#191C23] border border-white/10 text-slate-200 rounded-tl-none'
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
@@ -324,10 +324,10 @@ export default function SeveraDefenderChat({
                 </div>
 
                 {msg.sender === 'defender' && (
-                  <div className="pt-2 border-t border-slate-800 flex justify-end">
+                  <div className="pt-2 border-t border-white/10 flex justify-end">
                     <button
                       onClick={() => handleCopy(msg.text, i)}
-                      className="flex items-center gap-1 text-[10px] text-slate-400 hover:text-cyan-400 transition-colors cursor-pointer"
+                      className="flex items-center gap-1 text-[10px] text-slate-400 hover:text-emerald-400 transition-colors cursor-pointer"
                     >
                       {copiedIndex === i ? (
                         <>
@@ -346,7 +346,7 @@ export default function SeveraDefenderChat({
               </div>
 
               {msg.sender === 'user' && (
-                <div className="w-8 h-8 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 font-bold text-xs shrink-0 mt-1">
+                <div className="w-8 h-8 rounded-xl bg-[#232732] border border-white/10 flex items-center justify-center text-slate-200 font-bold text-xs shrink-0 mt-1">
                   U
                 </div>
               )}
@@ -355,11 +355,11 @@ export default function SeveraDefenderChat({
 
           {isTyping && (
             <div className="flex gap-3 items-center">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white shrink-0 shadow-md shadow-cyan-500/20">
+              <div className="w-8 h-8 rounded-xl bg-[#191C23] border border-white/10 flex items-center justify-center text-emerald-400 shrink-0 shadow-md shadow-black/30">
                 <Shield className="w-4 h-4" />
               </div>
-              <div className="bg-slate-900 border border-slate-800 rounded-2xl rounded-tl-none p-3 flex items-center gap-2 text-xs text-slate-400">
-                <RefreshCw className="w-3.5 h-3.5 animate-spin text-cyan-400" />
+              <div className="bg-[#191C23] border border-white/10 rounded-2xl rounded-tl-none p-3 flex items-center gap-2 text-xs text-slate-400 shadow-md">
+                <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-400" />
                 <span>Severa Defender is analyzing vulnerability AST and threat model...</span>
               </div>
             </div>
@@ -369,7 +369,7 @@ export default function SeveraDefenderChat({
         </div>
 
         {/* Input Bar */}
-        <div className="p-4 bg-slate-900/90 border-t border-slate-800 shrink-0">
+        <div className="p-4 bg-[#191C23] border-t border-white/10 shrink-0">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -388,16 +388,16 @@ export default function SeveraDefenderChat({
               }}
               rows={4}
               placeholder="Ask Severa Defender (e.g. 'How does an attacker exploit this?', 'What linters prevent this?')... [Press Enter to Send, Shift+Enter for new line]"
-              className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition-all font-mono min-h-[95px] max-h-[160px] overflow-y-auto leading-relaxed resize-y"
+              className="flex-1 bg-[#12141a] border border-white/10 rounded-xl px-4 py-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 transition-all font-mono min-h-[95px] max-h-[160px] overflow-y-auto leading-relaxed resize-y"
             />
 
             <button
               type="submit"
               disabled={!input.trim() || isTyping}
-              className="flex items-center gap-1.5 px-4 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs shadow-lg shadow-cyan-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer shrink-0 mt-1"
+              className="flex items-center gap-1.5 px-4 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer shrink-0 mt-1"
             >
               <span>Send</span>
-              <Send className="w-3.5 h-3.5" />
+              <Send className="w-3.5 h-3.5 text-black" />
             </button>
           </form>
         </div>
@@ -412,7 +412,7 @@ function formatMarkdown(text) {
   const lines = text.split('\n');
   return lines.map((line, idx) => {
     if (line.startsWith('### ')) {
-      return <h4 key={idx} className="text-sm font-bold text-cyan-300 mt-2 mb-1">{line.replace('### ', '')}</h4>;
+      return <h4 key={idx} className="text-sm font-bold text-emerald-400 mt-2 mb-1">{line.replace('### ', '')}</h4>;
     }
     if (line.startsWith('**') && line.endsWith('**')) {
       return <p key={idx} className="font-bold text-white mt-1">{line.replace(/\*\*/g, '')}</p>;
@@ -420,7 +420,7 @@ function formatMarkdown(text) {
     if (line.startsWith('- ') || line.startsWith('• ')) {
       return (
         <div key={idx} className="flex items-start gap-2 pl-2">
-          <span className="text-cyan-400 font-bold">•</span>
+          <span className="text-emerald-400 font-bold">•</span>
           <span className="text-slate-300">{formatInline(line.substring(2))}</span>
         </div>
       );
@@ -437,7 +437,7 @@ function formatInline(str) {
     }
     if (part.startsWith('`') && part.endsWith('`')) {
       return (
-        <code key={i} className="px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 text-cyan-300 font-mono text-[11px]">
+        <code key={i} className="px-1.5 py-0.5 rounded bg-[#16181f] border border-white/10 text-emerald-300 font-mono text-[11px]">
           {part.slice(1, -1)}
         </code>
       );
