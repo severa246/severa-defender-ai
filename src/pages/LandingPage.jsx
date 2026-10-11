@@ -56,7 +56,6 @@ const NAV_ITEMS = [
 
 // ── Navbar ─────────────────────────────────────────────────────────────────────
 function Navbar({ navigate, activeSection = 'home', onSelectSection }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -67,39 +66,39 @@ function Navbar({ navigate, activeSection = 'home', onSelectSection }) {
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      scrolled ? 'bg-[#191C23]/95 backdrop-blur-xl border-b border-white/10 shadow-lg' : 'bg-[#191C23]/80 backdrop-blur-md border-b border-white/5'
+      scrolled ? 'bg-[#191C23]/95 backdrop-blur-xl border-b border-white/10 shadow-lg' : 'bg-[#191C23]/85 backdrop-blur-md border-b border-white/5'
     }`}>
-      <div className="w-full px-6 sm:px-10 lg:px-14 xl:px-20 py-3 sm:py-4 flex items-center justify-between gap-6">
+      <div className="w-full px-3.5 sm:px-6 md:px-10 lg:px-14 xl:px-20 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-4 md:gap-6">
         {/* Logo */}
         <div
           onClick={() => onSelectSection('home')}
-          className="flex items-center gap-3 shrink-0 cursor-pointer group"
+          className="flex items-center gap-2 sm:gap-3 shrink-0 cursor-pointer group"
         >
-          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center group-hover:scale-105 transition-transform">
-            <Shield size={20} className="text-emerald-400" />
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <Shield size={18} className="text-emerald-400 sm:size-5" />
           </div>
           <div>
-            <span className="text-lg sm:text-xl font-black text-white tracking-tight">SEVERA AI</span>
-            <span className="block text-xs sm:text-[13px] font-bold text-emerald-400/90 uppercase tracking-wider">Enterprise Security</span>
+            <span className="text-base sm:text-lg lg:text-xl font-black text-white tracking-tight">SEVERA AI</span>
+            <span className="hidden md:block text-[11px] sm:text-xs font-bold text-emerald-400/90 uppercase tracking-wider">Enterprise Security</span>
           </div>
         </div>
 
-        {/* Desktop nav links / pills */}
-        <div className="hidden lg:flex items-center gap-1.5 p-1.5 rounded-2xl bg-[#0d1017]/90 border border-white/10 backdrop-blur-xl shadow-lg">
+        {/* Navigation links / pills (ALWAYS VISIBLE across all screen sizes including resized windows) */}
+        <div className="flex items-center gap-1 sm:gap-1.5 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl bg-[#0d1017]/90 border border-white/10 backdrop-blur-xl shadow-lg shrink-0">
           {NAV_ITEMS.map((item) => {
             const isActive = activeSection === item.id;
             return (
               <button
                 key={item.id}
                 onClick={() => onSelectSection(item.id)}
-                className={`px-5 py-2 rounded-xl text-sm sm:text-base font-bold transition-all duration-300 flex items-center gap-2 cursor-pointer border ${
+                className={`px-2.5 sm:px-4 lg:px-5 py-1 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm lg:text-base transition-all duration-300 flex items-center gap-1.5 sm:gap-2 cursor-pointer border ${
                   isActive
                     ? `${item.activeClass} shadow-md scale-105 font-black`
                     : 'border-transparent text-slate-300 hover:text-white hover:bg-white/5 font-semibold'
                 }`}
               >
                 {isActive && (
-                  <span className={`w-2 h-2 rounded-full ${item.dotColor} animate-pulse`} />
+                  <span className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${item.dotColor} animate-pulse`} />
                 )}
                 {item.label}
               </button>
@@ -108,73 +107,23 @@ function Navbar({ navigate, activeSection = 'home', onSelectSection }) {
         </div>
 
         {/* Right actions */}
-        <div className="hidden md:flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <button
             onClick={() => navigate('/login')}
-            className="px-5 py-2.5 rounded-xl border border-white/15 hover:border-white/30 text-sm sm:text-base font-bold text-slate-100 hover:text-white hover:bg-white/5 transition-all cursor-pointer"
+            className="hidden lg:inline-flex px-4 py-2 rounded-xl border border-white/15 hover:border-white/30 text-xs sm:text-sm font-bold text-slate-100 hover:text-white hover:bg-white/5 transition-all cursor-pointer"
           >
             Sign in
           </button>
           <button
             onClick={() => navigate('/login')}
-            className="flex items-center gap-2.5 px-6 py-2.5 sm:py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-sm sm:text-base font-black transition-all shadow-lg shadow-emerald-500/25 cursor-pointer hover:shadow-emerald-500/40 hover:-translate-y-0.5"
+            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 lg:px-6 py-1.5 sm:py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs sm:text-sm lg:text-base font-black transition-all shadow-lg shadow-emerald-500/25 cursor-pointer hover:shadow-emerald-500/40 hover:-translate-y-0.5"
           >
-            Launch Platform
-            <ArrowRight size={16} />
+            <span className="hidden sm:inline">Launch Platform</span>
+            <span className="sm:hidden">Launch</span>
+            <ArrowRight size={14} className="sm:size-4" />
           </button>
         </div>
-
-        <button className="md:hidden text-slate-400 hover:text-white" onClick={() => setMobileOpen(!mobileOpen)}>
-          {mobileOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
       </div>
-
-      {mobileOpen && (
-        <div className="md:hidden border-t border-white/5 bg-[#191C23]/95 backdrop-blur-xl px-6 py-5 space-y-2.5">
-          {NAV_ITEMS.map((item) => {
-            const isActive = activeSection === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  onSelectSection(item.id);
-                  setMobileOpen(false);
-                }}
-                className={`w-full text-left px-4 py-2.5 rounded-xl text-base flex items-center justify-between border transition-all ${
-                  isActive
-                    ? `${item.activeMobile} font-black shadow-sm`
-                    : 'border-transparent text-slate-300 hover:text-white hover:bg-white/5 font-medium'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  {isActive && <span className="w-2 h-2 rounded-full bg-current animate-pulse" />}
-                  <span>{item.label}</span>
-                </div>
-                {isActive && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-white/10 font-bold uppercase tracking-wider">
-                    Current
-                  </span>
-                )}
-              </button>
-            );
-          })}
-          <div className="pt-2 flex flex-col gap-2.5">
-            <button
-              onClick={() => navigate('/login')}
-              className="w-full py-2.5 rounded-xl border border-white/10 text-white text-base font-semibold"
-            >
-              Sign in
-            </button>
-            <button
-              onClick={() => navigate('/login')}
-              className="w-full py-3 rounded-xl bg-emerald-500 text-black text-base font-black flex items-center justify-center gap-2"
-            >
-              Launch Platform
-              <ArrowRight size={16} />
-            </button>
-          </div>
-        </div>
-      )}
     </nav>
   );
 }
