@@ -26,7 +26,7 @@ function CopyButton({ text }) {
   );
 }
 
-// ── Navigation items with distinct signature colors ────────────────────────────
+// ── Navigation items with consistent emerald green theme ────────────────────────
 const NAV_ITEMS = [
   {
     id: 'home',
@@ -39,18 +39,18 @@ const NAV_ITEMS = [
   {
     id: 'features',
     label: 'Features',
-    activeClass: 'bg-cyan-400 text-slate-950 border-cyan-300 shadow-cyan-400/35',
-    activeMobile: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
+    activeClass: 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-emerald-500/35',
+    activeMobile: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40',
     dotColor: 'bg-slate-950',
-    indicatorDot: 'bg-cyan-400',
+    indicatorDot: 'bg-emerald-400',
   },
   {
     id: 'quickstart',
     label: 'Quick Start',
-    activeClass: 'bg-amber-400 text-slate-950 border-amber-300 shadow-amber-400/35',
-    activeMobile: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+    activeClass: 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-emerald-500/35',
+    activeMobile: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40',
     dotColor: 'bg-slate-950',
-    indicatorDot: 'bg-amber-400',
+    indicatorDot: 'bg-emerald-400',
   },
 ];
 
@@ -364,12 +364,12 @@ function DemoTerminal() {
 // ── Step card ─────────────────────────────────────────────────────────────────
 function StepCard({ number, icon: Icon, title, desc, iconColor = 'text-emerald-400', iconBg = 'bg-emerald-500/10 border-emerald-500/20' }) {
   return (
-    <div className="p-3.5 sm:p-4 lg:p-4.5 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-cyan-500/30 transition-all group">
+    <div className="p-3.5 sm:p-4 lg:p-4.5 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-emerald-500/30 transition-all group">
       <div className="flex items-start justify-between mb-2">
         <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg border flex items-center justify-center ${iconBg} ${iconColor}`}>
           <Icon size={18} />
         </div>
-        <span className="text-[10px] sm:text-xs font-bold text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded tracking-wider">
+        <span className="text-[10px] sm:text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded tracking-wider">
           STEP {String(number).padStart(2,'0')}
         </span>
       </div>
@@ -641,7 +641,7 @@ export default function LandingPage() {
       >
         <div className="w-full max-w-[1720px] mx-auto">
           <div className="text-center mb-4 sm:mb-6">
-            <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 text-xs sm:text-sm font-bold mb-2">
+            <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs sm:text-sm font-bold mb-2">
               <Layers size={14} />
               Developer Workflow Pipeline
             </span>
@@ -689,8 +689,8 @@ export default function LandingPage() {
       >
         {/* Center content */}
         <div className="flex-1 flex flex-col justify-center items-center w-full max-w-5xl mx-auto px-6 py-6 text-center">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-xs sm:text-sm font-bold mb-4">
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs sm:text-sm font-bold mb-4">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             Free &amp; Open Source Security Platform
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-3">
@@ -703,7 +703,7 @@ export default function LandingPage() {
           <div className="flex flex-wrap gap-3.5 justify-center">
             <button
               onClick={() => navigate('/login')}
-              className="flex items-center gap-2 px-7 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-sm sm:text-base font-black transition-all shadow-xl shadow-amber-400/25 hover:-translate-y-0.5 cursor-pointer"
+              className="flex items-center gap-2 px-7 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-sm sm:text-base font-black transition-all shadow-xl shadow-emerald-500/25 hover:-translate-y-0.5 cursor-pointer"
             >
               Get Started
               <ArrowRight size={16} />
@@ -729,10 +729,10 @@ export default function LandingPage() {
               {[
                 { prompt: '$', cmd: 'git clone https://github.com/severaai/severa-core', color: 'text-slate-200' },
                 { prompt: '$', cmd: 'cd severa-core && docker compose up -d', color: 'text-slate-200' },
-                { prompt: '$', cmd: 'open http://localhost:3000', color: 'text-amber-300 font-bold' },
+                { prompt: '$', cmd: 'open http://localhost:3000', color: 'text-emerald-400 font-bold' },
               ].map(({ prompt, cmd, color }) => (
                 <div key={cmd} className="flex items-center gap-3 group">
-                  <span className="text-amber-400 font-bold shrink-0">{prompt}</span>
+                  <span className="text-emerald-400 font-bold shrink-0">{prompt}</span>
                   <span className={`flex-1 truncate ${color}`}>{cmd}</span>
                   <CopyButton text={cmd} />
                 </div>
@@ -766,13 +766,13 @@ export default function LandingPage() {
               </button>
               <button
                 onClick={() => scrollToSection('features')}
-                className="hover:text-cyan-400 transition-colors cursor-pointer font-medium"
+                className="hover:text-emerald-400 transition-colors cursor-pointer font-medium"
               >
                 Features
               </button>
               <button
                 onClick={() => scrollToSection('quickstart')}
-                className="hover:text-amber-400 transition-colors cursor-pointer font-medium"
+                className="hover:text-emerald-400 transition-colors cursor-pointer font-medium"
               >
                 Quick Start
               </button>
