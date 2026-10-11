@@ -10,7 +10,8 @@ import {
   Check, 
   CheckCheck,
   ShieldCheck,
-  ArrowRight
+  ArrowRight,
+  Sparkles
 } from 'lucide-react';
 
 export default function FindingsPanel({ 
@@ -311,13 +312,8 @@ export default function FindingsPanel({
                   {finding.description}
                 </p>
 
-                {/* Clean Enterprise Action Row */}
-                <div className="flex items-center justify-between pt-2 border-t border-white/[0.04]">
-                  <span className="text-xs text-slate-400 flex items-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Auto-patch verified</span>
-                  </span>
-
+                {/* Explain with AI Action */}
+                <div className="flex items-center justify-end pt-2 border-t border-white/[0.04]">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -327,9 +323,11 @@ export default function FindingsPanel({
                         onSelectFinding(finding);
                       }
                     }}
-                    className="px-3 py-1 bg-white hover:bg-slate-200 text-black text-xs font-semibold rounded-md transition-all shadow-sm cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-[#191C23] hover:bg-[#232732] text-emerald-400 hover:text-emerald-300 border border-emerald-500/30 hover:border-emerald-500/60 text-xs font-bold rounded-lg transition-all shadow-sm cursor-pointer"
+                    title="Explain this vulnerability with Severa Defender AI"
                   >
-                    Review Patch
+                    <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Explain with AI</span>
                   </button>
                 </div>
               </div>
@@ -342,15 +340,15 @@ export default function FindingsPanel({
       {(findings.length > 0 || allProjectFindings.length > 0) && (
         <div className="shrink-0 pt-3 border-t border-white/[0.06] space-y-2 mt-auto">
           
-          {/* Apply Fix to All Project Files */}
+          {/* Apply Fix to Current Project Folder */}
           {onApplyFixAll && (
             <button
               onClick={onApplyFixAll}
-              className="w-full py-2 bg-white/[0.05] hover:bg-white/[0.1] text-slate-200 rounded-lg text-xs font-medium border border-white/[0.08] flex items-center justify-center gap-2 transition-all cursor-pointer"
-              title="Apply AI Security Fixes Across ALL Files in Project Folder"
+              className="w-full py-2 bg-[#191C23] hover:bg-[#232732] text-slate-200 hover:text-white rounded-lg text-xs font-semibold border border-white/10 hover:border-emerald-500/30 flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
+              title="Apply AI Security Fixes Across ALL Files in Current Project Folder"
             >
               <CheckCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Apply Fix to All Project Files ({projectFiles.length > 0 ? projectFiles.length : 1})</span>
+              <span>Apply Fix to Current Project Folder ({projectFiles.length > 0 ? projectFiles.length : 1})</span>
             </button>
           )}
 

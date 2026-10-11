@@ -461,9 +461,9 @@ export default function EditorContainer({
             <button
               onClick={() => handleCodeChange('')}
               title="Clear Scratchpad"
-              className="p-1.5 bg-[#191C23] hover:bg-[#232732] text-slate-400 hover:text-rose-400 border border-white/10 rounded-lg text-xs transition-all cursor-pointer"
+              className="p-1.5 bg-[#191C23] hover:bg-red-950/40 text-red-800 hover:text-red-400 border border-red-900/50 hover:border-red-500/60 rounded-lg text-xs transition-all cursor-pointer group shadow-sm"
             >
-              <Trash2 className="w-3.5 h-3.5" />
+              <Trash2 className="w-3.5 h-3.5 text-red-800 group-hover:text-red-400 transition-colors" />
             </button>
 
             {/* Primary Action: Scan Active File */}

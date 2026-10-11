@@ -1841,28 +1841,28 @@ jobs:
 
       {/* Interactive AI Fix Confirmation Modal ("Apply Correct Code") */}
       {isApplyFixModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
-          <div className="w-full max-w-lg bg-[#0a0d18] border border-purple-500/40 rounded-2xl p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
+          <div className="w-full max-w-lg bg-[#191C23] border border-white/10 rounded-2xl p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300">
+              <div className="p-2.5 rounded-xl bg-[#232732] border border-white/10 text-emerald-400">
                 <Sparkles className="w-6 h-6 animate-pulse" />
               </div>
               <div>
                 <h3 className="text-base font-extrabold text-white">AI Security Patch Ready</h3>
-                <p className="text-xs text-slate-400">Severa AI generated a remediated patch for <span className="text-cyan-300 font-mono font-bold">{activeFileName}</span></p>
+                <p className="text-xs text-zinc-400">Severa AI generated a remediated patch for <span className="text-emerald-400 font-mono font-bold">{activeFileName}</span></p>
               </div>
             </div>
 
-            <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 text-xs text-slate-300 space-y-2">
+            <div className="bg-[#12141a] p-3.5 rounded-xl border border-white/10 text-xs text-zinc-300 space-y-2">
               <p className="font-semibold text-emerald-400">🛡️ Refactored Security Standard Applied:</p>
-              <p className="text-slate-400">This fix eliminates unvalidated inputs, replaces raw dynamic concatenations with parameterized statements, and enforces environment secret loading.</p>
+              <p className="text-zinc-400">This fix eliminates unvalidated inputs, replaces raw dynamic concatenations with parameterized statements, and enforces environment secret loading.</p>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
               <button
                 type="button"
                 onClick={() => setIsApplyFixModalOpen(false)}
-                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
+                className="px-4 py-2 rounded-xl text-xs font-bold text-zinc-400 hover:text-white hover:bg-[#232732] transition-all cursor-pointer"
               >
                 Cancel
               </button>
@@ -1872,7 +1872,7 @@ jobs:
                 onClick={() => {
                   handleApplyFix();
                 }}
-                className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-extrabold shadow-lg shadow-emerald-500/30 transition-all cursor-pointer flex items-center gap-1.5"
+                className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-extrabold shadow-lg shadow-emerald-500/20 transition-all cursor-pointer flex items-center gap-1.5"
               >
                 <span>Apply Correct Code</span>
               </button>

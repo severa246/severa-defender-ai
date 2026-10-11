@@ -33,6 +33,8 @@ export default function SeveraDefenderChat({
     scrollToBottom();
   }, [messages, isTyping]);
 
+  const handleSendRef = useRef(null);
+
   // Initial message & prompt pre-fill when opening
   useEffect(() => {
     if (isOpen) {
@@ -46,18 +48,14 @@ export default function SeveraDefenderChat({
         : `\n\n⚡ **Local Engine Active:** Using Severa AST Intelligence.`;
 
       if (targetFinding) {
-        const welcomeText = `Hello! I am **Severa Defender AI**.\n\nFocused Analysis Target: **${targetFinding.title}** (\`${targetFinding.severity}\` - Line ${targetFinding.line}) in \`${activeFileName}\`.${apiInfo}\n\nI have pre-filled the vulnerability analysis question below. You can customize your question or click **Send** when ready!`;
-        setMessages([
-          {
-            id: `welcome-${Date.now()}`,
-            sender: 'defender',
-            text: welcomeText,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          }
-        ]);
-
         const focusedPrompt = `Explain the vulnerability "${targetFinding.title}" on line ${targetFinding.line} in detail: 1. Why it happened (root cause), 2. What could happen if allowed or exploited (security risk & impact), and 3. How to prevent and fix it in future code.`;
-        setInput(focusedPrompt);
+        setMessages([]);
+        setInput('');
+        setTimeout(() => {
+          if (handleSendRef.current) {
+            handleSendRef.current(focusedPrompt);
+          }
+        }, 120);
       } else {
         const initialText = activeFlaw
           ? `Hello! I am **Severa Defender**, your AI security assistant.\n\nI noticed **${findings.length} security flaw(s)** in \`${activeFileName}\`. Target: **${activeFlaw.title} (${activeFlaw.severity})** on line ${activeFlaw.line}.${apiInfo}\n\nHow can I assist you today?`
@@ -77,10 +75,6 @@ export default function SeveraDefenderChat({
       }
     }
   }, [isOpen, targetFinding]);
-
-  if (!isOpen) return null;
-
-  const hasKey = Boolean(apiKey && apiKey.trim().length > 5) || selectedProvider === 'ollama' || Boolean(customEndpoint && customEndpoint.trim());
 
   const handleSend = async (customPrompt) => {
     const textToSend = customPrompt || input.trim();
@@ -173,6 +167,12 @@ export default function SeveraDefenderChat({
     setCopiedIndex(idx);
     setTimeout(() => setCopiedIndex(null), 1800);
   };
+
+  handleSendRef.current = handleSend;
+
+  if (!isOpen) return null;
+
+  const hasKey = Boolean(apiKey && apiKey.trim().length > 5) || selectedProvider === 'ollama' || Boolean(customEndpoint && customEndpoint.trim());
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fadeIn">

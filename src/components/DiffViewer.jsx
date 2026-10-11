@@ -13,11 +13,11 @@ export default function DiffViewer({ aiReviewData, onApplyFix, onClose }) {
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl space-y-4 transition-all">
+    <div className="bg-[#191C23] border border-white/10 rounded-2xl p-5 shadow-2xl shadow-black/60 space-y-4 transition-all">
       {/* Diff Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400">
+          <div className="p-2 rounded-xl bg-[#232732] border border-white/10 text-emerald-400">
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
@@ -45,12 +45,12 @@ export default function DiffViewer({ aiReviewData, onApplyFix, onClose }) {
                 </span>
 
                 <span className="text-slate-500">Request ID:</span>
-                <span className="text-cyan-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800 font-bold">
+                <span className="text-emerald-400 bg-[#12141a] px-2 py-0.5 rounded border border-white/10 font-bold">
                   {aiReviewData.requestId || 'SEVERA-QWEN-LOCAL'}
                 </span>
 
                 {aiReviewData.providerHttpStatus !== undefined && (
-                  <span className="text-slate-400 text-[10px] bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">
+                  <span className="text-slate-400 text-[10px] bg-[#12141a] px-1.5 py-0.5 rounded border border-white/10">
                     HTTP {aiReviewData.providerHttpStatus}
                   </span>
                 )}
@@ -75,19 +75,19 @@ export default function DiffViewer({ aiReviewData, onApplyFix, onClose }) {
           {/* Toggle Expand / Collapse Diff Option */}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="flex items-center gap-1.5 px-3 py-2 bg-slate-950 hover:bg-slate-800 text-slate-200 rounded-xl text-xs font-bold border border-slate-800 transition-all cursor-pointer shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-2 bg-[#12141a] hover:bg-[#232732] text-slate-200 rounded-xl text-xs font-bold border border-white/10 transition-all cursor-pointer shadow-sm"
           >
-            {isCollapsed ? <ChevronDown className="w-4 h-4 text-cyan-400" /> : <ChevronUp className="w-4 h-4 text-cyan-400" />}
+            {isCollapsed ? <ChevronDown className="w-4 h-4 text-emerald-400" /> : <ChevronUp className="w-4 h-4 text-emerald-400" />}
             <span>{isCollapsed ? 'Expand Diff View' : 'Collapse Diff View'}</span>
           </button>
 
           {/* Apply Patch Button */}
           <button
             onClick={handleApply}
-            className={`flex items-center gap-2 px-4 py-2 text-white rounded-xl text-xs font-bold shadow-lg transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold shadow-lg transition-all cursor-pointer ${
               applied
-                ? 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-600/40'
-                : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-emerald-500/20'
+                ? 'bg-[#232732] text-emerald-400 border border-emerald-500/40 hover:bg-[#2c3240]'
+                : 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-emerald-500/20'
             }`}
           >
             <Check className="w-4 h-4" />
@@ -98,7 +98,7 @@ export default function DiffViewer({ aiReviewData, onApplyFix, onClose }) {
           {onClose && (
             <button
               onClick={onClose}
-              className="p-2 text-slate-500 hover:text-white hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
+              className="p-2 text-slate-400 hover:text-white hover:bg-[#232732] rounded-xl transition-colors cursor-pointer"
               title="Close Diff Panel"
             >
               <X className="w-4 h-4" />
@@ -116,9 +116,9 @@ export default function DiffViewer({ aiReviewData, onApplyFix, onClose }) {
               {reviewComments.map((comment, index) => (
                 <div
                   key={index}
-                  className="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-1"
+                  className="bg-[#12141a] border border-white/10 rounded-xl p-3 space-y-1"
                 >
-                  <h4 className="text-xs font-bold text-cyan-400 flex items-center gap-1.5">
+                  <h4 className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
                     <FileCheck2 className="w-3.5 h-3.5" />
                     <span>{comment.title}</span>
                   </h4>
@@ -138,7 +138,7 @@ export default function DiffViewer({ aiReviewData, onApplyFix, onClose }) {
                 </span>
                 <span className="text-[10px] text-slate-500 font-mono">BEFORE</span>
               </div>
-              <div className="bg-slate-950 border border-rose-500/30 rounded-xl p-3 font-mono text-[11px] text-slate-300 overflow-x-auto max-h-[300px] leading-relaxed">
+              <div className="bg-[#12141a] border border-rose-500/30 rounded-xl p-3 font-mono text-[11px] text-slate-300 overflow-x-auto max-h-[300px] leading-relaxed">
                 <pre>{originalCode}</pre>
               </div>
             </div>
@@ -151,7 +151,7 @@ export default function DiffViewer({ aiReviewData, onApplyFix, onClose }) {
                 </span>
                 <span className="text-[10px] text-emerald-400 font-mono">AFTER (SECURED)</span>
               </div>
-              <div className="bg-slate-950 border border-emerald-500/30 rounded-xl p-3 font-mono text-[11px] text-emerald-200 overflow-x-auto max-h-[300px] leading-relaxed">
+              <div className="bg-[#12141a] border border-emerald-500/30 rounded-xl p-3 font-mono text-[11px] text-emerald-200 overflow-x-auto max-h-[300px] leading-relaxed">
                 <pre>{fixedCode}</pre>
               </div>
             </div>
