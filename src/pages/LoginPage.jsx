@@ -421,33 +421,47 @@ export default function LoginPage({ onLogin }) {
       </div>
 
       {/* ── Right panel — auth form ── */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 relative">
+      <div className="flex-1 flex flex-col items-center justify-center px-4 sm:px-8 py-10 lg:py-12 relative">
         <Orbs />
-        <div className="relative w-full max-w-[380px]">
+        <div className="relative w-full max-w-[460px] sm:max-w-[480px] md:max-w-[500px]">
 
-          {/* Mobile logo & Back to Home */}
-          <div className="lg:hidden flex items-center justify-between mb-8">
-            <button
-              type="button"
-              onClick={() => _navigate('/')}
-              className="flex items-center gap-2.5 cursor-pointer text-left"
-            >
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#00dc82] to-emerald-600 flex items-center justify-center shadow-lg shadow-[#00dc82]/25">
-                <Shield size={15} className="text-black font-black" />
-              </div>
-              <span className="text-base font-black text-white">Severa<span className="text-[#00dc82]">.</span></span>
-            </button>
-            <button
-              type="button"
-              onClick={() => _navigate('/')}
-              className="text-xs font-semibold text-slate-400 hover:text-[#00dc82] bg-white/[0.04] border border-white/10 px-3 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1"
-            >
-              ← Back to Home
-            </button>
+          {/* Resized / Mobile Header & Branding (Shows Severa + Back to Home + Headline on resized windows and mobile) */}
+          <div className="lg:hidden mb-7 space-y-4">
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => _navigate('/')}
+                className="flex items-center gap-2.5 cursor-pointer text-left"
+              >
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#00dc82] to-emerald-600 flex items-center justify-center shadow-lg shadow-[#00dc82]/25">
+                  <Shield size={16} className="text-black font-black" />
+                </div>
+                <span className="text-lg font-black text-white">Severa<span className="text-[#00dc82]">.</span></span>
+              </button>
+              <button
+                type="button"
+                onClick={() => _navigate('/')}
+                className="text-xs font-semibold text-slate-300 hover:text-[#00dc82] bg-white/[0.06] hover:bg-white/[0.1] border border-white/10 px-3.5 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+              >
+                ← Back to Home
+              </button>
+            </div>
+
+            <div className="pt-1">
+              <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight">
+                Autonomous Code Security.<br />
+                <span className="bg-gradient-to-r from-[#00dc82] via-emerald-300 to-teal-300 bg-clip-text text-transparent">
+                  Instant AI Patching.
+                </span>
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-400 mt-2 leading-relaxed">
+                Client-side SAST &amp; SCA analysis with automated AI refactoring patches.
+              </p>
+            </div>
           </div>
 
           {/* Tab switcher */}
-          <div className="flex p-1 rounded-xl bg-white/[0.04] border border-white/5 mb-7">
+          <div className="flex p-1.5 rounded-xl bg-white/[0.04] border border-white/10 mb-7">
             {['login', 'signup'].map((t) => (
               <button
                 key={t}
@@ -457,10 +471,10 @@ export default function LoginPage({ onLogin }) {
                   setErrorAction(null);
                   setForm({ name: '', email: '', password: '', confirmPassword: '' });
                 }}
-                className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                className={`flex-1 py-2.5 text-xs sm:text-sm font-semibold rounded-lg transition-all cursor-pointer ${
                   tab === t
                     ? 'bg-white/10 text-white shadow-sm'
-                    : 'text-slate-500 hover:text-slate-300'
+                    : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
                 {t === 'login' ? 'Sign in' : 'Create account'}
@@ -472,10 +486,10 @@ export default function LoginPage({ onLogin }) {
           <div>
             {/* Heading */}
             <div className="mb-6">
-              <h1 className="text-xl font-black text-white mb-1">
+              <h1 className="text-2xl sm:text-3xl font-black text-white mb-1.5">
                 {tab === 'login' ? 'Welcome back' : 'Create your account'}
               </h1>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs sm:text-sm text-slate-400">
                 {tab === 'login'
                   ? 'Sign in to your Severa workspace'
                   : 'Start scanning your code for free today'}
@@ -483,17 +497,17 @@ export default function LoginPage({ onLogin }) {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-3">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {tab === 'signup' && (
                 <div>
-                  <label className="block text-xs text-slate-500 mb-1.5">Full name</label>
+                  <label className="block text-xs sm:text-[13px] text-slate-300 mb-1.5 font-medium">Full name</label>
                   <input
                     type="text"
                     value={form.name}
                     onChange={(e) => setField('name', e.target.value)}
                     placeholder="Your name"
-                    className="w-full bg-white/[0.04] border border-white/8 rounded-xl px-4 py-2.5 text-sm text-white
-                      placeholder-slate-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
+                    className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-sm text-white
+                      placeholder-slate-500 focus:outline-none focus:border-[#00dc82] focus:ring-1 focus:ring-[#00dc82]/30 transition-all font-medium"
                     autoComplete="name"
                     required
                   />
@@ -501,14 +515,14 @@ export default function LoginPage({ onLogin }) {
               )}
 
               <div>
-                <label className="block text-xs text-slate-400 mb-1.5 font-medium">Email address</label>
+                <label className="block text-xs sm:text-[13px] text-slate-300 mb-1.5 font-medium">Email address</label>
                 <input
                   ref={emailInputRef}
                   type="email"
                   value={form.email}
                   onChange={(e) => setField('email', e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#00dc82] focus:ring-1 focus:ring-[#00dc82]/40 transition-all font-medium"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#00dc82] focus:ring-1 focus:ring-[#00dc82]/40 transition-all font-medium"
                   autoComplete="email"
                   required
                 />
@@ -516,12 +530,12 @@ export default function LoginPage({ onLogin }) {
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs text-slate-400 font-medium">Password</label>
+                  <label className="text-xs sm:text-[13px] text-slate-300 font-medium">Password</label>
                   {tab === 'login' && (
                     <button
                       type="button"
                       onClick={handleForgotPasswordClick}
-                      className="text-[11px] text-[#00dc82] hover:underline transition-colors font-medium cursor-pointer"
+                      className="text-xs text-[#00dc82] hover:underline transition-colors font-medium cursor-pointer"
                     >
                       Forgot password?
                     </button>
@@ -533,30 +547,30 @@ export default function LoginPage({ onLogin }) {
                     value={form.password}
                     onChange={(e) => setField('password', e.target.value)}
                     placeholder="••••••••"
-                    className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 pr-10 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#00dc82] focus:ring-1 focus:ring-[#00dc82]/40 transition-all"
+                    className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 pr-11 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#00dc82] focus:ring-1 focus:ring-[#00dc82]/40 transition-all font-medium"
                     autoComplete={tab === 'login' ? 'current-password' : 'new-password'}
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPass((s) => !s)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors cursor-pointer"
                   >
-                    {showPass ? <EyeOff size={14} /> : <Eye size={14} />}
+                    {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
               </div>
 
               {tab === 'signup' && (
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1.5 font-medium">Confirm Password</label>
+                  <label className="block text-xs sm:text-[13px] text-slate-300 mb-1.5 font-medium">Confirm Password</label>
                   <div className="relative">
                     <input
                       type={showPass ? 'text' : 'password'}
                       value={form.confirmPassword || ''}
                       onChange={(e) => setField('confirmPassword', e.target.value)}
                       placeholder="••••••••"
-                      className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#00dc82] focus:ring-1 focus:ring-[#00dc82]/40 transition-all"
+                      className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#00dc82] focus:ring-1 focus:ring-[#00dc82]/40 transition-all font-medium"
                       autoComplete="new-password"
                       required
                     />
@@ -566,7 +580,7 @@ export default function LoginPage({ onLogin }) {
 
               {/* Success State */}
               {successMessage && (
-                <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-400 font-bold flex items-center justify-between animate-fadeIn">
+                <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs sm:text-sm text-emerald-400 font-bold flex items-center justify-between animate-fadeIn">
                   <span>✓ {successMessage}</span>
                   <button onClick={() => setSuccessMessage('')} className="text-emerald-400 hover:text-white text-xs cursor-pointer ml-2">✕</button>
                 </div>
@@ -574,7 +588,7 @@ export default function LoginPage({ onLogin }) {
 
               {/* Error State */}
               {error && (
-                <div className="space-y-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs">
+                <div className="space-y-2 p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-xs sm:text-sm">
                   <p className="text-red-400 font-medium">{error}</p>
                   {errorAction && errorAction.type === 'switch_to_login' && (
                     <button
@@ -585,7 +599,7 @@ export default function LoginPage({ onLogin }) {
                         setError('');
                         setErrorAction(null);
                       }}
-                      className="w-full text-center py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold border border-emerald-500/30 transition-all cursor-pointer"
+                      className="w-full text-center py-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold border border-emerald-500/30 transition-all cursor-pointer"
                     >
                       Switch to Sign In with "{errorAction.email}" →
                     </button>
@@ -599,7 +613,7 @@ export default function LoginPage({ onLogin }) {
                         setError('');
                         setErrorAction(null);
                       }}
-                      className="w-full text-center py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold border border-emerald-500/30 transition-all cursor-pointer"
+                      className="w-full text-center py-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold border border-emerald-500/30 transition-all cursor-pointer"
                     >
                       Create Account with "{errorAction.email}" →
                     </button>
@@ -611,14 +625,14 @@ export default function LoginPage({ onLogin }) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-[#00dc82] to-emerald-500 hover:from-[#00c574] hover:to-emerald-400 text-black text-sm font-black transition-all shadow-lg shadow-[#00dc82]/25 hover:shadow-[#00dc82]/40 disabled:opacity-60 disabled:cursor-not-allowed mt-1 cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-[#00dc82] to-emerald-500 hover:from-[#00c574] hover:to-emerald-400 text-black text-sm sm:text-base font-black transition-all shadow-lg shadow-[#00dc82]/25 hover:shadow-[#00dc82]/40 disabled:opacity-60 disabled:cursor-not-allowed mt-2 cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
               >
                 {loading ? (
-                  <Loader2 size={15} className="animate-spin" />
+                  <Loader2 size={16} className="animate-spin" />
                 ) : (
                   <>
                     {tab === 'login' ? 'Sign in' : 'Create account'}
-                    <ArrowRight size={14} />
+                    <ArrowRight size={15} />
                   </>
                 )}
               </button>
@@ -626,13 +640,13 @@ export default function LoginPage({ onLogin }) {
 
             {/* Quick demo link */}
             {tab === 'login' && (
-              <div className="mt-4 p-3 rounded-xl bg-[#191C23] border border-white/10">
-                <p className="text-[11px] text-slate-400 text-center">
+              <div className="mt-5 p-3.5 sm:p-4 rounded-xl bg-[#191C23] border border-white/10 shadow-md">
+                <p className="text-xs text-slate-300 text-center leading-relaxed">
                   Quick demo (with sample vulnerabilities):{' '}
                   <button type="button" onClick={() => {
                     setField('email', 'demo@severa.ai');
                     setField('password', 'demo1234');
-                  }} className="text-emerald-400 hover:underline font-medium cursor-pointer">
+                  }} className="text-emerald-400 hover:underline font-mono font-bold cursor-pointer">
                     demo@severa.ai / demo1234
                   </button>
                 </p>

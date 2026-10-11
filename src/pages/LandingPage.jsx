@@ -378,7 +378,7 @@ export default function LandingPage() {
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
       <section className="relative z-10 pt-28 pb-20">
 
-        <div className="relative max-w-6xl xl:max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 grid lg:grid-cols-2 gap-8 lg:gap-10 xl:gap-14 items-center">
+        <div className="relative w-full max-w-[1720px] mx-auto px-6 sm:px-10 lg:px-14 xl:px-20 grid lg:grid-cols-2 gap-10 lg:gap-14 xl:gap-20 items-center">
           {/* Left */}
           <div className="w-full">
             {/* Info bar */}
@@ -389,13 +389,13 @@ export default function LandingPage() {
               </span>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-black leading-[1.1] tracking-tight mb-5">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-6xl xl:text-7xl font-black leading-[1.08] tracking-tight mb-5">
               Build Secure<br />
               Software{' '}
               <span className="text-emerald-400">Faster</span>
             </h1>
 
-            <p className="text-sm sm:text-base lg:text-[17px] text-slate-300 leading-relaxed mb-6 max-w-xl font-normal">
+            <p className="text-base sm:text-lg lg:text-xl text-slate-300 leading-relaxed mb-6 max-w-2xl font-normal">
               Open-source AI security platform for intelligent code review,
               vulnerability detection, automated remediation, and developer workflows.
             </p>
@@ -403,21 +403,21 @@ export default function LandingPage() {
             <div className="flex flex-wrap gap-3.5 mb-7">
               <button
                 onClick={() => navigate('/login')}
-                className="flex items-center gap-2 px-5.5 py-2.5 sm:px-6 sm:py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-sm sm:text-base font-black transition-all shadow-lg shadow-emerald-500/25 hover:-translate-y-0.5 cursor-pointer"
+                className="flex items-center gap-2 px-6 py-3 sm:px-7 sm:py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-sm sm:text-base font-black transition-all shadow-lg shadow-emerald-500/25 hover:-translate-y-0.5 cursor-pointer"
               >
                 Get Started
                 <ArrowRight size={16} />
               </button>
               <button
                 onClick={() => navigate('/app')}
-                className="flex items-center gap-2 px-4.5 py-2.5 sm:px-5 sm:py-3 rounded-xl border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-white text-sm sm:text-base font-semibold transition-all hover:-translate-y-0.5 cursor-pointer"
+                className="flex items-center gap-2 px-5 py-3 sm:px-6 sm:py-3.5 rounded-xl border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-white text-sm sm:text-base font-semibold transition-all hover:-translate-y-0.5 cursor-pointer"
               >
                 <Eye size={16} className="text-slate-300" />
                 View Demo
               </button>
               <button
                 onClick={() => {}}
-                className="flex items-center gap-2 px-4.5 py-2.5 sm:px-5 sm:py-3 rounded-xl border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-white text-sm sm:text-base font-semibold transition-all hover:-translate-y-0.5 cursor-pointer"
+                className="flex items-center gap-2 px-5 py-3 sm:px-6 sm:py-3.5 rounded-xl border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-white text-sm sm:text-base font-semibold transition-all hover:-translate-y-0.5 cursor-pointer"
               >
                 <FileCode size={16} className="text-slate-300" />
                 Read Docs
@@ -425,7 +425,7 @@ export default function LandingPage() {
             </div>
 
             {/* Docker quick-start */}
-            <div className="flex items-center gap-2.5 bg-black/60 border border-white/10 rounded-xl px-4 py-2.5 font-mono text-xs sm:text-sm text-slate-200 max-w-lg">
+            <div className="flex items-center gap-2.5 bg-black/60 border border-white/10 rounded-xl px-4 py-3 font-mono text-xs sm:text-sm text-slate-200 max-w-xl">
               <Terminal size={14} className="text-emerald-400 shrink-0" />
               <span className="flex-1 truncate">$ {DOCKER_CMD}</span>
               <CopyButton text={DOCKER_CMD} />
