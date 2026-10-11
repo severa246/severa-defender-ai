@@ -38,7 +38,8 @@ import {
   HardDrive,
   Calendar,
   ArrowDownAZ,
-  ArrowUpAZ
+  ArrowUpAZ,
+  AlertTriangle
 } from 'lucide-react';
 import UploadChoiceModal from './UploadChoiceModal';
 import UserProfileModal from './UserProfileModal';
@@ -394,6 +395,15 @@ export default function Sidebar({
   // User Profile Modal State
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
+  // Custom Themed Delete Confirmation Modal State
+  const [deleteConfirmModal, setDeleteConfirmModal] = useState({
+    isOpen: false,
+    type: 'project',
+    target: null,
+    title: '',
+    itemName: ''
+  });
+
   const fileInputRef = useRef(null);
   const folderInputRef = useRef(null);
 
@@ -514,12 +524,15 @@ export default function Sidebar({
     setEditingProjectId(null);
   };
 
-  // DELETE PROJECT FOLDER
+  // DELETE PROJECT FOLDER (Custom Themed Modal)
   const handleDeleteProjectFolder = (proj) => {
-    if (confirm(`Are you sure you want to delete project folder "${proj.name}"?`)) {
-      setProjectFolders((prev) => prev.filter((p) => p.id !== proj.id));
-      if (onDeleteProject) onDeleteProject(proj.name);
-    }
+    setDeleteConfirmModal({
+      isOpen: true,
+      type: 'project',
+      target: proj,
+      title: 'Delete Project Folder',
+      itemName: proj.name
+    });
   };
 
   // CREATE FILE INSIDE SPECIFIC PROJECT FOLDER
@@ -577,10 +590,28 @@ export default function Sidebar({
     setEditingFileKey(null);
   };
 
-  // DELETE FILE INSIDE PROJECT FOLDER
+  // DELETE FILE INSIDE PROJECT FOLDER (Custom Themed Modal)
   const handleDeleteFileInProjectFolder = (proj, fileIdx) => {
     const targetFile = proj.files[fileIdx];
-    if (confirm(`Delete file "${targetFile?.name || 'file'}" from "${proj.name}"?`)) {
+    setDeleteConfirmModal({
+      isOpen: true,
+      type: 'file',
+      target: { proj, fileIdx, targetFile },
+      title: 'Delete Code File',
+      itemName: targetFile?.name || 'file'
+    });
+  };
+
+  // EXECUTE CONFIRMED DELETION
+  const handleExecuteDelete = () => {
+    if (!deleteConfirmModal.target) return;
+
+    if (deleteConfirmModal.type === 'project') {
+      const proj = deleteConfirmModal.target;
+      setProjectFolders((prev) => prev.filter((p) => p.id !== proj.id));
+      if (onDeleteProject) onDeleteProject(proj.name);
+    } else if (deleteConfirmModal.type === 'file') {
+      const { proj, fileIdx, targetFile } = deleteConfirmModal.target;
       setProjectFolders((prev) =>
         prev.map((p) => {
           if (p.id === proj.id) {
@@ -592,6 +623,14 @@ export default function Sidebar({
       );
       if (onDeleteFileInProject) onDeleteFileInProject(proj.name, targetFile?.name);
     }
+
+    setDeleteConfirmModal({
+      isOpen: false,
+      type: 'project',
+      target: null,
+      title: '',
+      itemName: ''
+    });
   };
 
   // TRIGGER UPLOAD CHOICE MODAL FOR A PROJECT FOLDER
@@ -1367,6 +1406,58 @@ export default function Sidebar({
         customEndpoint={customEndpoint}
         scanMetrics={scanMetrics}
       />
+
+      {/* Custom Themed Enterprise Delete Confirmation Modal */}
+      {deleteConfirmModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+          <div className="w-full max-w-md bg-[#191C23] border border-white/10 rounded-2xl p-6 shadow-2xl shadow-black/90 space-y-5 animate-scaleUp">
+            
+            {/* Modal Header */}
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-red-950/50 border border-red-500/40 flex items-center justify-center shrink-0 shadow-lg shadow-red-950/60">
+                <Trash2 className="w-5 h-5 text-red-400" />
+              </div>
+              <div className="flex-1 min-w-0 pt-0.5">
+                <h3 className="text-base font-bold text-white tracking-tight">
+                  {deleteConfirmModal.title}
+                </h3>
+                <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
+                  Are you sure you want to delete <span className="text-red-400 font-mono font-bold bg-[#12141a] px-1.5 py-0.5 rounded border border-white/10">{deleteConfirmModal.itemName}</span>?
+                </p>
+              </div>
+            </div>
+
+            {/* Warning Note */}
+            <div className="p-3 bg-[#12141a] border border-white/10 rounded-xl text-xs text-zinc-400 flex items-start gap-2.5">
+              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+              <span className="leading-relaxed">
+                This action is permanent and cannot be undone. Workspace files and active audit findings will be permanently removed.
+              </span>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-white/10">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmModal({ isOpen: false, type: 'project', target: null, title: '', itemName: '' })}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-zinc-400 hover:text-white bg-[#12141a] hover:bg-[#232732] border border-white/10 transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              
+              <button
+                type="button"
+                onClick={handleExecuteDelete}
+                className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-red-700 to-rose-700 hover:from-red-600 hover:to-rose-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-red-950/50 transition-all cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete {deleteConfirmModal.type === 'project' ? 'Folder' : 'File'}</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </aside>
   );
