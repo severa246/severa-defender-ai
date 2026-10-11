@@ -13,7 +13,135 @@ function Orbs() {
   );
 }
 
+function AutonomousShowcaseContent({ onBackToHome, onFreeForeverClick }) {
+  return (
+    <div className="relative space-y-6">
+      {/* Logo & Back to Home */}
+      <div className="relative flex items-center justify-between mb-2">
+        <button
+          type="button"
+          onClick={onBackToHome}
+          className="flex items-center gap-3 group cursor-pointer text-left focus:outline-none"
+        >
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#00dc82] to-emerald-600 flex items-center justify-center shadow-lg shadow-[#00dc82]/25 group-hover:scale-105 transition-transform">
+            <Shield size={18} className="text-black font-black" />
+          </div>
+          <span className="text-lg font-black text-white tracking-tight">
+            Severa<span className="text-[#00dc82]">.</span>
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={onBackToHome}
+          className="text-xs font-semibold text-slate-300 hover:text-[#00dc82] bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 px-3.5 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+        >
+          ← Back to Home
+        </button>
+      </div>
 
+      {/* Center content */}
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-3">
+            Autonomous Code Security.<br />
+            <span className="bg-gradient-to-r from-[#00dc82] via-emerald-300 to-teal-300 bg-clip-text text-transparent">
+              Instant AI Patching.
+            </span>
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-400 leading-relaxed max-w-sm">
+            Severa performs instant client-side SAST &amp; SCA analysis, pinpoints root-cause vulnerabilities, and generates side-by-side AI refactoring patches.
+          </p>
+        </div>
+
+        {/* Platform Metric Badges */}
+        <div className="flex flex-wrap items-center gap-2 pt-1">
+          <span className="text-[11px] font-semibold text-slate-300 bg-white/[0.04] border border-white/10 px-3 py-1 rounded-full flex items-center gap-1.5">
+            <span className="text-[#00dc82]">⚡</span> 200+ Security Rules
+          </span>
+          <span className="text-[11px] font-semibold text-slate-300 bg-white/[0.04] border border-white/10 px-3 py-1 rounded-full flex items-center gap-1.5">
+            <span className="text-[#00dc82]">🛡️</span> OWASP &amp; CIS Compliant
+          </span>
+          <span className="text-[11px] font-semibold text-slate-300 bg-white/[0.04] border border-white/10 px-3 py-1 rounded-full flex items-center gap-1.5">
+            <span className="text-[#00dc82]">🚀</span> Zero Setup Required
+          </span>
+        </div>
+
+        {/* Why Choose Severa AI Section */}
+        <div className="p-4 sm:p-5 rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.04] to-transparent backdrop-blur-md space-y-4">
+          <div className="flex items-center gap-2 pb-2 border-b border-white/5">
+            <Sparkles size={15} className="text-[#00dc82]" />
+            <h3 className="text-xs font-bold text-slate-200 tracking-wider uppercase">
+              Why Choose Severa AI Platform
+            </h3>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-start gap-3">
+              <div className="w-7 h-7 rounded-lg bg-[#00dc82]/10 border border-[#00dc82]/20 flex items-center justify-center shrink-0 mt-0.5">
+                <Zap size={14} className="text-[#00dc82]" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-white mb-0.5">Instant SAST &amp; SCA Audits</h4>
+                <p className="text-[11px] text-slate-400 leading-snug">
+                  Scan thousands of lines in Python, JS, Node, and Docker in milliseconds right inside your browser.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <div className="w-7 h-7 rounded-lg bg-[#00dc82]/10 border border-[#00dc82]/20 flex items-center justify-center shrink-0 mt-0.5">
+                <Code2 size={14} className="text-[#00dc82]" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-white mb-0.5">Autonomous AI Remediation</h4>
+                <p className="text-[11px] text-slate-400 leading-snug">
+                  Auto-generate side-by-side refactoring diff patches powered by Gemini, GPT-4o &amp; Claude.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <div className="w-7 h-7 rounded-lg bg-[#00dc82]/10 border border-[#00dc82]/20 flex items-center justify-center shrink-0 mt-0.5">
+                <Lock size={14} className="text-[#00dc82]" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-white mb-0.5">100% Zero-Trust Data Isolation</h4>
+                <p className="text-[11px] text-slate-400 leading-snug">
+                  Your code and API keys are strictly user-scoped and encrypted locally. Zero remote data retention.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* High-Converting Sign-In Trigger Banner */}
+        <div className="p-4 sm:p-4.5 rounded-xl border border-[#00dc82]/40 bg-[#0a1428] relative overflow-hidden shadow-xl shadow-[#00dc82]/15">
+          <div className="flex items-center justify-between gap-3">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-black text-[#00dc82] tracking-wide">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#00dc82] shadow-md shadow-[#00dc82]/50 animate-pulse" />
+                Ready to audit your code in seconds?
+              </div>
+              <p className="text-[11px] sm:text-xs font-medium text-cyan-200 leading-snug">
+                Sign in now to unlock full AI refactoring &amp; zero-trust security analysis.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={onFreeForeverClick}
+                className="text-xs font-black text-black bg-[#00dc82] hover:bg-[#00c574] shadow-lg shadow-[#00dc82]/40 px-3 py-2 rounded-lg tracking-tight transition-all hover:scale-105 active:scale-95 cursor-pointer"
+              >
+                Free Forever →
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function LoginPage({ onLogin }) {
   const { navigate: _navigate } = useRouter();
@@ -281,9 +409,9 @@ export default function LoginPage({ onLogin }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#050810] flex">
+    <div className="min-h-screen bg-[#050810] flex flex-col lg:flex-row">
       {/* ── Left panel ── */}
-      <div className="hidden lg:flex flex-col justify-center gap-9 w-[52%] relative p-12 bg-gradient-to-br from-[#060d1f] to-[#050810] border-r border-white/5 overflow-hidden">
+      <div className="hidden lg:flex flex-col justify-center gap-9 w-[52%] relative p-12 bg-gradient-to-br from-[#060d1f] to-[#050810] border-r border-white/5 overflow-y-auto">
         <Orbs />
         <div
           className="absolute inset-0 pointer-events-none"
@@ -293,171 +421,24 @@ export default function LoginPage({ onLogin }) {
             opacity: 0.25,
           }}
         />
-
-        {/* Logo & Back to Home */}
-        <div className="relative flex items-center justify-between mb-2">
-          <button
-            type="button"
-            onClick={() => _navigate('/')}
-            className="flex items-center gap-3 group cursor-pointer text-left focus:outline-none"
-          >
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#00dc82] to-emerald-600 flex items-center justify-center shadow-lg shadow-[#00dc82]/25 group-hover:scale-105 transition-transform">
-              <Shield size={18} className="text-black font-black" />
-            </div>
-            <span className="text-lg font-black text-white tracking-tight">
-              Severa<span className="text-[#00dc82]">.</span>
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={() => _navigate('/')}
-            className="text-xs font-semibold text-slate-400 hover:text-[#00dc82] bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 px-3.5 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
-          >
-            ← Back to Home
-          </button>
-        </div>
-
-        {/* Center content */}
-        <div className="relative space-y-6">
-          <div>
-            <h2 className="text-4xl font-black text-white leading-tight mb-3">
-              Autonomous Code Security.<br />
-              <span className="bg-gradient-to-r from-[#00dc82] via-emerald-300 to-teal-300 bg-clip-text text-transparent">
-                Instant AI Patching.
-              </span>
-            </h2>
-            <p className="text-sm text-slate-400 leading-relaxed max-w-sm">
-              Severa performs instant client-side SAST & SCA analysis, pinpoints root-cause vulnerabilities, and generates side-by-side AI refactoring patches.
-            </p>
-          </div>
-
-          {/* Platform Metric Badges */}
-          <div className="flex flex-wrap items-center gap-2 pt-1">
-            <span className="text-[11px] font-semibold text-slate-300 bg-white/[0.04] border border-white/10 px-3 py-1 rounded-full flex items-center gap-1.5">
-              <span className="text-[#00dc82]">⚡</span> 200+ Security Rules
-            </span>
-            <span className="text-[11px] font-semibold text-slate-300 bg-white/[0.04] border border-white/10 px-3 py-1 rounded-full flex items-center gap-1.5">
-              <span className="text-[#00dc82]">🛡️</span> OWASP & CIS Compliant
-            </span>
-            <span className="text-[11px] font-semibold text-slate-300 bg-white/[0.04] border border-white/10 px-3 py-1 rounded-full flex items-center gap-1.5">
-              <span className="text-[#00dc82]">🚀</span> Zero Setup Required
-            </span>
-          </div>
-
-          {/* Why Choose Severa AI Section */}
-          <div className="p-5 rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.04] to-transparent backdrop-blur-md space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-white/5">
-              <Sparkles size={15} className="text-[#00dc82]" />
-              <h3 className="text-xs font-bold text-slate-200 tracking-wider uppercase">
-                Why Choose Severa AI Platform
-              </h3>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-lg bg-[#00dc82]/10 border border-[#00dc82]/20 flex items-center justify-center shrink-0 mt-0.5">
-                  <Zap size={14} className="text-[#00dc82]" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-white mb-0.5">Instant SAST & SCA Audits</h4>
-                  <p className="text-[11px] text-slate-400 leading-snug">
-                    Scan thousands of lines in Python, JS, Node, and Docker in milliseconds right inside your browser.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-lg bg-[#00dc82]/10 border border-[#00dc82]/20 flex items-center justify-center shrink-0 mt-0.5">
-                  <Code2 size={14} className="text-[#00dc82]" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-white mb-0.5">Autonomous AI Remediation</h4>
-                  <p className="text-[11px] text-slate-400 leading-snug">
-                    Auto-generate side-by-side refactoring diff patches powered by Gemini, GPT-4o & Claude.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-lg bg-[#00dc82]/10 border border-[#00dc82]/20 flex items-center justify-center shrink-0 mt-0.5">
-                  <Lock size={14} className="text-[#00dc82]" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-white mb-0.5">100% Zero-Trust Data Isolation</h4>
-                  <p className="text-[11px] text-slate-400 leading-snug">
-                    Your code and API keys are strictly user-scoped and encrypted locally. Zero remote data retention.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* High-Converting Sign-In Trigger Banner */}
-          <div className="p-4.5 rounded-xl border border-[#00dc82]/40 bg-[#0a1428] relative overflow-hidden shadow-xl shadow-[#00dc82]/15">
-            <div className="flex items-between justify-between gap-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-sm font-black text-[#00dc82] tracking-wide">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#00dc82] shadow-md shadow-[#00dc82]/50 animate-pulse" />
-                  Ready to audit your code in seconds?
-                </div>
-                <p className="text-xs font-medium text-cyan-200 leading-snug">
-                  Sign in now to unlock full AI refactoring & zero-trust security analysis.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  type="button"
-                  onClick={handleFreeForeverClick}
-                  className="text-xs font-black text-black bg-[#00dc82] hover:bg-[#00c574] shadow-lg shadow-[#00dc82]/40 px-3.5 py-2 rounded-lg tracking-tight transition-all hover:scale-105 active:scale-95 cursor-pointer"
-                >
-                  Free Forever →
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
+        <AutonomousShowcaseContent
+          onBackToHome={() => _navigate('/')}
+          onFreeForeverClick={handleFreeForeverClick}
+        />
       </div>
 
       {/* ── Right panel — auth form ── */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 sm:px-8 py-10 lg:py-12 relative">
+      <div className="flex-1 flex flex-col items-center justify-center px-4 sm:px-8 py-10 lg:py-12 relative overflow-y-auto">
         <Orbs />
-        <div className="relative w-full max-w-[460px] sm:max-w-[480px] md:max-w-[500px]">
+        <div className="relative w-full max-w-[460px] sm:max-w-[480px] md:max-w-[540px]">
 
-          {/* Resized / Mobile Header & Branding (Shows Severa + Back to Home + Headline on resized windows and mobile) */}
-          <div className="lg:hidden mb-7 space-y-4">
-            <div className="flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => _navigate('/')}
-                className="flex items-center gap-2.5 cursor-pointer text-left"
-              >
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#00dc82] to-emerald-600 flex items-center justify-center shadow-lg shadow-[#00dc82]/25">
-                  <Shield size={16} className="text-black font-black" />
-                </div>
-                <span className="text-lg font-black text-white">Severa<span className="text-[#00dc82]">.</span></span>
-              </button>
-              <button
-                type="button"
-                onClick={() => _navigate('/')}
-                className="text-xs font-semibold text-slate-300 hover:text-[#00dc82] bg-white/[0.06] hover:bg-white/[0.1] border border-white/10 px-3.5 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
-              >
-                ← Back to Home
-              </button>
-            </div>
-
-            <div className="pt-1">
-              <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight">
-                Autonomous Code Security.<br />
-                <span className="bg-gradient-to-r from-[#00dc82] via-emerald-300 to-teal-300 bg-clip-text text-transparent">
-                  Instant AI Patching.
-                </span>
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-400 mt-2 leading-relaxed">
-                Client-side SAST &amp; SCA analysis with automated AI refactoring patches.
-              </p>
-            </div>
+          {/* Resized / Mobile Header & Complete Autonomous Showcase */}
+          <div className="lg:hidden mb-8 w-full">
+            <AutonomousShowcaseContent
+              onBackToHome={() => _navigate('/')}
+              onFreeForeverClick={handleFreeForeverClick}
+            />
+            <div className="my-8 border-t border-white/10" />
           </div>
 
           {/* Tab switcher */}
