@@ -535,38 +535,6 @@ export default function LandingPage() {
         onSelectSection={scrollToSection}
       />
 
-      {/* Floating Right Slide Navigator */}
-      <div className="hidden md:flex fixed right-6 top-1/2 -translate-y-1/2 z-40 flex-col items-end gap-3.5 pointer-events-auto">
-        {NAV_ITEMS.map((item) => {
-          const isActive = activeSection === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => scrollToSection(item.id)}
-              aria-label={`Jump to ${item.label}`}
-              className="group flex items-center gap-3 cursor-pointer py-1"
-            >
-              <span
-                className={`text-xs font-bold transition-all duration-200 px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 ${
-                  isActive
-                    ? 'bg-white/10 text-white opacity-100 shadow-sm'
-                    : 'bg-black/70 text-slate-300'
-                }`}
-              >
-                {item.label}
-              </span>
-              <span
-                className={`transition-all duration-300 rounded-full border ${
-                  isActive
-                    ? `w-3.5 h-3.5 ${item.indicatorDot} border-white shadow-lg ring-4 ring-white/10 scale-125`
-                    : 'w-2.5 h-2.5 bg-white/20 border-white/30 group-hover:bg-white/60 group-hover:scale-110'
-                }`}
-              />
-            </button>
-          );
-        })}
-      </div>
-
       {/* ── SLIDE 1: HOME (HERO) ────────────────────────────────────────── */}
       <section
         id="home"
