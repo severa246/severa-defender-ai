@@ -259,24 +259,24 @@ export default function GitHubPullModal({ isOpen, onClose, onLoadCode }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div className="bg-[#191C23] border border-white/10 rounded-2xl max-w-lg w-full p-6 shadow-2xl shadow-black/80 space-y-4">
         
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="flex items-center justify-between border-b border-white/10 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-slate-800 text-slate-100 border border-slate-700">
-              <GitBranch className="w-5 h-5 text-cyan-400" />
+            <div className="p-2 rounded-xl bg-[#232732] text-emerald-400 border border-white/10">
+              <GitBranch className="w-5 h-5 text-emerald-400" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-100">Pull Code from GitHub</h3>
-              <p className="text-xs text-slate-400">Import repository or raw code directly from GitHub</p>
+              <h3 className="text-base font-bold text-white">Pull Code from GitHub</h3>
+              <p className="text-xs text-zinc-400">Import repository or raw code directly from GitHub</p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-200 text-xl font-bold cursor-pointer"
+            className="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-[#232732] transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -284,7 +284,7 @@ export default function GitHubPullModal({ isOpen, onClose, onLoadCode }) {
 
         {/* GitHub URL Input */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-300">GitHub Repository or File URL</label>
+          <label className="text-xs font-semibold text-zinc-300">GitHub Repository or File URL</label>
           <div className="flex gap-2">
             <input
               type="text"
@@ -294,24 +294,24 @@ export default function GitHubPullModal({ isOpen, onClose, onLoadCode }) {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleFetchGithubCode(githubUrl);
               }}
-              className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan-500 font-mono"
+              className="flex-1 bg-[#12141a] border border-white/10 rounded-xl px-3 py-2 text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/60 font-mono"
             />
             <button
               onClick={() => handleFetchGithubCode(githubUrl)}
               disabled={isLoading || !githubUrl.trim()}
-              className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer shadow-md shadow-cyan-600/20"
+              className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer shadow-md shadow-emerald-500/20"
             >
-              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+              {isLoading ? <Loader2 className="w-4 h-4 animate-spin text-black" /> : <Download className="w-4 h-4 text-black" />}
               <span>Pull Code</span>
             </button>
           </div>
         </div>
 
         {/* Short Informative Note */}
-        <div className="p-2.5 bg-cyan-500/10 border border-cyan-500/20 rounded-xl text-[11px] text-cyan-300 flex items-start gap-2">
-          <AlertCircle className="w-4 h-4 shrink-0 text-cyan-400 mt-0.5" />
+        <div className="p-3 bg-[#12141a] border border-white/10 rounded-xl text-[11px] text-zinc-300 flex items-start gap-2.5">
+          <AlertCircle className="w-4 h-4 shrink-0 text-emerald-400 mt-0.5" />
           <span>
-            <strong>Note:</strong> Pulling via URL imports key security modules to bypass GitHub API rate limits. To scan a full 100% repository folder (all files & subfolders), use <strong>"Upload Folder"</strong> in the Project Explorer.
+            <strong className="text-white">Note:</strong> Pulling via URL imports key security modules to bypass GitHub API rate limits. To scan a full 100% repository folder (all files & subfolders), use <strong className="text-emerald-400">"Upload Folder"</strong> in the Project Explorer.
           </span>
         </div>
 
@@ -323,8 +323,8 @@ export default function GitHubPullModal({ isOpen, onClose, onLoadCode }) {
         )}
 
         {/* Preset Demo Sample Files from GitHub */}
-        <div className="space-y-2 pt-2 border-t border-slate-800">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+        <div className="space-y-2 pt-2 border-t border-white/10">
+          <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
             Or Select a Sample GitHub Test Code File:
           </span>
           <div className="space-y-1.5">
@@ -335,12 +335,12 @@ export default function GitHubPullModal({ isOpen, onClose, onLoadCode }) {
                   setGithubUrl(preset.url);
                   handleFetchGithubCode(preset.url);
                 }}
-                className="w-full text-left bg-slate-950 hover:bg-slate-800/80 border border-slate-800 rounded-xl p-2.5 flex items-center justify-between text-xs transition-colors group cursor-pointer"
+                className="w-full text-left bg-[#12141a] hover:bg-[#232732] border border-white/10 rounded-xl p-2.5 flex items-center justify-between text-xs transition-colors group cursor-pointer"
               >
-                <span className="font-semibold text-slate-300 group-hover:text-cyan-400">
+                <span className="font-semibold text-zinc-300 group-hover:text-emerald-400 transition-colors">
                   {preset.name}
                 </span>
-                <span className="text-[10px] text-cyan-400 font-mono underline">
+                <span className="text-[10px] text-emerald-400 font-mono underline group-hover:text-emerald-300">
                   Pull & Scan →
                 </span>
               </button>

@@ -839,6 +839,9 @@ jobs:
       projectName: activeProjectName
     });
 
+    // Synchronize SAST findings and generate AI remediation diff for active file
+    handleScan(code, language, activeFileName, activeProjectName);
+
     setTimeout(() => {
       setIsScanning(false);
       confetti({ particleCount: 90, spread: 60, origin: { y: 0.6 } });
@@ -1184,12 +1187,14 @@ jobs:
     setLanguage(targetLang);
     setFixedLineNumbers([]);
 
-    if (pfMatch?.findings && targetCode === file.code) {
+    if (pfMatch?.findings) {
       setFindings(pfMatch.findings);
-      setScanMetrics(pfMatch.metrics);
-    } else {
-      handleScan(targetCode, targetLang, targetName, activeProjectName);
+      if (pfMatch.metrics) setScanMetrics(pfMatch.metrics);
+      if (pfMatch.aiReview) setAiReviewData(pfMatch.aiReview);
     }
+
+    // Run SAST & AI remediation synthesis for the selected file
+    handleScan(targetCode, targetLang, targetName, activeProjectName);
   };
 
   // Upload Entire Directory / Folder
@@ -1688,18 +1693,18 @@ jobs:
 
         {/* Full Project Scan Completed Toast Banner */}
         {projectScanToast.show && (
-          <div className="bg-gradient-to-r from-purple-900/90 via-indigo-900/90 to-slate-900/90 border-b border-purple-500/40 px-6 py-2.5 flex items-center justify-between shadow-xl animate-fadeIn">
+          <div className="bg-[#191C23] border-b border-white/10 px-6 py-2.5 flex items-center justify-between shadow-xl shadow-black/60 animate-fadeIn">
             <div className="flex items-center gap-3">
-              <div className="p-1 rounded-lg bg-purple-500/20 text-purple-300">
+              <div className="p-1 rounded-lg bg-[#232732] border border-white/10 text-emerald-400">
                 <Sparkles className="w-4 h-4 animate-spin" />
               </div>
-              <span className="text-xs font-bold text-slate-100 font-mono">
-                🛡️ Full Project Scan Completed on <span className="text-purple-300 font-extrabold">{projectScanToast.projectName}</span>: Analyzed <span className="text-cyan-300 font-bold">{projectScanToast.fileCount}</span> file(s), identified <span className="text-amber-300 font-bold">{projectScanToast.findingsCount}</span> vulnerability finding(s).
+              <span className="text-xs font-bold text-zinc-200 font-mono">
+                🛡️ Full Project Scan Completed on <span className="text-emerald-400 font-extrabold">{projectScanToast.projectName}</span>: Analyzed <span className="text-white font-bold">{projectScanToast.fileCount}</span> file(s), identified <span className="text-amber-400 font-bold">{projectScanToast.findingsCount}</span> vulnerability finding(s).
               </span>
             </div>
             <button
               onClick={() => setProjectScanToast((prev) => ({ ...prev, show: false }))}
-              className="text-slate-400 hover:text-white p-1"
+              className="text-zinc-400 hover:text-white p-1 rounded hover:bg-[#232732] transition-colors cursor-pointer"
             >
               ✕
             </button>
@@ -1769,8 +1774,14 @@ jobs:
                 </div>
               </div>
 
-              {/* AI Auto-Fix Diff Panel — Only show when findings exist and review matches current code */}
-              {aiReviewData && findings.length > 0 && (aiReviewData.originalCode === code || aiReviewData.fixedCode === code) && (
+              {/* AI Auto-Fix Diff Panel — Shows whenever findings and review data exist */}
+              {aiReviewData && findings.length > 0 && (
+                !aiReviewData.originalCode ||
+                aiReviewData.originalCode.trim() === code.trim() ||
+                aiReviewData.fixedCode?.trim() === code.trim() ||
+                aiReviewData.originalCode === code ||
+                aiReviewData.fixedCode === code
+              ) && (
                 <DiffViewer
                   aiReviewData={aiReviewData}
                   onApplyFix={handleApplyFix}
@@ -1790,7 +1801,7 @@ jobs:
         </main>
 
         {/* Footer */}
-        <footer className="border-t border-slate-900 py-3 px-6 text-center text-xs text-slate-500 shrink-0">
+        <footer className="border-t border-white/10 py-3 px-6 text-center text-xs text-zinc-500 bg-[#12141a] shrink-0">
           Severa AI • Production Enterprise Edition • Continuous Code Review & SAST Vulnerability Detection System
         </footer>
       </div>
