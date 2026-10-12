@@ -71,8 +71,20 @@ export default function AuditReportModal({ isOpen, onClose, scanMetrics, finding
   const verification = getAuditVerificationMetadata(language, code?.length || 0, findings?.length || 0, score);
 
   return (
-    <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 print:p-0 print:bg-white print:static print:inset-auto">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-5xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden print:max-h-none print:border-none print:shadow-none print:bg-white print:text-black">
+    <div 
+      className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 print:p-0 print:bg-white print:static print:inset-auto cursor-pointer"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div 
+        className="bg-slate-900 border border-slate-800 rounded-2xl max-w-5xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden print:max-h-none print:border-none print:shadow-none print:bg-white print:text-black cursor-default"
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+      >
         
         {/* Modal Header (Hidden on PDF Print) */}
         <div className="bg-[#0c0e15] px-6 py-4 border-b border-slate-800 flex items-center justify-between gap-3 flex-wrap print:hidden">

@@ -199,11 +199,17 @@ export default function CommandPaletteModal({
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-black/70 backdrop-blur-sm animate-fadeIn"
-      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-black/70 backdrop-blur-sm animate-fadeIn cursor-pointer"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div 
-        className="w-full max-w-2xl bg-[#0c101a] border border-white/[0.12] rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[580px] text-slate-100 animate-scaleUp"
+        className="w-full max-w-2xl bg-[#0c101a] border border-white/[0.12] rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[580px] text-slate-100 animate-scaleUp cursor-default"
+        onMouseDown={(e) => e.stopPropagation()}
         onClick={(e) => e.stopPropagation()}
         onKeyDown={handleKeyDown}
       >

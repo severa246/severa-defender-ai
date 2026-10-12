@@ -1852,8 +1852,20 @@ jobs:
 
       {/* Interactive AI Fix Confirmation Modal ("Apply Correct Code") */}
       {isApplyFixModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
-          <div className="w-full max-w-lg bg-[#191C23] border border-white/10 rounded-2xl p-6 shadow-2xl space-y-4">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn cursor-pointer"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setIsApplyFixModalOpen(false);
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsApplyFixModalOpen(false);
+          }}
+        >
+          <div 
+            className="w-full max-w-lg bg-[#191C23] border border-white/10 rounded-2xl p-6 shadow-2xl space-y-4 cursor-default"
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-xl bg-[#232732] border border-white/10 text-emerald-400">
                 <Sparkles className="w-6 h-6 animate-pulse" />

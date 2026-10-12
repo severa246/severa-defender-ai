@@ -175,8 +175,20 @@ export default function SeveraDefenderChat({
   const hasKey = Boolean(apiKey && apiKey.trim().length > 5) || selectedProvider === 'ollama' || Boolean(customEndpoint && customEndpoint.trim());
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-4xl h-[85vh] bg-[#12141a] border border-white/10 rounded-2xl shadow-2xl shadow-black/80 flex flex-col overflow-hidden">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fadeIn cursor-pointer"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div 
+        className="relative w-full max-w-4xl h-[85vh] bg-[#12141a] border border-white/10 rounded-2xl shadow-2xl shadow-black/80 flex flex-col overflow-hidden cursor-default"
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+      >
         
         {/* Top Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-[#191C23] shrink-0">

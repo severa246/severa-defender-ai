@@ -259,8 +259,20 @@ export default function GitHubPullModal({ isOpen, onClose, onLoadCode }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-      <div className="bg-[#191C23] border border-white/10 rounded-2xl max-w-lg w-full p-6 shadow-2xl shadow-black/80 space-y-4">
+    <div 
+      className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 cursor-pointer"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div 
+        className="bg-[#191C23] border border-white/10 rounded-2xl max-w-lg w-full p-6 shadow-2xl shadow-black/80 space-y-4 cursor-default"
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+      >
         
         {/* Header */}
         <div className="flex items-center justify-between border-b border-white/10 pb-3">

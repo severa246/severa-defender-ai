@@ -828,9 +828,6 @@ export default function Sidebar({
                 <div className="min-w-0 animate-fadeIn">
                   <div className="flex items-center gap-1.5">
                     <h1 className="font-bold text-[15px] text-slate-100 tracking-tight truncate">Severa AI</h1>
-                    <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded bg-white/10 text-slate-300 border border-white/10">
-                      PRO
-                    </span>
                   </div>
                   <p className="text-xs text-slate-400 font-medium leading-tight truncate">Continuous SAST Platform</p>
                 </div>
@@ -1409,8 +1406,20 @@ export default function Sidebar({
 
       {/* Custom Themed Enterprise Delete Confirmation Modal */}
       {deleteConfirmModal.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-          <div className="w-full max-w-md bg-[#191C23] border border-white/10 rounded-2xl p-6 shadow-2xl shadow-black/90 space-y-5 animate-scaleUp">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn cursor-pointer"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) closeDeleteConfirmModal();
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeDeleteConfirmModal();
+          }}
+        >
+          <div 
+            className="w-full max-w-md bg-[#191C23] border border-white/10 rounded-2xl p-6 shadow-2xl shadow-black/90 space-y-5 animate-scaleUp cursor-default"
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+          >
             
             {/* Modal Header */}
             <div className="flex items-start gap-3.5">
