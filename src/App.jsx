@@ -15,6 +15,7 @@ import { Shield, Sparkles } from 'lucide-react';
 import { analyzeCode } from './engine/scannerEngine';
 import { generateAiReview } from './engine/aiReviewer';
 import { detectLanguage } from './engine/languageDetector';
+import { scanDependencies } from './engine/scaScanner';
 import { CODE_TEMPLATES } from './engine/templates';
 import { cloudSyncService } from './services/cloudSyncService';
 import { storageService } from './services/storageService';
@@ -30,6 +31,7 @@ const INITIAL_SESSIONS = [
 
 export const DEFAULT_AI_PROJECT_FILES = [
   { name: 'main.py', path: 'main.py', templateId: 'py-sqli' },
+  { name: 'requirements.txt', path: 'requirements.txt', code: 'flask==2.1.0\nrequests==2.28.0\nsqlite3\n', language: 'text' },
   { name: 'download-zip.js', path: 'api/download-zip.js', code: '// Severa Serverless Download ZIP Proxy API\nconst JSZip = require("jszip");\n\nmodule.exports = async (req, res) => {\n  // Streaming ZIP attachment download\n};\n', language: 'javascript' },
   { name: 'Sidebar.jsx', path: 'src/components/Sidebar.jsx', code: '// Severa Defender AI Sidebar & File Tree Explorer Component\nimport React from "react";\n\nexport default function Sidebar() {\n  return <aside>...</aside>;\n}\n', language: 'javascript' },
   { name: 'CodeWorkbench.jsx', path: 'src/components/CodeWorkbench.jsx', code: '// Monaco Code Workbench Component\nimport React from "react";\n\nexport default function CodeWorkbench() {\n  return <div>Workbench</div>;\n}\n', language: 'javascript' },
@@ -46,7 +48,7 @@ export const DEFAULT_AI_PROJECT_FILES = [
   { name: '.env.example', path: '.env.example', code: 'VITE_API_URL=https://api.severa.ai\nVITE_SUPABASE_KEY=your_key_here\n', language: 'shell' },
   { name: '.gitignore', path: '.gitignore', code: 'node_modules\ndist\n.env\n', language: 'shell' },
   { name: 'Dockerfile', path: 'Dockerfile', templateId: 'docker-sec' },
-  { name: 'package.json', path: 'package.json', code: '{\n  "name": "ai-project",\n  "version": "2.4.0",\n  "type": "module",\n  "scripts": {\n    "dev": "vite",\n    "build": "vite build"\n  }\n}\n', language: 'json' },
+  { name: 'package.json', path: 'package.json', code: '{\n  "name": "ai-project",\n  "version": "2.4.0",\n  "type": "module",\n  "scripts": {\n    "dev": "vite",\n    "build": "vite build"\n  },\n  "dependencies": {\n    "express": "4.16.0",\n    "axios": "0.19.0",\n    "lodash": "4.17.15",\n    "jsonwebtoken": "8.5.1"\n  }\n}\n', language: 'json' },
   { name: 'README.md', path: 'README.md', code: '# AI Project - Severa Defender AI\n\nEnterprise Static Application Security Testing (SAST) & DevSecOps Platform.\n', language: 'markdown' },
   { name: 'vite.config.js', path: 'vite.config.js', code: 'import { defineConfig } from "vite";\nimport react from "@vitejs/plugin-react";\n\nexport default defineConfig({\n  plugins: [react()]\n});\n', language: 'javascript' }
 ];
@@ -628,62 +630,134 @@ jobs:
     const currentFileName = optFileName || activeFileName;
     const currentProjName = optProjName || activeProjectName;
 
-    const result = analyzeCode(activeCode, activeLang, customRules);
-    let finalFindings = [...result.findings];
+    const isManifest = currentFileName === 'package.json' || currentFileName === 'requirements.txt' || currentFileName === 'go.mod';
+    let finalFindings = [];
+    let resultMetrics = null;
 
-    setFindings(finalFindings);
-    setScanMetrics(result.metrics);
+    if (isManifest) {
+      const scaRes = scanDependencies(activeCode, currentFileName);
+      finalFindings = (scaRes.findings || []).map((depVuln, vIdx) => {
+        let lineNum = 1;
+        if (activeCode) {
+          const lines = activeCode.split('\n');
+          const foundIdx = lines.findIndex((l) => l.toLowerCase().includes(depVuln.packageName.toLowerCase()));
+          if (foundIdx !== -1) lineNum = foundIdx + 1;
+        }
+        return {
+          id: `DEP-${currentFileName}-${depVuln.cve}-${vIdx}`,
+          ruleId: `SCA-${depVuln.packageName}`,
+          title: `${depVuln.cve} in ${depVuln.packageName} (${depVuln.currentVersion} ➔ Fixed in ${depVuln.fixedIn || 'Latest'})`,
+          severity: depVuln.severity,
+          cwe: 'CWE-1395',
+          cweUrl: `https://nvd.nist.gov/vuln/detail/${depVuln.cve}`,
+          owasp: 'A06:2021 - Vulnerable and Outdated Components',
+          line: lineNum,
+          codeSnippet: `"${depVuln.packageName}": "${depVuln.currentVersion}"`,
+          description: depVuln.summary,
+          impact: `Outdated package ${depVuln.packageName}@${depVuln.currentVersion} contains known vulnerability ${depVuln.cve}.`,
+          remediation: `Upgrade ${depVuln.packageName} to ${depVuln.fixedIn || 'latest secure version'}.`,
+          cvssScore: depVuln.cvssScore,
+          cvssVector: depVuln.cvssVector,
+          epssScore: depVuln.epssScore,
+          isDependency: true,
+          packageName: depVuln.packageName,
+          currentVersion: depVuln.currentVersion,
+          fixedIn: depVuln.fixedIn,
+          manifestFile: currentFileName,
+          manifestPath: currentFileName
+        };
+      });
 
-    // Trigger AI remediation review generation (only when active code actually has flaws)
-    if (finalFindings.length > 0 && activeCode && activeCode.trim().length > 0) {
-      setIsAiLoading(true);
-      generateAiReview(activeCode, activeLang, finalFindings, apiKey)
-        .then((aiRes) => {
-          if (aiRes) {
-            setAiReviewData(aiRes);
-            if (aiRes.aiFindings && Array.isArray(aiRes.aiFindings) && aiRes.aiFindings.length > 0) {
-              const existingLineRuleMap = new Set(finalFindings.map((f) => `${f.line}:${f.ruleId}`));
-              const freshAiFindings = aiRes.aiFindings.filter((f) => !existingLineRuleMap.has(`${f.line}:${f.ruleId}`));
-              if (freshAiFindings.length > 0) {
-                finalFindings = [...finalFindings, ...freshAiFindings];
-                setFindings(finalFindings);
+      let criticalCount = 0;
+      let highCount = 0;
+      let mediumCount = 0;
+      let lowCount = 0;
+      finalFindings.forEach((f) => {
+        if (f.severity === 'CRITICAL') criticalCount++;
+        else if (f.severity === 'HIGH') highCount++;
+        else if (f.severity === 'MEDIUM') mediumCount++;
+        else lowCount++;
+      });
+      let score = 100 - (criticalCount * 25 + highCount * 15 + mediumCount * 8 + lowCount * 3);
+      score = Math.max(0, Math.min(100, score));
+      let grade = score >= 90 ? 'A+' : score >= 80 ? 'A' : score >= 70 ? 'B' : score >= 55 ? 'C' : score >= 40 ? 'D' : 'F';
 
-                let criticalCount = 0;
-                let highCount = 0;
-                let mediumCount = 0;
-                let lowCount = 0;
+      resultMetrics = {
+        totalLines: activeCode ? activeCode.split('\n').length : 0,
+        score,
+        grade,
+        criticalCount,
+        highCount,
+        mediumCount,
+        lowCount,
+        totalFindings: finalFindings.length,
+        complexity: 1,
+        maintainability: score
+      };
 
-                finalFindings.forEach((f) => {
-                  if (f.severity === 'CRITICAL') criticalCount++;
-                  else if (f.severity === 'HIGH') highCount++;
-                  else if (f.severity === 'MEDIUM') mediumCount++;
-                  else if (f.severity === 'LOW') lowCount++;
-                });
+      setFindings(finalFindings);
+      setScanMetrics(resultMetrics);
+      setIsAiLoading(false);
+      setAiReviewData(null);
+    } else {
+      const result = analyzeCode(activeCode, activeLang, customRules);
+      finalFindings = [...result.findings];
+      resultMetrics = result.metrics;
 
-                let score = 100 - (criticalCount * 25 + highCount * 15 + mediumCount * 8 + lowCount * 3);
-                score = Math.max(0, Math.min(100, score));
-                let grade = score >= 90 ? 'A+' : score >= 80 ? 'A' : score >= 70 ? 'B' : score >= 55 ? 'C' : score >= 40 ? 'D' : 'F';
+      setFindings(finalFindings);
+      setScanMetrics(resultMetrics);
 
-                setScanMetrics((prev) => ({
-                  ...prev,
-                  score,
-                  grade,
-                  criticalCount,
-                  highCount,
-                  mediumCount,
-                  lowCount,
-                  totalFindings: finalFindings.length
-                }));
+      // Trigger AI remediation review generation (only when active code actually has flaws)
+      if (finalFindings.length > 0 && activeCode && activeCode.trim().length > 0) {
+        setIsAiLoading(true);
+        generateAiReview(activeCode, activeLang, finalFindings, apiKey)
+          .then((aiRes) => {
+            if (aiRes) {
+              setAiReviewData(aiRes);
+              if (aiRes.aiFindings && Array.isArray(aiRes.aiFindings) && aiRes.aiFindings.length > 0) {
+                const existingLineRuleMap = new Set(finalFindings.map((f) => `${f.line}:${f.ruleId}`));
+                const freshAiFindings = aiRes.aiFindings.filter((f) => !existingLineRuleMap.has(`${f.line}:${f.ruleId}`));
+                if (freshAiFindings.length > 0) {
+                  finalFindings = [...finalFindings, ...freshAiFindings];
+                  setFindings(finalFindings);
+
+                  let criticalCount = 0;
+                  let highCount = 0;
+                  let mediumCount = 0;
+                  let lowCount = 0;
+
+                  finalFindings.forEach((f) => {
+                    if (f.severity === 'CRITICAL') criticalCount++;
+                    else if (f.severity === 'HIGH') highCount++;
+                    else if (f.severity === 'MEDIUM') mediumCount++;
+                    else if (f.severity === 'LOW') lowCount++;
+                  });
+
+                  let score = 100 - (criticalCount * 25 + highCount * 15 + mediumCount * 8 + lowCount * 3);
+                  score = Math.max(0, Math.min(100, score));
+                  let grade = score >= 90 ? 'A+' : score >= 80 ? 'A' : score >= 70 ? 'B' : score >= 55 ? 'C' : score >= 40 ? 'D' : 'F';
+
+                  setScanMetrics((prev) => ({
+                    ...prev,
+                    score,
+                    grade,
+                    criticalCount,
+                    highCount,
+                    mediumCount,
+                    lowCount,
+                    totalFindings: finalFindings.length
+                  }));
+                }
               }
             }
-          }
-        })
-        .catch((err) => console.warn("AI security review error:", err))
-        .finally(() => {
-          setIsAiLoading(false);
-        });
-    } else {
-      setAiReviewData(null);
+          })
+          .catch((err) => console.warn("AI security review error:", err))
+          .finally(() => {
+            setIsAiLoading(false);
+          });
+      } else {
+        setAiReviewData(null);
+      }
     }
 
     // 1. Sync active file code & findings in projectFiles array
@@ -746,7 +820,7 @@ jobs:
     }
   }, [isWorkspaceLoaded, code, language, handleScan]);
 
-  // Scan Full Project across all project files in folder
+  // Scan Full Project across all project files in folder (Unified SAST + SCA parallel crawl)
   const handleScanFullProject = () => {
     setIsScanning(true);
 
@@ -793,12 +867,76 @@ jobs:
     let totalMed = 0;
     let totalLow = 0;
     let totalProjectFindings = 0;
+    let codeVulnerabilityCount = 0;
+    let dependencyCveCount = 0;
 
     const scannedFiles = filesToScan.map((fileObj) => {
+      const isManifest = fileObj.name === 'package.json' || fileObj.name === 'requirements.txt' || fileObj.name === 'go.mod';
+
+      if (isManifest) {
+        const scaRes = scanDependencies(fileObj.code, fileObj.name);
+        const depFindings = (scaRes.findings || []).map((depVuln, vIdx) => {
+          let lineNum = 1;
+          if (fileObj.code) {
+            const lines = fileObj.code.split('\n');
+            const foundIdx = lines.findIndex((l) => l.toLowerCase().includes(depVuln.packageName.toLowerCase()));
+            if (foundIdx !== -1) lineNum = foundIdx + 1;
+          }
+          return {
+            id: `DEP-${fileObj.name}-${depVuln.cve}-${vIdx}`,
+            ruleId: `SCA-${depVuln.packageName}`,
+            title: `${depVuln.cve} in ${depVuln.packageName} (${depVuln.currentVersion} ➔ Fixed in ${depVuln.fixedIn || 'Latest'})`,
+            severity: depVuln.severity,
+            cwe: 'CWE-1395',
+            cweUrl: `https://nvd.nist.gov/vuln/detail/${depVuln.cve}`,
+            owasp: 'A06:2021 - Vulnerable and Outdated Components',
+            line: lineNum,
+            codeSnippet: `"${depVuln.packageName}": "${depVuln.currentVersion}"`,
+            description: depVuln.summary,
+            impact: `Outdated package ${depVuln.packageName}@${depVuln.currentVersion} contains known vulnerability ${depVuln.cve}.`,
+            remediation: `Upgrade ${depVuln.packageName} to ${depVuln.fixedIn || 'latest secure version'}.`,
+            cvssScore: depVuln.cvssScore,
+            cvssVector: depVuln.cvssVector,
+            epssScore: depVuln.epssScore,
+            isDependency: true,
+            packageName: depVuln.packageName,
+            currentVersion: depVuln.currentVersion,
+            fixedIn: depVuln.fixedIn,
+            manifestFile: fileObj.name,
+            manifestPath: fileObj.path || fileObj.name
+          };
+        });
+
+        depFindings.forEach((f) => {
+          dependencyCveCount++;
+          if (f.severity === 'CRITICAL') totalCrit++;
+          else if (f.severity === 'HIGH') totalHigh++;
+          else if (f.severity === 'MEDIUM') totalMed++;
+          else totalLow++;
+        });
+        totalProjectFindings += depFindings.length;
+
+        return {
+          ...fileObj,
+          findings: depFindings,
+          metrics: {
+            totalLines: fileObj.code ? fileObj.code.split('\n').length : 0,
+            score: Math.max(0, 100 - (depFindings.length * 15)),
+            grade: depFindings.length === 0 ? 'A+' : depFindings.length <= 2 ? 'B' : 'F',
+            criticalCount: depFindings.filter((f) => f.severity === 'CRITICAL').length,
+            highCount: depFindings.filter((f) => f.severity === 'HIGH').length,
+            mediumCount: depFindings.filter((f) => f.severity === 'MEDIUM').length,
+            lowCount: depFindings.filter((f) => f.severity === 'LOW').length
+          }
+        };
+      }
+
+      // SAST Analysis for source code files
       const scanRes = analyzeCode(fileObj.code, fileObj.language, customRules);
       const fileFindings = scanRes.findings || [];
 
       fileFindings.forEach((f) => {
+        codeVulnerabilityCount++;
         if (f.severity === 'CRITICAL') totalCrit++;
         else if (f.severity === 'HIGH') totalHigh++;
         else if (f.severity === 'MEDIUM') totalMed++;
@@ -815,6 +953,7 @@ jobs:
 
     setProjectFiles(scannedFiles);
 
+    // Full Project Combined Security Posture Score & Grade
     let overallScore = 100 - (totalCrit * 25 + totalHigh * 15 + totalMed * 8 + totalLow * 3);
     overallScore = Math.max(0, Math.min(100, overallScore));
     let overallGrade = overallScore >= 90 ? 'A+' : overallScore >= 80 ? 'A' : overallScore >= 70 ? 'B' : overallScore >= 55 ? 'C' : overallScore >= 40 ? 'D' : 'F';
@@ -836,10 +975,14 @@ jobs:
       show: true,
       fileCount: scannedFiles.length,
       findingsCount: totalProjectFindings,
+      codeFlawsCount: codeVulnerabilityCount,
+      dependencyCvesCount: dependencyCveCount,
+      score: overallScore,
+      grade: overallGrade,
       projectName: activeProjectName
     });
 
-    // Synchronize SAST findings and generate AI remediation diff for active file
+    // Synchronize active file SAST findings
     handleScan(code, language, activeFileName, activeProjectName);
 
     setTimeout(() => {
@@ -849,7 +992,91 @@ jobs:
 
     setTimeout(() => {
       setProjectScanToast((prev) => ({ ...prev, show: false }));
-    }, 5000);
+    }, 6000);
+  };
+
+  // 1-Click Dependency Auto-Bump (SCA)
+  const handleAutoBumpDependency = (pkgName, fixedVersion, manifestFileName = 'package.json') => {
+    const cleanFixVer = String(fixedVersion || '').replace(/[\^~>=<v\s]/g, '').trim() || 'latest';
+    
+    let targetFile = projectFiles.find((f) => f.name === manifestFileName);
+    let originalCode = targetFile ? targetFile.code : (manifestFileName === activeFileName ? code : '');
+
+    if (!originalCode) return;
+
+    let updatedCode = originalCode;
+    if (manifestFileName.endsWith('.json')) {
+      try {
+        const parsed = JSON.parse(originalCode);
+        if (parsed.dependencies && parsed.dependencies[pkgName]) {
+          parsed.dependencies[pkgName] = `^${cleanFixVer}`;
+        }
+        if (parsed.devDependencies && parsed.devDependencies[pkgName]) {
+          parsed.devDependencies[pkgName] = `^${cleanFixVer}`;
+        }
+        updatedCode = JSON.stringify(parsed, null, 2) + '\n';
+      } catch {
+        const pkgRegex = new RegExp(`("${pkgName}"\\s*:\\s*")[^"]+(")`, 'g');
+        updatedCode = originalCode.replace(pkgRegex, `$1^${cleanFixVer}$2`);
+      }
+    } else if (manifestFileName.includes('requirements.txt')) {
+      const reqRegex = new RegExp(`(^|\\n)(${pkgName}\\s*(?:==|>=|<=|~=))\\s*[^\\n\\r]+`, 'gi');
+      updatedCode = originalCode.replace(reqRegex, `$1${pkgName}==${cleanFixVer}`);
+    } else if (manifestFileName.includes('go.mod')) {
+      const goRegex = new RegExp(`(${pkgName}\\s+)v?[0-9a-zA-Z.-]+`, 'g');
+      updatedCode = originalCode.replace(goRegex, `$1v${cleanFixVer}`);
+    }
+
+    if (manifestFileName === activeFileName) {
+      setCode(updatedCode);
+    }
+
+    setProjectFiles((prev) => prev.map((f) => (f.name === manifestFileName ? { ...f, code: updatedCode } : f)));
+    setProjectFolders((prev) =>
+      prev.map((folder) => {
+        if (folder.name === activeProjectName) {
+          return {
+            ...folder,
+            files: (folder.files || []).map((f) => (f.name === manifestFileName ? { ...f, code: updatedCode } : f))
+          };
+        }
+        return folder;
+      })
+    );
+
+    setTimeout(() => {
+      handleScanFullProject();
+    }, 150);
+  };
+
+  // 1-Click Secret Environment Variable Migration (Shannon Entropy Remediation)
+  const handleApplySecretFix = (finding) => {
+    if (!finding || !finding.line || !finding.suggestedFix) return;
+    const lines = code.split('\n');
+    const lineIdx = finding.line - 1;
+    if (lineIdx < 0 || lineIdx >= lines.length) return;
+
+    let targetLine = lines[lineIdx];
+    const { variableName, suggestedCode } = finding.suggestedFix;
+
+    const replaced = targetLine.replace(
+      new RegExp(`([a-zA-Z0-9_]*${variableName}[a-zA-Z0-9_]*\\s*[:=]\\s*)["'\`][^"'\`]+["'\`]`),
+      `$1${suggestedCode}`
+    );
+
+    if (replaced !== targetLine) {
+      lines[lineIdx] = replaced;
+    } else {
+      lines[lineIdx] = targetLine.replace(/["'][A-Za-z0-9_\-\/+=]{8,}["']/, suggestedCode);
+    }
+
+    if (language.includes('py') && !lines.some((l) => l.trim().startsWith('import os') || l.trim().startsWith('from os'))) {
+      lines.unshift('import os');
+    }
+
+    const newCode = lines.join('\n');
+    setCode(newCode);
+    handleScan(newCode, language);
   };
 
   // History Session Handlers
@@ -1699,7 +1926,7 @@ jobs:
                 <Sparkles className="w-4 h-4 animate-spin" />
               </div>
               <span className="text-xs font-bold text-zinc-200 font-mono">
-                🛡️ Full Project Scan Completed on <span className="text-emerald-400 font-extrabold">{projectScanToast.projectName}</span>: Analyzed <span className="text-white font-bold">{projectScanToast.fileCount}</span> file(s), identified <span className="text-amber-400 font-bold">{projectScanToast.findingsCount}</span> vulnerability finding(s).
+                🛡️ Full Project Scan Completed on <span className="text-emerald-400 font-extrabold">{projectScanToast.projectName}</span>: Analyzed <span className="text-white font-bold">{projectScanToast.fileCount}</span> files (Code: <span className="text-amber-400 font-bold">{projectScanToast.codeFlawsCount !== undefined ? projectScanToast.codeFlawsCount : projectScanToast.findingsCount}</span> flaws, Dependencies: <span className="text-sky-400 font-bold">{projectScanToast.dependencyCvesCount || 0}</span> CVEs) • Combined Posture Score: <span className="text-emerald-400 font-bold">{projectScanToast.score !== undefined ? `${projectScanToast.score}/100` : 'Evaluated'}</span> ({projectScanToast.grade || 'A+'}).
               </span>
             </div>
             <button
@@ -1767,6 +1994,8 @@ jobs:
                     onGenerateAiFix={handleGenerateAiFix}
                     onOpenDefender={handleOpenDefenderWithFinding}
                     onScanFullProject={handleScanFullProject}
+                    onAutoBumpDependency={handleAutoBumpDependency}
+                    onApplySecretFix={handleApplySecretFix}
                     aiReviewData={aiReviewData}
                     onApplyFix={handleApplyFix}
                     onApplyFixAll={handleApplyFixToAllFiles}

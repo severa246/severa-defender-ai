@@ -10,6 +10,12 @@ import { processAdvisoryStream } from './advisoryStreamEngine.js';
 import { decompileBinaryContent } from './binaryDecompilerEngine.js';
 import { searchWebGpuPatterns } from './webGpuPatternEngine.js';
 import { auditDomainAccessAndRaceConditions } from './domainAccessRaceAgent.js';
+import { 
+  detectEntropySecrets, 
+  calculateShannonEntropy, 
+  maskSecretToken, 
+  generateSecretAdvisory 
+} from './entropyEngine.js';
 
 /**
  * Static Analysis & Security Scanner Core Engine
@@ -207,13 +213,38 @@ export function analyzeCode(code, language = 'javascript', customRules = []) {
         }
 
         const intel = getCvssAndEpss(rule.cwe, rule.severity);
+        const isSecret = rule.cwe === 'CWE-798' || rule.id.startsWith('SEC-SEC-');
+        let secretMeta = {};
+        if (isSecret) {
+          const strMatch = trimmedLine.match(/["']([^"']{8,})["']/);
+          if (strMatch) {
+            const rawToken = strMatch[1];
+            const ent = calculateShannonEntropy(rawToken);
+            const masked = maskSecretToken(rawToken);
+            const varMatch = trimmedLine.match(/([a-zA-Z0-9_]+)\s*[:=]/);
+            const varName = varMatch ? varMatch[1] : 'SECRET_KEY';
+            const adv = generateSecretAdvisory(varName, rawToken, language);
+            secretMeta = {
+              isSecret: true,
+              entropyScore: ent,
+              maskedToken: masked,
+              secretType: rule.title,
+              variableName: varName,
+              suggestedFix: adv,
+              title: `${rule.title} (Entropy: ${ent} bits)`
+            };
+          } else {
+            secretMeta = { isSecret: true };
+          }
+        }
+
         findings.push({
           id: `${rule.id}-L${lineNumber}`,
           ruleId: rule.id,
           line: lineNumber,
           column: lineText.search(rule.pattern) + 1,
           codeSnippet: trimmedLine,
-          title: rule.title,
+          title: secretMeta.title || rule.title,
           severity: rule.severity,
           confidence: rule.confidence || 'CORROBORATED',
           cvssScore: rule.cvssScore || intel.score,
@@ -225,7 +256,8 @@ export function analyzeCode(code, language = 'javascript', customRules = []) {
           owasp: rule.owasp,
           description: rule.description,
           impact: rule.impact,
-          remediation: rule.remediation
+          remediation: secretMeta.suggestedFix ? secretMeta.suggestedFix.advisoryText : rule.remediation,
+          ...secretMeta
         });
       }
     });
@@ -256,6 +288,10 @@ export function analyzeCode(code, language = 'javascript', customRules = []) {
     });
   }
 
+  // --- SHANNON ENTROPY SECRET DETECTION PASS ---
+  const entropyFindings = detectEntropySecrets(code, language);
+  findings.push(...entropyFindings);
+
   // --- INTERPROCEDURAL DATA-FLOW TAINT ANALYSIS ---
   const dataFlowResult = analyzeDataFlow(code, language);
   if (dataFlowResult && dataFlowResult.flowFindings.length > 0) {
@@ -266,6 +302,7 @@ export function analyzeCode(code, language = 'javascript', customRules = []) {
   // Suppress pattern findings if dataFlowEngine proves all variables on that line were sanitized
   const filteredFindings = findings.filter((f) => {
     if (f.ruleId && f.ruleId.startsWith('FLOW-')) return true; // Flow findings already verified by dataFlowEngine
+    if (f.isSecret) return true; // Never suppress detected secrets
 
     // Check if finding is for data flow sensitive rules (Path, SQL, CMD, SSRF, XSS)
     if (['CWE-22', 'CWE-89', 'CWE-78', 'CWE-918', 'CWE-79'].includes(f.cwe) || ['SEC-PATH-001', 'SEC-SQL-001', 'SEC-CMD-001', 'SEC-SSRF-001', 'SEC-XSS-001'].includes(f.ruleId)) {
@@ -303,7 +340,7 @@ export function analyzeCode(code, language = 'javascript', customRules = []) {
   filteredFindings.forEach((f) => {
     // Check if there is an existing finding on the same line or for the same data-flow CWE within 2 lines
     const existingIndex = consolidatedFindings.findIndex((ef) => {
-      if (ef.line === f.line && (ef.ruleId === f.ruleId || ef.id === f.id || ef.cwe === f.cwe)) return true;
+      if (ef.line === f.line && (ef.ruleId === f.ruleId || ef.id === f.id || ef.cwe === f.cwe || (ef.isSecret && f.isSecret))) return true;
       if (['CWE-89', 'CWE-22', 'CWE-78', 'CWE-918', 'CWE-79'].includes(f.cwe) && ef.cwe === f.cwe && Math.abs(ef.line - f.line) <= 2) {
         return true;
       }
@@ -318,6 +355,15 @@ export function analyzeCode(code, language = 'javascript', customRules = []) {
           existing.corroboratedLines = new Set();
         }
         existing.corroboratedLines.add(f.line);
+      }
+      if (f.isSecret) {
+        existing.isSecret = true;
+        if (f.entropyScore) existing.entropyScore = f.entropyScore;
+        if (f.maskedToken) existing.maskedToken = f.maskedToken;
+        if (f.secretType) existing.secretType = f.secretType;
+        if (f.suggestedFix) existing.suggestedFix = f.suggestedFix;
+        if (f.variableName) existing.variableName = f.variableName;
+        if (f.title && f.title.includes('Entropy:')) existing.title = f.title;
       }
       const existingRank = severityRank[existing.severity] || 0;
       const newRank = severityRank[f.severity] || 0;

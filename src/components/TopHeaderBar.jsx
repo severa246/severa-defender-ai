@@ -209,15 +209,15 @@ export default function TopHeaderBar({
           </button>
         )}
 
-        {/* 2. Scan Full Project Button */}
+        {/* 2. Scan Full Project Button (Unified 1-Click SAST + SCA Scan) */}
         {onScanFullProject && (
           <button
             onClick={onScanFullProject}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-[#0e121d] hover:bg-white/[0.08] text-slate-300 hover:text-white border border-white/[0.08] hover:border-white/[0.16] rounded-lg text-xs font-medium transition-all cursor-pointer group shadow-sm"
-            title="Scan all project files in active folder"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 hover:text-emerald-300 border border-emerald-500/30 hover:border-emerald-500/60 rounded-lg text-xs font-bold transition-all cursor-pointer group shadow-sm shadow-emerald-950/40"
+            title="Unified 1-Click Project Scanning: Parallel source code (SAST) and dependency manifest (SCA) crawl"
           >
-            <Folder className="w-3.5 h-3.5 text-sky-400 group-hover:text-sky-300 transition-colors" />
-            <span className="hidden sm:inline">Scan Project</span>
+            <span className="text-emerald-400 font-bold text-[11px] group-hover:scale-110 transition-transform">▶</span>
+            <span>Scan Project</span>
           </button>
         )}
 
