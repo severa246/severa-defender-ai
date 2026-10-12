@@ -158,6 +158,7 @@ export default function LoginPage({ onLogin }) {
   const [tab, setTab] = useState('login'); // 'login' | 'signup'
   const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
   const [showPass, setShowPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
   const [error, setError] = useState('');
   const [errorAction, setErrorAction] = useState(null); // { type: 'switch_to_login' | 'switch_to_signup', email: '' }
   const [loading, setLoading] = useState(false);
@@ -179,6 +180,7 @@ export default function LoginPage({ onLogin }) {
   const [resetForm, setResetForm] = useState({ password: '', confirmPassword: '' });
   const [resetError, setResetError] = useState('');
   const [showResetPass, setShowResetPass] = useState(false);
+  const [showResetConfirmPass, setShowResetConfirmPass] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
   const [forgotPromptOpen, setForgotPromptOpen] = useState(false);
   const [forgotEmailInput, setForgotEmailInput] = useState('');
@@ -548,14 +550,21 @@ export default function LoginPage({ onLogin }) {
                   <label className="block text-xs sm:text-[13px] text-slate-300 mb-1.5 font-medium">Confirm Password</label>
                   <div className="relative">
                     <input
-                      type={showPass ? 'text' : 'password'}
+                      type={showConfirmPass ? 'text' : 'password'}
                       value={form.confirmPassword || ''}
                       onChange={(e) => setField('confirmPassword', e.target.value)}
                       placeholder="••••••••"
-                      className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#00dc82] focus:ring-1 focus:ring-[#00dc82]/40 transition-all font-medium"
+                      className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 pr-11 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#00dc82] focus:ring-1 focus:ring-[#00dc82]/40 transition-all font-medium"
                       autoComplete="new-password"
                       required
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPass((s) => !s)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                    >
+                      {showConfirmPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
                   </div>
                 </div>
               )}
@@ -710,7 +719,7 @@ export default function LoginPage({ onLogin }) {
                 </label>
                 <div className="relative">
                   <input
-                    type={showResetPass ? 'text' : 'password'}
+                    type={showResetConfirmPass ? 'text' : 'password'}
                     value={resetForm.confirmPassword}
                     onChange={(e) => {
                       setResetForm((f) => ({ ...f, confirmPassword: e.target.value }));
@@ -722,10 +731,10 @@ export default function LoginPage({ onLogin }) {
                   />
                   <button
                     type="button"
-                    onClick={() => setShowResetPass(!showResetPass)}
+                    onClick={() => setShowResetConfirmPass(!showResetConfirmPass)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors cursor-pointer"
                   >
-                    {showResetPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                    {showResetConfirmPass ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
               </div>
