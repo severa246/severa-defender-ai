@@ -74,14 +74,17 @@
   border-left: 3px solid #10b981 !important;
 }
 
-/* ── Fullpage Slide Snapping (Scrollbar Completely Hidden) ─────────────────── */
+/* ── Fullpage Landing Page Presentation (Scrollbars Completely Hidden) ───── */
 html.landing-snap-page,
 body.landing-snap-page {
-  scroll-snap-type: y mandatory;
-  scroll-behavior: smooth;
-  overflow-y: auto;
+  overflow: hidden !important;
+  height: 100% !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
+  touch-action: pan-y;
 }
 
 html.landing-snap-page::-webkit-scrollbar,
@@ -91,16 +94,4 @@ body.landing-snap-page::-webkit-scrollbar {
   height: 0 !important;
 }
 
-.snap-slide-section {
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
-}
-
-.snap-slide-section::-webkit-scrollbar {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-}
 

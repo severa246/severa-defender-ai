@@ -1,17 +1,17 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from '../router/RouterContext';
 import {
-  Shield, Zap, Eye, GitBranch, Lock, Server, CheckCircle,
-  ArrowRight, ChevronRight, Code2, Cpu, Globe, Layers, BarChart3,
-  ShieldCheck, AlertTriangle, FileCode, Sparkles, Menu, X,
+  Shield, Zap, Eye, Lock, Server, CheckCircle,
+  ArrowRight, Code2, Cpu, Layers, Sparkles,
   Terminal, Copy, Check, Package, GitPullRequest, FileText,
-  Users, Star, Tag
+  FileCode
 } from 'lucide-react';
 
 // ── Copy button ────────────────────────────────────────────────────────────────
 function CopyButton({ text }) {
   const [copied, setCopied] = useState(false);
-  function handleCopy() {
+  function handleCopy(e) {
+    e?.stopPropagation();
     navigator.clipboard.writeText(text).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 1800);
@@ -19,9 +19,9 @@ function CopyButton({ text }) {
   return (
     <button
       onClick={handleCopy}
-      className="p-1.5 rounded-md text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all"
+      className="p-1 sm:p-1.5 rounded-md text-slate-400 hover:text-slate-200 hover:bg-white/10 transition-all cursor-pointer"
     >
-      {copied ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
+      {copied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
     </button>
   );
 }
@@ -32,73 +32,56 @@ const NAV_ITEMS = [
     id: 'home',
     label: 'Home',
     activeClass: 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-emerald-500/35',
-    activeMobile: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40',
     dotColor: 'bg-slate-950',
-    indicatorDot: 'bg-emerald-400',
   },
   {
     id: 'features',
     label: 'Features',
     activeClass: 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-emerald-500/35',
-    activeMobile: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40',
     dotColor: 'bg-slate-950',
-    indicatorDot: 'bg-emerald-400',
   },
   {
     id: 'quickstart',
     label: 'Quick Start',
     activeClass: 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-emerald-500/35',
-    activeMobile: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40',
     dotColor: 'bg-slate-950',
-    indicatorDot: 'bg-emerald-400',
   },
 ];
 
 // ── Navbar ─────────────────────────────────────────────────────────────────────
-function Navbar({ navigate, activeSection = 'home', onSelectSection }) {
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 12);
-    window.addEventListener('scroll', fn);
-    return () => window.removeEventListener('scroll', fn);
-  }, []);
-
+function Navbar({ navigate, activeSlideIndex = 0, onSelectSlide }) {
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      scrolled ? 'bg-[#191C23]/95 backdrop-blur-xl border-b border-white/10 shadow-lg' : 'bg-[#191C23]/85 backdrop-blur-md border-b border-white/5'
-    }`}>
-      <div className="w-full px-3.5 sm:px-6 md:px-10 lg:px-14 xl:px-20 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-4 md:gap-6">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#191C23]/95 backdrop-blur-xl border-b border-white/10 shadow-lg">
+      <div className="w-full max-w-[1720px] mx-auto px-2.5 sm:px-6 md:px-10 lg:px-14 py-2 sm:py-3 flex items-center justify-between gap-1.5 sm:gap-4">
         {/* Logo */}
         <div
-          onClick={() => onSelectSection('home')}
-          className="flex items-center gap-2 sm:gap-3 shrink-0 cursor-pointer group"
+          onClick={() => onSelectSlide(0)}
+          className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 cursor-pointer group select-none"
         >
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center group-hover:scale-105 transition-transform">
-            <Shield size={18} className="text-emerald-400 sm:size-5" />
+          <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <Shield size={16} className="text-emerald-400 sm:size-5" />
           </div>
           <div>
-            <span className="text-base sm:text-lg lg:text-xl font-black text-white tracking-tight">SEVERA AI</span>
-            <span className="hidden md:block text-[11px] sm:text-xs font-bold text-emerald-400/90 uppercase tracking-wider">Enterprise Security</span>
+            <span className="text-sm sm:text-base lg:text-lg font-black text-white tracking-tight">SEVERA AI</span>
           </div>
         </div>
 
-        {/* Navigation links / pills (ALWAYS VISIBLE across all screen sizes including resized windows) */}
-        <div className="flex items-center gap-1 sm:gap-1.5 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl bg-[#0d1017]/90 border border-white/10 backdrop-blur-xl shadow-lg shrink-0">
-          {NAV_ITEMS.map((item) => {
-            const isActive = activeSection === item.id;
+        {/* Navigation links / pills (ALWAYS VISIBLE across all screen sizes) */}
+        <div className="flex items-center gap-0.5 sm:gap-1.5 p-1 rounded-xl bg-[#0d1017]/90 border border-white/10 backdrop-blur-xl shadow-lg shrink-0">
+          {NAV_ITEMS.map((item, idx) => {
+            const isActive = activeSlideIndex === idx;
             return (
               <button
                 key={item.id}
-                onClick={() => onSelectSection(item.id)}
-                className={`px-2.5 sm:px-4 lg:px-5 py-1 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm lg:text-base transition-all duration-300 flex items-center gap-1.5 sm:gap-2 cursor-pointer border ${
+                onClick={() => onSelectSlide(idx)}
+                className={`px-2 sm:px-3.5 md:px-4 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-sm transition-all duration-300 flex items-center gap-1 sm:gap-1.5 cursor-pointer border ${
                   isActive
-                    ? `${item.activeClass} shadow-md scale-105 font-black`
+                    ? `${item.activeClass} shadow-md font-black`
                     : 'border-transparent text-slate-300 hover:text-white hover:bg-white/5 font-semibold'
                 }`}
               >
                 {isActive && (
-                  <span className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${item.dotColor} animate-pulse`} />
+                  <span className={`w-1.5 h-1.5 rounded-full ${item.dotColor} animate-pulse`} />
                 )}
                 {item.label}
               </button>
@@ -107,20 +90,13 @@ function Navbar({ navigate, activeSection = 'home', onSelectSection }) {
         </div>
 
         {/* Right actions */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           <button
             onClick={() => navigate('/login')}
-            className="hidden lg:inline-flex px-4 py-2 rounded-xl border border-white/15 hover:border-white/30 text-xs sm:text-sm font-bold text-slate-100 hover:text-white hover:bg-white/5 transition-all cursor-pointer"
+            className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-lg sm:rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-[11px] sm:text-sm font-black transition-all shadow-md shadow-emerald-500/25 cursor-pointer hover:shadow-emerald-500/40"
           >
-            Sign in
-          </button>
-          <button
-            onClick={() => navigate('/login')}
-            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 lg:px-6 py-1.5 sm:py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs sm:text-sm lg:text-base font-black transition-all shadow-lg shadow-emerald-500/25 cursor-pointer hover:shadow-emerald-500/40 hover:-translate-y-0.5"
-          >
-            <span className="hidden sm:inline">Launch Platform</span>
-            <span className="sm:hidden">Launch</span>
-            <ArrowRight size={14} className="sm:size-4" />
+            <span>Launch</span>
+            <ArrowRight size={12} className="sm:size-3.5" />
           </button>
         </div>
       </div>
@@ -128,39 +104,33 @@ function Navbar({ navigate, activeSection = 'home', onSelectSection }) {
   );
 }
 
-// ── Animated terminal ──────────────────────────────────────────────────────────
+// ── Animated terminal steps ────────────────────────────────────────────────────
 const TERMINAL_STEPS = [
   {
     stepNum: 'Step 1',
     title: 'SAST Scan',
     mobileTitle: 'SAST',
-    tab: 'Step 1: SAST Scan',
-    text: '$ severa scan run --repo github.com/acme/core-api --profile owasp-top10',
-    headerTitle: 'Code Ingestion & Vulnerability Detection',
-    info: '[INFO] Cloned 142 repository files (38,420 lines) · SAST Engine v2.4',
+    text: '$ severa scan run --repo github.com/acme/core-api',
+    headerTitle: 'Vulnerability Detection',
+    info: 'SAST Engine v2.4 · 142 files indexed',
     items: [
       { label: 'Repository Cloned & AST Tree Indexed', value: 'Done', done: true },
-      { label: 'AST Security Rules Loaded (248 Rules)', value: 'Done', done: true },
-      { label: 'Flaw Flagged: SQL Injection (CWE-89) in auth.py:L42', value: 'Critical', done: true, badge: 'text-red-400' },
-      { label: 'Flaw Flagged: Hardcoded JWT Secret (CWE-798) in config.py:L12', value: 'High', done: true, badge: 'text-amber-400' },
-      { label: 'Flaw Flagged: Reflected DOM XSS (CWE-79) in views.py:L88', value: 'Medium', done: true, badge: 'text-yellow-400' },
-      { label: 'SAST Scan Complete — 3 Security Vulnerabilities Found', value: 'Finished', done: true, badge: 'text-emerald-400' },
+      { label: 'Flaw Flagged: SQL Injection (CWE-89)', value: 'Critical', done: true, badge: 'text-red-400' },
+      { label: 'Flaw Flagged: Hardcoded JWT Secret', value: 'High', done: true, badge: 'text-amber-400' },
+      { label: 'SAST Scan Complete — 3 Flaws Detected', value: 'Finished', done: true, badge: 'text-emerald-400' },
     ]
   },
   {
     stepNum: 'Step 2',
     title: 'AI Remediation',
     mobileTitle: 'AI Fix',
-    tab: 'Step 2: AI Remediation',
-    text: '$ severa ai remediate --finding SEC-2024-89 --engine gemini-1.5-flash',
-    headerTitle: 'AI Auto-Patching & Code Refactoring',
-    info: '[INFO] Connected to Severa AI Engine (Gemini 1.5 Flash)',
+    text: '$ severa ai remediate --finding SEC-2024-89',
+    headerTitle: 'AI Auto-Patching & Code Fix',
+    info: 'Connected to Severa AI Engine (Gemini 1.5 Flash)',
     items: [
-      { label: 'Targeting AST Sink Node: auth.py:L42', value: 'Done', done: true },
+      { label: 'Targeting AST Sink: auth.py:L42', value: 'Done', done: true },
       { label: 'Generating Parametrized Prepared Statement', value: 'Done', done: true },
-      { label: 'Verifying Fix Against Regression Test Suite', value: 'Passed', done: true, badge: 'text-emerald-400' },
-      { label: 'Security Grade Upgraded: Grade C → Grade A+', value: 'Upgraded', done: true, badge: 'text-cyan-400' },
-      { label: 'Diff Prepared (+3 lines, -1 line)', value: 'Applied', done: true, badge: 'text-emerald-400' },
+      { label: 'Security Grade Upgraded: Grade C → A+', value: 'Upgraded', done: true, badge: 'text-cyan-400' },
       { label: 'Automated Patch Refactor Verified', value: 'Ready', done: true, badge: 'text-emerald-400' },
     ]
   },
@@ -168,32 +138,26 @@ const TERMINAL_STEPS = [
     stepNum: 'Step 3',
     title: 'Severa Defender',
     mobileTitle: 'Defender',
-    tab: 'Step 3: Severa Defender',
-    text: '$ severa defender explain --file auth.py --flaw SEC-2024-89',
-    headerTitle: 'AI Security Assistant & Prevention Strategy',
-    info: '[INFO] Severa Defender AI Agent inspecting vulnerability context',
+    text: '$ severa defender explain --file auth.py',
+    headerTitle: 'AI Security Assistant & Prevention',
+    info: 'Severa Defender AI Agent inspecting vulnerability',
     items: [
-      { label: 'Analyzing Root Cause: Raw string concatenation in SQL query', value: 'Analyzed', done: true },
-      { label: 'Mapping Attack Vector: SQL Injection bypassing authentication', value: 'Mapped', done: true },
-      { label: 'Generating Future Prevention Guidelines & Linter Rules', value: 'Generated', done: true, badge: 'text-emerald-400' },
-      { label: 'Creating Developer Security Checklist & CI/CD Pre-commit Hook', value: 'Saved', done: true, badge: 'text-cyan-400' },
-      { label: 'Interactive Q&A Session Active', value: 'Active', done: true, badge: 'text-emerald-400' },
-      { label: 'Defense Blueprint Ready', value: 'Complete', done: true, badge: 'text-emerald-400' },
+      { label: 'Analyzing Root Cause: Raw string concatenation', value: 'Analyzed', done: true },
+      { label: 'Mapping Attack Vector: SQL Injection auth bypass', value: 'Mapped', done: true },
+      { label: 'Generating Future Prevention Guidelines', value: 'Generated', done: true, badge: 'text-emerald-400' },
+      { label: 'Defense Blueprint & CI/CD Hook Ready', value: 'Complete', done: true, badge: 'text-emerald-400' },
     ]
   },
   {
     stepNum: 'Step 4',
     title: 'Audit & PR',
-    mobileTitle: 'Audit & PR',
-    tab: 'Step 4: Audit & PR',
-    text: '$ severa report generate --format pdf --pr-create',
-    headerTitle: 'Executive PDF Audit & GitHub PR Automation',
-    info: '[INFO] Generating Executive Security Audit & GitHub Pull Request',
+    mobileTitle: 'PR Fix',
+    text: '$ severa report generate --pr-create',
+    headerTitle: 'GitHub PR & PDF Compliance',
+    info: 'Generating Executive Audit & Pull Request',
     items: [
       { label: 'Generating Executive Compliance Summary', value: 'Done', done: true },
-      { label: 'Exporting PDF Audit Report (severa-audit-2026.pdf)', value: 'Exported', done: true },
-      { label: 'Creating GitHub PR #104 "fix(sec): remediate SQLi & JWT secrets"', value: 'Opened', done: true, badge: 'text-cyan-400' },
-      { label: 'Attaching Severa Defender AI Patch Explanation', value: 'Attached', done: true },
+      { label: 'Creating GitHub PR #104 "fix(sec): SQLi patch"', value: 'Opened', done: true, badge: 'text-cyan-400' },
       { label: 'CI/CD Pipeline Security Check Status: Passed', value: 'Passed', done: true, badge: 'text-emerald-400' },
       { label: 'All Security Gates Cleared — Production Ready', value: 'Ready to Merge', done: true, badge: 'text-emerald-400' },
     ]
@@ -212,29 +176,28 @@ function DemoTerminal() {
 
   useEffect(() => {
     if (revealedOutput < step.items.length) {
-      const t = setTimeout(() => setRevealedOutput((r) => r + 1), 450);
+      const t = setTimeout(() => setRevealedOutput((r) => r + 1), 400);
       return () => clearTimeout(t);
     } else {
-      // Once all terminal lines for the current step are revealed, wait 1.8s then auto-advance to next step
       const loopTimer = setTimeout(() => {
         setActiveStep((prev) => (prev + 1) % TERMINAL_STEPS.length);
-      }, 1800);
+      }, 2000);
       return () => clearTimeout(loopTimer);
     }
   }, [revealedOutput, activeStep, step.items.length]);
 
   return (
-    <div className="bg-[#080b12] border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-black/80 w-full">
+    <div className="bg-[#080b12] border border-white/10 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl shadow-black/80 w-full text-left">
       {/* Chrome bar */}
-      <div className="flex items-center gap-2.5 px-4 sm:px-5 py-3 sm:py-3.5 border-b border-white/10 bg-white/[0.03]">
-        <span className="w-3 h-3 rounded-full bg-red-500/80" />
-        <span className="w-3 h-3 rounded-full bg-yellow-500/80" />
-        <span className="w-3 h-3 rounded-full bg-emerald-500/80" />
-        <span className="ml-2 sm:ml-3 text-xs sm:text-sm text-slate-300 font-mono flex-1 truncate">severa-cli — zsh</span>
-        <span className="text-[10px] sm:text-xs font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 shrink-0">● LIVE DEMO</span>
+      <div className="flex items-center gap-1.5 sm:gap-2.5 px-3 sm:px-4 py-1.5 sm:py-2.5 border-b border-white/10 bg-white/[0.03]">
+        <span className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
+        <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
+        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+        <span className="ml-1 sm:ml-2 text-[10px] sm:text-xs text-slate-300 font-mono flex-1 truncate">severa-cli — zsh</span>
+        <span className="text-[9px] sm:text-[11px] font-bold px-1.5 sm:px-2 py-0.5 rounded border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 shrink-0">● LIVE DEMO</span>
       </div>
 
-      {/* Step tabs — 4 equal columns across the entire width, NO scrollbar */}
+      {/* Step tabs — 4 equal columns */}
       <div className="grid grid-cols-4 w-full border-b border-white/10 bg-black/40">
         {TERMINAL_STEPS.map((s, i) => {
           const isActive = i === activeStep;
@@ -243,19 +206,18 @@ function DemoTerminal() {
               key={s.stepNum}
               type="button"
               onClick={() => setActiveStep(i)}
-              className={`py-2 sm:py-2.5 px-1 sm:px-2 flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-1.5 text-center transition-all border-b-2 cursor-pointer select-none ${
+              className={`py-1.5 sm:py-2 px-1 flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-1 text-center transition-all border-b-2 cursor-pointer select-none ${
                 isActive
                   ? 'border-emerald-500 text-emerald-400 bg-emerald-500/10 font-bold'
                   : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/[0.02] font-medium'
               }`}
             >
-              <span className={`text-[10px] sm:text-xs tracking-tight shrink-0 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`}>
-                {s.stepNum}
-                <span className="hidden md:inline">:</span>
+              <span className={`text-[9px] sm:text-xs tracking-tight shrink-0 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`}>
+                {s.stepNum}:
               </span>
-              <span className="text-[11px] sm:text-xs truncate max-w-full">
+              <span className="text-[10px] sm:text-xs truncate max-w-full">
                 <span className="hidden sm:inline">{s.title}</span>
-                <span className="inline sm:hidden">{s.mobileTitle || s.title}</span>
+                <span className="inline sm:hidden">{s.mobileTitle}</span>
               </span>
             </button>
           );
@@ -263,45 +225,40 @@ function DemoTerminal() {
       </div>
 
       {/* Command line */}
-      <div className="px-4 sm:px-5 py-2.5 sm:py-3.5 border-b border-white/10 bg-black/50 overflow-hidden">
-        <p className="font-mono text-xs sm:text-sm md:text-base text-emerald-300 truncate">{step.text}</p>
+      <div className="px-3 sm:px-4 py-1.5 sm:py-2 border-b border-white/10 bg-black/50 overflow-hidden">
+        <p className="font-mono text-[11px] sm:text-xs md:text-sm text-emerald-300 truncate">{step.text}</p>
       </div>
 
       {/* Terminal Body */}
-      <div className="p-4 sm:p-5 space-y-2.5 sm:space-y-3 min-h-[240px]">
-        {/* Header line */}
-        <div className="flex items-center justify-between gap-2 mb-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-md bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
-              <Shield size={13} className="text-emerald-400" />
+      <div className="p-2.5 sm:p-4 space-y-1.5 sm:space-y-2">
+        <div className="flex items-center justify-between gap-2 mb-1">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <div className="w-4 h-4 sm:w-5 sm:h-5 rounded bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
+              <Shield size={11} className="text-emerald-400" />
             </div>
-            <span className="text-xs sm:text-sm font-bold text-emerald-400 truncate">{step.headerTitle || step.title}</span>
+            <span className="text-[11px] sm:text-xs font-bold text-emerald-400 truncate">{step.headerTitle}</span>
           </div>
-          <span className="text-[10px] sm:text-xs text-emerald-400 font-mono font-bold animate-pulse shrink-0">● LIVE</span>
+          <span className="text-[9px] sm:text-[11px] text-emerald-400 font-mono font-bold animate-pulse shrink-0">● LIVE</span>
         </div>
-
-        <p className="text-[11px] sm:text-xs md:text-sm text-slate-300 font-mono mb-2.5 truncate">
-          {step.info}
-        </p>
 
         {/* Output lines */}
         {step.items.map((item, i) => (
           <div
             key={i}
-            className={`flex items-center justify-between gap-2 text-[11px] sm:text-xs md:text-sm font-mono transition-all duration-300 ${
+            className={`flex items-center justify-between gap-1.5 text-[10px] sm:text-xs font-mono transition-all duration-300 ${
               i < revealedOutput ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'
             }`}
           >
-            <div className="flex items-center gap-2 min-w-0 flex-1">
-              <span className={`shrink-0 ${i < revealedOutput - 1 ? 'text-emerald-400 font-bold' : 'text-emerald-500/80 font-bold'}`}>
+            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+              <span className={`shrink-0 text-xs ${i < revealedOutput - 1 ? 'text-emerald-400 font-bold' : 'text-emerald-500/80 font-bold'}`}>
                 {i < revealedOutput - 1 ? '✓' : '⦿'}
               </span>
               <span className={`truncate ${i < revealedOutput - 1 ? 'text-slate-200' : 'text-slate-300 font-medium'}`}>
                 {item.label}
               </span>
             </div>
-            <span className={`shrink-0 text-[10px] sm:text-xs md:text-sm font-bold ${item.badge || (i < revealedOutput - 1 ? 'text-emerald-400' : 'text-slate-400')}`}>
-              {i < revealedOutput - 1 ? item.value : 'Processing...'}
+            <span className={`shrink-0 text-[9px] sm:text-[11px] font-bold ${item.badge || (i < revealedOutput - 1 ? 'text-emerald-400' : 'text-slate-400')}`}>
+              {i < revealedOutput - 1 ? item.value : 'Running...'}
             </span>
           </div>
         ))}
@@ -310,165 +267,170 @@ function DemoTerminal() {
   );
 }
 
-// ── Step card ─────────────────────────────────────────────────────────────────
+// ── Step card for features pipeline ───────────────────────────────────────────
 function StepCard({ number, icon: Icon, title, desc, iconColor = 'text-emerald-400', iconBg = 'bg-emerald-500/10 border-emerald-500/20' }) {
   return (
-    <div className="p-3.5 sm:p-4 lg:p-4.5 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-emerald-500/30 transition-all group">
-      <div className="flex items-start justify-between mb-2">
-        <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg border flex items-center justify-center ${iconBg} ${iconColor}`}>
-          <Icon size={18} />
+    <div className="p-2 sm:p-3.5 lg:p-4 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-emerald-500/30 transition-all text-left group">
+      <div className="flex items-center justify-between mb-1 sm:mb-2">
+        <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-lg border flex items-center justify-center ${iconBg} ${iconColor}`}>
+          <Icon size={14} className="sm:size-4" />
         </div>
-        <span className="text-[10px] sm:text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded tracking-wider">
-          STEP {String(number).padStart(2,'0')}
+        <span className="text-[9px] sm:text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded tracking-wider">
+          {String(number).padStart(2,'0')}
         </span>
       </div>
-      <h3 className="text-sm sm:text-base font-bold text-white mb-1">{title}</h3>
-      <p className="text-xs sm:text-[13px] text-slate-300 leading-snug font-normal line-clamp-2 sm:line-clamp-3">{desc}</p>
+      <h3 className="text-xs sm:text-sm lg:text-base font-bold text-white mb-0.5 truncate">{title}</h3>
+      <p className="text-[10px] sm:text-xs text-slate-300 leading-tight font-normal line-clamp-2">{desc}</p>
     </div>
   );
 }
 
-// ── Contributor avatar row ─────────────────────────────────────────────────────
-const CONTRIB_COLORS = ['from-blue-500 to-violet-500','from-emerald-500 to-cyan-500','from-rose-500 to-pink-500','from-amber-500 to-orange-500','from-purple-500 to-indigo-500'];
-function ContribAvatars({ count = 5 }) {
-  return (
-    <div className="flex items-center">
-      {Array(count).fill(0).map((_, i) => (
-        <div
-          key={i}
-          style={{ zIndex: count - i, marginLeft: i === 0 ? 0 : -8 }}
-          className={`w-6 h-6 rounded-full bg-gradient-to-br ${CONTRIB_COLORS[i % CONTRIB_COLORS.length]} border-2 border-[#191C23] flex items-center justify-center text-[9px] font-black text-white`}
-        >
-          {String.fromCharCode(65 + i)}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// ── Main ───────────────────────────────────────────────────────────────────────
+// ── Main Component ─────────────────────────────────────────────────────────────
 export default function LandingPage() {
   const { navigate } = useRouter();
-  const [activeSection, setActiveSection] = useState('home');
-  const isScrollingRef = useRef(false);
-  const activeSectionRef = useRef(activeSection);
-  activeSectionRef.current = activeSection;
+  const [activeSlide, setActiveSlide] = useState(0);
+  const isTransitioningRef = useRef(false);
+  const activeSlideRef = useRef(0);
+  activeSlideRef.current = activeSlide;
+
+  const touchStartY = useRef(0);
+  const touchStartX = useRef(0);
+  const isSwiping = useRef(false);
 
   const DOCKER_CMD = 'docker run -d -p 3000:3000 severaai/severa:latest';
+  const SLIDES = ['home', 'features', 'quickstart'];
+  const TOTAL_SLIDES = SLIDES.length;
 
-  const scrollToSection = (id) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      setActiveSection(id);
-    }
-  };
+  // Transition controller
+  const goToSlide = useCallback((index) => {
+    if (index < 0 || index >= TOTAL_SLIDES) return;
+    if (isTransitioningRef.current && index === activeSlideRef.current) return;
 
-  // Add scroll-snap styling class to documentElement/body
+    isTransitioningRef.current = true;
+    setActiveSlide(index);
+
+    try {
+      window.history.replaceState(null, '', `#${SLIDES[index]}`);
+    } catch {}
+
+    setTimeout(() => {
+      isTransitioningRef.current = false;
+    }, 650);
+  }, [TOTAL_SLIDES]);
+
+  // Lock document body scroll on mount
   useEffect(() => {
     document.documentElement.classList.add('landing-snap-page');
     document.body.classList.add('landing-snap-page');
+
+    // Check hash on initial load
+    const hash = window.location.hash.replace('#', '');
+    const idx = SLIDES.indexOf(hash);
+    if (idx !== -1) {
+      setActiveSlide(idx);
+    }
+
     return () => {
       document.documentElement.classList.remove('landing-snap-page');
       document.body.classList.remove('landing-snap-page');
     };
   }, []);
 
-  // Track active section via IntersectionObserver
+  // Wheel listener for PC (mouse wheel & touchpad)
   useEffect(() => {
-    const ids = ['home', 'features', 'quickstart'];
-    const elements = ids.map((id) => document.getElementById(id)).filter(Boolean);
-    if (!elements.length) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        let bestEntry = null;
-        let maxRatio = 0;
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && entry.intersectionRatio > maxRatio) {
-            maxRatio = entry.intersectionRatio;
-            bestEntry = entry;
-          }
-        });
-        if (bestEntry && maxRatio >= 0.35) {
-          setActiveSection(bestEntry.target.id);
-        }
-      },
-      {
-        threshold: [0.35, 0.5, 0.7, 0.9],
-      }
-    );
-
-    elements.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, []);
-
-  // Wheel listener to guarantee single slide transition at a time
-  useEffect(() => {
-    const SLIDES = ['home', 'features', 'quickstart'];
-
     const handleWheel = (e) => {
-      if (Math.abs(e.deltaY) < 25) return;
-      if (isScrollingRef.current) {
+      if (isTransitioningRef.current) {
         e.preventDefault();
         return;
       }
 
-      const current = activeSectionRef.current;
-      const currentIndex = SLIDES.indexOf(current);
-      if (currentIndex === -1) return;
+      // Delta threshold: triggers when wheel scroll reaches certain level
+      if (Math.abs(e.deltaY) < 18) return;
 
-      if (e.deltaY > 0 && currentIndex < SLIDES.length - 1) {
+      const current = activeSlideRef.current;
+      if (e.deltaY > 0 && current < TOTAL_SLIDES - 1) {
         e.preventDefault();
-        isScrollingRef.current = true;
-        const target = SLIDES[currentIndex + 1];
-        scrollToSection(target);
-        setTimeout(() => {
-          isScrollingRef.current = false;
-        }, 750);
-      } else if (e.deltaY < 0 && currentIndex > 0) {
+        goToSlide(current + 1);
+      } else if (e.deltaY < 0 && current > 0) {
         e.preventDefault();
-        isScrollingRef.current = true;
-        const target = SLIDES[currentIndex - 1];
-        scrollToSection(target);
-        setTimeout(() => {
-          isScrollingRef.current = false;
-        }, 750);
-      }
-    };
-
-    const handleKeyDown = (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-      const SLIDES = ['home', 'features', 'quickstart'];
-      const currentIndex = SLIDES.indexOf(activeSectionRef.current);
-      if (currentIndex === -1) return;
-
-      if (['ArrowDown', 'PageDown'].includes(e.key) && currentIndex < SLIDES.length - 1) {
-        e.preventDefault();
-        scrollToSection(SLIDES[currentIndex + 1]);
-      } else if (['ArrowUp', 'PageUp'].includes(e.key) && currentIndex > 0) {
-        e.preventDefault();
-        scrollToSection(SLIDES[currentIndex - 1]);
-      } else if (e.key === 'Home') {
-        e.preventDefault();
-        scrollToSection(SLIDES[0]);
-      } else if (e.key === 'End') {
-        e.preventDefault();
-        scrollToSection(SLIDES[SLIDES.length - 1]);
+        goToSlide(current - 1);
       }
     };
 
     window.addEventListener('wheel', handleWheel, { passive: false });
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('wheel', handleWheel);
-      window.removeEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('wheel', handleWheel);
+  }, [goToSlide, TOTAL_SLIDES]);
+
+  // Touch gesture listener for Mobile (finger swipe / drag)
+  useEffect(() => {
+    const handleTouchStart = (e) => {
+      if (e.touches.length !== 1) return;
+      touchStartY.current = e.touches[0].clientY;
+      touchStartX.current = e.touches[0].clientX;
+      isSwiping.current = true;
     };
-  }, []);
+
+    const handleTouchMove = (e) => {
+      if (!isSwiping.current || isTransitioningRef.current) return;
+      if (e.touches.length !== 1) return;
+
+      const deltaY = touchStartY.current - e.touches[0].clientY;
+      const deltaX = touchStartX.current - e.touches[0].clientX;
+
+      // Ensure vertical gesture dominates
+      if (Math.abs(deltaY) > Math.abs(deltaX)) {
+        // Threshold: 32px of touch movement automatically triggers slide switch
+        if (deltaY > 32 && activeSlideRef.current < TOTAL_SLIDES - 1) {
+          isSwiping.current = false;
+          goToSlide(activeSlideRef.current + 1);
+        } else if (deltaY < -32 && activeSlideRef.current > 0) {
+          isSwiping.current = false;
+          goToSlide(activeSlideRef.current - 1);
+        }
+      }
+    };
+
+    const handleTouchEnd = () => {
+      isSwiping.current = false;
+    };
+
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [goToSlide, TOTAL_SLIDES]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+      const current = activeSlideRef.current;
+      if (['ArrowDown', 'PageDown'].includes(e.key) && current < TOTAL_SLIDES - 1) {
+        e.preventDefault();
+        goToSlide(current + 1);
+      } else if (['ArrowUp', 'PageUp'].includes(e.key) && current > 0) {
+        e.preventDefault();
+        goToSlide(current - 1);
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        goToSlide(0);
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        goToSlide(TOTAL_SLIDES - 1);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [goToSlide, TOTAL_SLIDES]);
 
   return (
-    <div className="min-h-screen bg-[#191C23] text-white font-sans relative">
-      {/* Seamless fixed background grid design throughout the landing page */}
+    <div className="fixed inset-0 h-[100dvh] w-full overflow-hidden bg-[#191C23] text-white font-sans select-none">
+      {/* Seamless fixed background grid design */}
       <div
         className="fixed inset-0 pointer-events-none z-0"
         style={{
@@ -480,229 +442,231 @@ export default function LandingPage() {
       {/* Top Navbar */}
       <Navbar
         navigate={navigate}
-        activeSection={activeSection}
-        onSelectSection={scrollToSection}
+        activeSlideIndex={activeSlide}
+        onSelectSlide={goToSlide}
       />
 
-      {/* ── SLIDE 1: HOME (HERO) ────────────────────────────────────────── */}
-      <section
-        id="home"
-        className="h-screen min-h-screen w-full snap-slide-section flex flex-col justify-center relative shrink-0 pt-20 pb-6 px-0 overflow-y-auto lg:overflow-hidden"
+      {/* ── 3-Slide Presentation Track (Zero Gap, Smooth Glide) ───────── */}
+      <div
+        className="w-full h-full transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] flex flex-col"
+        style={{ transform: `translateY(-${activeSlide * 100}%)` }}
       >
-        <div className="relative w-full max-w-[1720px] mx-auto px-6 sm:px-10 lg:px-14 xl:px-20 grid lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16 items-center">
-          {/* Left Column */}
-          <div className="w-full">
-            {/* Info Badge */}
-            <div className="flex flex-wrap items-center gap-3 mb-4 sm:mb-5">
-              <span className="flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs sm:text-[13px] font-semibold">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Open Source &amp; Self-Hostable Security Platform
-              </span>
+        {/* ── SLIDE 0: HOME ────────────────────────────────────────────── */}
+        <section
+          id="home"
+          className="w-full h-[100dvh] min-h-[100dvh] shrink-0 flex flex-col justify-center relative px-3 sm:px-8 lg:px-14 xl:px-20 pt-14 sm:pt-16 lg:pt-20 pb-2 sm:pb-6 overflow-hidden"
+        >
+          <div className="relative w-full max-w-[1720px] mx-auto grid lg:grid-cols-2 gap-3 sm:gap-6 lg:gap-12 xl:gap-16 items-center">
+            {/* Left Content */}
+            <div className="w-full text-center lg:text-left">
+              {/* Badge */}
+              <div className="flex justify-center lg:justify-start items-center gap-2 mb-1.5 sm:mb-3">
+                <span className="flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[10px] sm:text-xs font-semibold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Open Source Security Platform
+                </span>
+              </div>
+
+              {/* Headline */}
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black leading-tight tracking-tight mb-1.5 sm:mb-3">
+                Build Secure Software <span className="text-emerald-400">Faster</span>
+              </h1>
+
+              {/* Subtitle */}
+              <p className="text-xs sm:text-sm lg:text-base text-slate-300 leading-relaxed mb-2.5 sm:mb-5 max-w-xl mx-auto lg:mx-0 font-normal line-clamp-2 sm:line-clamp-none">
+                Open-source AI security platform for intelligent code review, vulnerability detection, automated remediation, and DevSecOps workflows.
+              </p>
+
+              {/* Buttons & Docker Quick Command */}
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 sm:gap-3 mb-2 sm:mb-4">
+                <button
+                  onClick={() => navigate('/login')}
+                  className="flex items-center gap-1.5 px-3.5 sm:px-6 py-1.5 sm:py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs sm:text-sm font-black transition-all shadow-md shadow-emerald-500/25 hover:-translate-y-0.5 cursor-pointer"
+                >
+                  Get Started
+                  <ArrowRight size={14} />
+                </button>
+                <button
+                  onClick={() => navigate('/app')}
+                  className="flex items-center gap-1.5 px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-xl border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-white text-xs sm:text-sm font-semibold transition-all hover:-translate-y-0.5 cursor-pointer"
+                >
+                  <Eye size={14} className="text-slate-300" />
+                  View Demo
+                </button>
+              </div>
+
+              {/* Docker quick-start box */}
+              <div className="flex items-center gap-2 bg-black/60 border border-white/10 rounded-lg sm:rounded-xl px-2.5 sm:px-4 py-1 sm:py-2 font-mono text-[10px] sm:text-xs text-slate-200 max-w-md mx-auto lg:mx-0">
+                <Terminal size={12} className="text-emerald-400 shrink-0" />
+                <span className="flex-1 truncate">$ {DOCKER_CMD}</span>
+                <CopyButton text={DOCKER_CMD} />
+              </div>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-black leading-[1.08] tracking-tight mb-4 sm:mb-5">
-              Build Secure<br />
-              Software{' '}
-              <span className="text-emerald-400">Faster</span>
-            </h1>
+            {/* Right Column — Demo Terminal */}
+            <div className="relative w-full max-w-xl lg:max-w-none mx-auto">
+              <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-emerald-500/15 to-transparent blur-xl pointer-events-none" />
+              <DemoTerminal />
+            </div>
+          </div>
+        </section>
 
-            <p className="text-sm sm:text-base lg:text-lg text-slate-300 leading-relaxed mb-5 sm:mb-6 max-w-2xl font-normal">
-              Open-source AI security platform for intelligent code review,
-              vulnerability detection, automated remediation, and developer workflows.
+        {/* ── SLIDE 1: FEATURES ────────────────────────────────────────── */}
+        <section
+          id="features"
+          className="w-full h-[100dvh] min-h-[100dvh] shrink-0 flex flex-col justify-center relative px-3 sm:px-8 lg:px-14 xl:px-20 pt-14 sm:pt-16 lg:pt-20 pb-2 sm:pb-6 overflow-hidden border-t border-white/10"
+        >
+          <div className="w-full max-w-[1720px] mx-auto text-center">
+            {/* Header */}
+            <div className="mb-2 sm:mb-4 lg:mb-6">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3.5 sm:py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[10px] sm:text-xs font-bold mb-1">
+                <Layers size={12} />
+                Developer Workflow Pipeline
+              </span>
+              <h2 className="text-xl sm:text-3xl lg:text-4xl xl:text-5xl font-black text-white mb-1">
+                End-to-End Automated Code Defense
+              </h2>
+              <p className="text-[11px] sm:text-xs lg:text-sm text-slate-300 max-w-2xl mx-auto leading-tight line-clamp-1 sm:line-clamp-none">
+                Severa replaces fragmented security scanners with a unified open-source workflow pipeline.
+              </p>
+            </div>
+
+            {/* Step Cards Grid */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-3 mb-1.5 sm:mb-3">
+              <StepCard number={1} icon={Code2} iconColor="text-slate-200" iconBg="bg-white/5 border-white/10"
+                title="Repository Analysis"
+                desc="Deep AST parsing across 30+ languages. Automatic call graph indexing." />
+              <StepCard number={2} icon={Lock} iconColor="text-amber-400" iconBg="bg-amber-500/10 border-amber-500/20"
+                title="Secret Detection"
+                desc="Real-time detection for API keys, JWT secrets, and AWS credentials." />
+              <StepCard number={3} icon={Package} iconColor="text-violet-400" iconBg="bg-violet-500/10 border-violet-500/20"
+                title="Dependency Analysis"
+                desc="SCA scanning against OSV and NVD to detect vulnerable packages." />
+              <StepCard number={4} icon={Sparkles} iconColor="text-emerald-400" iconBg="bg-emerald-500/10 border-emerald-500/20"
+                title="AI Review Engine"
+                desc="LLM security reviews powered by Gemini Flash or local Ollama models." />
+            </div>
+
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-1.5 sm:gap-3">
+              <StepCard number={5} icon={Zap} iconColor="text-cyan-400" iconBg="bg-cyan-500/10 border-cyan-500/20"
+                title="Automated Fixes"
+                desc="Context-aware patch synthesis with clean, verified regression tests." />
+              <StepCard number={6} icon={GitPullRequest} iconColor="text-rose-400" iconBg="bg-rose-500/10 border-rose-500/20"
+                title="Pull Request Synthesis"
+                desc="One-click GitHub PR creation with remediation diffs and rationale." />
+              <div className="col-span-2 lg:col-span-1">
+                <StepCard number={7} icon={FileText} iconColor="text-orange-400" iconBg="bg-orange-500/10 border-orange-500/20"
+                  title="Compliance Reports"
+                  desc="Interactive OWASP Top 10 matrices, MITRE ATT&CK maps, and SBOMs." />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── SLIDE 2: QUICK START & FOOTER ────────────────────────────── */}
+        <section
+          id="quickstart"
+          className="w-full h-[100dvh] min-h-[100dvh] shrink-0 flex flex-col justify-between relative px-3 sm:px-8 lg:px-14 xl:px-20 pt-14 sm:pt-16 lg:pt-20 pb-0 overflow-hidden border-t border-white/10"
+        >
+          {/* Center Content */}
+          <div className="flex-1 flex flex-col justify-center items-center w-full max-w-4xl mx-auto text-center py-2">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3.5 sm:py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[10px] sm:text-xs font-bold mb-2 sm:mb-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Free &amp; Open Source Security Platform
+            </div>
+            <h2 className="text-xl sm:text-3xl lg:text-4xl xl:text-5xl font-black text-white mb-1.5 sm:mb-2">
+              Start securing your codebase today
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-300 mb-3 sm:mb-5 max-w-xl leading-relaxed">
+              Deploy in minutes. No vendor lock-in. Your code stays on your infrastructure.
             </p>
 
-            <div className="flex flex-wrap gap-3.5 mb-6 sm:mb-7">
+            <div className="flex flex-wrap gap-2.5 justify-center mb-3 sm:mb-5">
               <button
                 onClick={() => navigate('/login')}
-                className="flex items-center gap-2 px-6 py-3 sm:px-7 sm:py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-sm sm:text-base font-black transition-all shadow-lg shadow-emerald-500/25 hover:-translate-y-0.5 cursor-pointer"
+                className="flex items-center gap-1.5 px-5 sm:px-7 py-2 sm:py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs sm:text-sm font-black transition-all shadow-md shadow-emerald-500/25 hover:-translate-y-0.5 cursor-pointer"
               >
                 Get Started
-                <ArrowRight size={16} />
+                <ArrowRight size={14} />
               </button>
               <button
                 onClick={() => navigate('/app')}
-                className="flex items-center gap-2 px-5 py-3 sm:px-6 sm:py-3.5 rounded-xl border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-white text-sm sm:text-base font-semibold transition-all hover:-translate-y-0.5 cursor-pointer"
+                className="flex items-center gap-1.5 px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-white text-xs sm:text-sm font-semibold transition-all hover:-translate-y-0.5 cursor-pointer"
               >
-                <Eye size={16} className="text-slate-300" />
-                View Demo
-              </button>
-              <button
-                onClick={() => {}}
-                className="flex items-center gap-2 px-5 py-3 sm:px-6 sm:py-3.5 rounded-xl border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-white text-sm sm:text-base font-semibold transition-all hover:-translate-y-0.5 cursor-pointer"
-              >
-                <FileCode size={16} className="text-slate-300" />
-                Read Docs
+                <Eye size={14} />
+                Live Demo
               </button>
             </div>
 
-            {/* Docker quick-start */}
-            <div className="flex items-center gap-2.5 bg-black/60 border border-white/10 rounded-xl px-4 py-2.5 font-mono text-xs sm:text-sm text-slate-200 max-w-xl">
-              <Terminal size={14} className="text-emerald-400 shrink-0" />
-              <span className="flex-1 truncate">$ {DOCKER_CMD}</span>
-              <CopyButton text={DOCKER_CMD} />
+            {/* Quick-start CLI block */}
+            <div className="text-left bg-black/60 border border-white/10 rounded-xl overflow-hidden shadow-2xl max-w-xl w-full">
+              <div className="px-3 sm:px-4 py-1.5 sm:py-2 border-b border-white/10 flex items-center gap-2 bg-white/[0.02]">
+                <span className="w-2 h-2 rounded-full bg-red-500/70" />
+                <span className="w-2 h-2 rounded-full bg-yellow-500/70" />
+                <span className="w-2 h-2 rounded-full bg-emerald-500/70" />
+                <span className="ml-1 text-[11px] text-slate-300 font-mono font-semibold">Quick Start CLI</span>
+              </div>
+              <div className="p-2.5 sm:p-4 space-y-1.5 sm:space-y-2 font-mono text-[11px] sm:text-xs">
+                {[
+                  { prompt: '$', cmd: 'git clone https://github.com/severaai/severa-core', color: 'text-slate-200' },
+                  { prompt: '$', cmd: 'cd severa-core && docker compose up -d', color: 'text-slate-200' },
+                  { prompt: '$', cmd: 'open http://localhost:3000', color: 'text-emerald-400 font-bold' },
+                ].map(({ prompt, cmd, color }) => (
+                  <div key={cmd} className="flex items-center gap-2 group">
+                    <span className="text-emerald-400 font-bold shrink-0">{prompt}</span>
+                    <span className={`flex-1 truncate ${color}`}>{cmd}</span>
+                    <CopyButton text={cmd} />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Right Column — Demo Terminal */}
-          <div className="relative w-full">
-            <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-emerald-500/15 to-transparent blur-xl pointer-events-none" />
-            <DemoTerminal />
-          </div>
-        </div>
-      </section>
-
-      {/* ── SLIDE 2: FEATURES (PIPELINE) ────────────────────────────────── */}
-      <section
-        id="features"
-        className="h-screen min-h-screen w-full snap-slide-section flex flex-col justify-center relative shrink-0 pt-20 pb-6 px-6 sm:px-10 lg:px-14 xl:px-20 overflow-y-auto lg:overflow-hidden border-t border-white/10"
-      >
-        <div className="w-full max-w-[1720px] mx-auto">
-          <div className="text-center mb-4 sm:mb-6">
-            <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs sm:text-sm font-bold mb-2">
-              <Layers size={14} />
-              Developer Workflow Pipeline
-            </span>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-2">
-              End-to-End Automated Code Defense
-            </h2>
-            <p className="text-xs sm:text-sm lg:text-base text-slate-300 max-w-3xl mx-auto leading-relaxed">
-              Severa replaces fragmented security scanners with a unified open-source workflow
-              pipeline built specifically for modern developer teams.
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 mb-3.5 sm:mb-4">
-            <StepCard number={1} icon={Code2} iconColor="text-slate-200" iconBg="bg-white/5 border-white/10"
-              title="Repository Analysis"
-              desc="Deep AST parsing across 30+ languages. Automatically indexes dependencies, branches, and code call graphs." />
-            <StepCard number={2} icon={Lock} iconColor="text-amber-400" iconBg="bg-amber-500/10 border-amber-500/20"
-              title="Secret Detection"
-              desc="Real-time detection for hardcoded API keys, JWT secrets, AWS tokens, SSH keys, and private certificates." />
-            <StepCard number={3} icon={Package} iconColor="text-violet-400" iconBg="bg-violet-500/10 border-violet-500/20"
-              title="Dependency Analysis"
-              desc="SCA scanning against OSV, NVD, and GitHub Advisory Database to catch vulnerable npm, PyPI, and Go packages." />
-            <StepCard number={4} icon={Sparkles} iconColor="text-emerald-400" iconBg="bg-emerald-500/10 border-emerald-500/20"
-              title="AI Review Engine"
-              desc="LLM-powered security reviews using Google Gemini 1.5 Pro, Anthropic Claude 3.7, or local Ollama / LM Studio." />
-          </div>
-          <div className="grid sm:grid-cols-3 gap-3.5 sm:gap-4">
-            <StepCard number={5} icon={Zap} iconColor="text-cyan-400" iconBg="bg-cyan-500/10 border-cyan-500/20"
-              title="Automated Fixes"
-              desc="Context-aware security patch synthesis. Generates clean, tested code diffs that preserve style and type safety." />
-            <StepCard number={6} icon={GitPullRequest} iconColor="text-rose-400" iconBg="bg-rose-500/10 border-rose-500/20"
-              title="Pull Request Synthesis"
-              desc="One-click GitHub & GitLab PR creation with complete vulnerability context, remediation rationale, and test cases." />
-            <StepCard number={7} icon={FileText} iconColor="text-orange-400" iconBg="bg-orange-500/10 border-orange-500/20"
-              title="Export Security Report"
-              desc="Generate interactive executive summaries, OWASP Top 10 matrices, MITRE ATT&CK maps, and SBOM compliance exports." />
-          </div>
-        </div>
-      </section>
-
-      {/* ── SLIDE 3: QUICK START & FOOTER ───────────────────────────────── */}
-      <section
-        id="quickstart"
-        className="h-screen min-h-screen w-full snap-slide-section flex flex-col justify-between relative shrink-0 pt-20 overflow-y-auto lg:overflow-hidden border-t border-white/10"
-      >
-        {/* Center content */}
-        <div className="flex-1 flex flex-col justify-center items-center w-full max-w-5xl mx-auto px-6 py-6 text-center">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs sm:text-sm font-bold mb-4">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            Free &amp; Open Source Security Platform
-          </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-3">
-            Start securing your codebase today
-          </h2>
-          <p className="text-sm sm:text-base text-slate-300 mb-6 max-w-2xl leading-relaxed">
-            Deploy in minutes. No vendor lock-in. No usage limits.
-            Your code stays on your infrastructure.
-          </p>
-          <div className="flex flex-wrap gap-3.5 justify-center">
-            <button
-              onClick={() => navigate('/login')}
-              className="flex items-center gap-2 px-7 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-sm sm:text-base font-black transition-all shadow-xl shadow-emerald-500/25 hover:-translate-y-0.5 cursor-pointer"
-            >
-              Get Started
-              <ArrowRight size={16} />
-            </button>
-            <button
-              onClick={() => navigate('/app')}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl border border-white/15 bg-white/[0.05] hover:bg-white/[0.1] text-white text-sm sm:text-base font-semibold transition-all hover:-translate-y-0.5 cursor-pointer"
-            >
-              <Eye size={15} />
-              Live Demo
-            </button>
-          </div>
-
-          {/* Quick-start block */}
-          <div className="mt-7 text-left bg-black/60 border border-white/10 rounded-2xl overflow-hidden shadow-2xl max-w-2xl w-full">
-            <div className="px-5 py-2.5 border-b border-white/10 flex items-center gap-2.5 bg-white/[0.02]">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
-              <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/70" />
-              <span className="ml-2 text-xs text-slate-300 font-mono font-semibold">Quick Start CLI</span>
-            </div>
-            <div className="p-4 sm:p-5 space-y-2.5 font-mono text-xs sm:text-sm">
-              {[
-                { prompt: '$', cmd: 'git clone https://github.com/severaai/severa-core', color: 'text-slate-200' },
-                { prompt: '$', cmd: 'cd severa-core && docker compose up -d', color: 'text-slate-200' },
-                { prompt: '$', cmd: 'open http://localhost:3000', color: 'text-emerald-400 font-bold' },
-              ].map(({ prompt, cmd, color }) => (
-                <div key={cmd} className="flex items-center gap-3 group">
-                  <span className="text-emerald-400 font-bold shrink-0">{prompt}</span>
-                  <span className={`flex-1 truncate ${color}`}>{cmd}</span>
-                  <CopyButton text={cmd} />
+          {/* Pinned Footer */}
+          <footer className="w-full border-t border-white/10 py-2.5 sm:py-4 px-3 sm:px-8 lg:px-14 shrink-0 bg-[#14171e]/90 backdrop-blur-md">
+            <div className="max-w-[1720px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4">
+              <div
+                className="flex items-center gap-2 cursor-pointer"
+                onClick={() => goToSlide(0)}
+              >
+                <div className="w-6 h-6 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
+                  <Shield size={13} className="text-emerald-400" />
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Footer pinned to bottom of Slide 3 */}
-        <footer className="w-full border-t border-white/10 py-4 sm:py-5 px-6 sm:px-10 lg:px-14 xl:px-20 shrink-0 bg-[#14171e]/80 backdrop-blur-md">
-          <div className="max-w-[1720px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-            <div
-              className="flex items-center gap-3 cursor-pointer"
-              onClick={() => scrollToSection('home')}
-            >
-              <div className="w-7 h-7 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
-                <Shield size={15} className="text-emerald-400" />
+                <div>
+                  <span className="text-xs sm:text-sm font-black text-white">SEVERA AI</span>
+                </div>
               </div>
-              <div>
-                <span className="text-sm font-black text-white">SEVERA AI</span>
-                <span className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Open-Source Platform</span>
+              <p className="text-[10px] sm:text-xs text-slate-400">© 2026 Severa AI · Open Source</p>
+              <div className="flex items-center gap-3 sm:gap-5 text-[11px] sm:text-xs text-slate-300">
+                <button
+                  onClick={() => goToSlide(0)}
+                  className="hover:text-emerald-400 transition-colors cursor-pointer font-medium"
+                >
+                  Home
+                </button>
+                <button
+                  onClick={() => goToSlide(1)}
+                  className="hover:text-emerald-400 transition-colors cursor-pointer font-medium"
+                >
+                  Features
+                </button>
+                <button
+                  onClick={() => goToSlide(2)}
+                  className="hover:text-emerald-400 transition-colors cursor-pointer font-medium"
+                >
+                  Quick Start
+                </button>
+                <button
+                  onClick={() => navigate('/login')}
+                  className="hover:text-emerald-400 font-bold transition-colors cursor-pointer text-emerald-400"
+                >
+                  Launch →
+                </button>
               </div>
             </div>
-            <p className="text-xs sm:text-sm text-slate-400">© 2026 Severa AI</p>
-            <div className="flex items-center gap-5 sm:gap-6 text-xs sm:text-sm text-slate-300">
-              <button
-                onClick={() => scrollToSection('home')}
-                className="hover:text-emerald-400 transition-colors cursor-pointer font-medium"
-              >
-                Home
-              </button>
-              <button
-                onClick={() => scrollToSection('features')}
-                className="hover:text-emerald-400 transition-colors cursor-pointer font-medium"
-              >
-                Features
-              </button>
-              <button
-                onClick={() => scrollToSection('quickstart')}
-                className="hover:text-emerald-400 transition-colors cursor-pointer font-medium"
-              >
-                Quick Start
-              </button>
-              <button
-                onClick={() => navigate('/login')}
-                className="hover:text-emerald-400 font-bold transition-colors cursor-pointer text-emerald-400"
-              >
-                Launch Platform →
-              </button>
-            </div>
-          </div>
-        </footer>
-      </section>
+          </footer>
+        </section>
+      </div>
     </div>
   );
 }
