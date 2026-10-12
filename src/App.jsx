@@ -771,7 +771,7 @@ jobs:
               code: activeCode,
               language: activeLang,
               findings: finalFindings,
-              metrics: result.metrics
+              metrics: resultMetrics || {}
             };
           }
           return file;
