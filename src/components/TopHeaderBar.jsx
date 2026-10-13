@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Check,
   Folder, FileCode, ChevronRight, ChevronDown, FileText, Cloud,
-  Search, Download, FolderDown
+  Search, Download, FolderDown, Play
 } from 'lucide-react';
 
 export default function TopHeaderBar({
@@ -216,7 +216,7 @@ export default function TopHeaderBar({
             className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 hover:text-emerald-300 border border-emerald-500/30 hover:border-emerald-500/60 rounded-lg text-xs font-bold transition-all cursor-pointer group shadow-sm shadow-emerald-950/40"
             title="Unified 1-Click Project Scanning: Parallel source code (SAST) and dependency manifest (SCA) crawl"
           >
-            <span className="text-emerald-400 font-bold text-[11px] group-hover:scale-110 transition-transform">▶</span>
+            <Play className="w-3 h-3 fill-emerald-400 text-emerald-400 group-hover:scale-110 transition-transform" />
             <span>Scan Project</span>
           </button>
         )}

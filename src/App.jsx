@@ -1926,7 +1926,7 @@ jobs:
                 <Sparkles className="w-4 h-4 animate-spin" />
               </div>
               <span className="text-xs font-bold text-zinc-200 font-mono">
-                🛡️ Full Project Scan Completed on <span className="text-emerald-400 font-extrabold">{projectScanToast.projectName}</span>: Analyzed <span className="text-white font-bold">{projectScanToast.fileCount}</span> files (Code: <span className="text-amber-400 font-bold">{projectScanToast.codeFlawsCount !== undefined ? projectScanToast.codeFlawsCount : projectScanToast.findingsCount}</span> flaws, Dependencies: <span className="text-sky-400 font-bold">{projectScanToast.dependencyCvesCount || 0}</span> CVEs) • Combined Posture Score: <span className="text-emerald-400 font-bold">{projectScanToast.score !== undefined ? `${projectScanToast.score}/100` : 'Evaluated'}</span> ({projectScanToast.grade || 'A+'}).
+                Full Project Scan Completed on <span className="text-emerald-400 font-extrabold">{projectScanToast.projectName}</span>: Analyzed <span className="text-white font-bold">{projectScanToast.fileCount}</span> files (Code: <span className="text-amber-400 font-bold">{projectScanToast.codeFlawsCount !== undefined ? projectScanToast.codeFlawsCount : projectScanToast.findingsCount}</span> flaws, Dependencies: <span className="text-sky-400 font-bold">{projectScanToast.dependencyCvesCount || 0}</span> CVEs) • Combined Posture Score: <span className="text-emerald-400 font-bold">{projectScanToast.score !== undefined ? `${projectScanToast.score}/100` : 'Evaluated'}</span> ({projectScanToast.grade || 'A+'}).
               </span>
             </div>
             <button

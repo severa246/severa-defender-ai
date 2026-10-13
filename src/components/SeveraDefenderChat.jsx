@@ -64,8 +64,8 @@ export default function SeveraDefenderChat({
       const modelUpper = selectedModel || 'ACTIVE MODEL';
 
       const apiInfo = hasKey
-        ? `\n\n🟢 **Live AI Connected:** Powered by \`${provUpper} (${modelUpper})\`.`
-        : `\n\n⚡ **Local Engine Active:** Using Severa AST Intelligence.`;
+        ? `\n\n**Live AI Connected:** Powered by \`${provUpper} (${modelUpper})\`.`
+        : `\n\n**Local Engine Active:** Using Severa AST Intelligence.`;
 
       if (targetFinding) {
         const focusedPrompt = `Explain the vulnerability "${targetFinding.title}" on line ${targetFinding.line} in detail: 1. Why it happened (root cause), 2. What could happen if allowed or exploited (security risk & impact), and 3. How to prevent and fix it in future code.`;
@@ -306,7 +306,7 @@ export default function SeveraDefenderChat({
             title="Pre-fill prompt: Why did this happen?"
           >
             <HelpCircle className="w-3.5 h-3.5" />
-            <span>🔍 Why did this happen?</span>
+            <span>Why did this happen?</span>
           </button>
 
           <button
@@ -316,7 +316,7 @@ export default function SeveraDefenderChat({
             title="Pre-fill prompt: How can we fix it?"
           >
             <Wrench className="w-3.5 h-3.5" />
-            <span>🛠️ How can we fix it?</span>
+            <span>How can we fix it?</span>
           </button>
 
           <button
@@ -326,7 +326,7 @@ export default function SeveraDefenderChat({
             title="Pre-fill prompt: How to overcome in future?"
           >
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>🛡️ How to overcome in future?</span>
+            <span>How to overcome in future?</span>
           </button>
         </div>
 
@@ -702,7 +702,7 @@ function generateDefenderResponse(prompt, findings = [], fileName = 'main.py', c
   // CASE 1: File has ZERO flaws or code is clean/empty
   if (!hasFlaws) {
     if (query.includes('why') || query.includes('happened') || query.includes('cause') || query.includes('explain')) {
-      return `### 🛡️ Security Status: Code Clean (0 Vulnerabilities Flagged)
+      return `### Security Status: Code Clean (0 Vulnerabilities Flagged)
 
 **Target File:** \`${fileName}\` (${language.toUpperCase()})
 
@@ -713,7 +713,7 @@ function generateDefenderResponse(prompt, findings = [], fileName = 'main.py', c
     }
 
     if (query.includes('fix') || query.includes('refactor') || query.includes('how can we fix') || query.includes('patch')) {
-      return `### 🛠️ Code Remediation & Refactoring Status
+      return `### Code Remediation & Refactoring Status
 
 **Target File:** \`${fileName}\` (${language.toUpperCase()})
 
@@ -723,25 +723,25 @@ function generateDefenderResponse(prompt, findings = [], fileName = 'main.py', c
     }
 
     if (query.includes('future') || query.includes('overcome') || query.includes('prevent') || query.includes('avoid')) {
-      return `### 🛡️ Blueprint: Maintaining Secure Code Standards
+      return `### Blueprint: Maintaining Secure Code Standards
 
 Even though your current file \`${fileName}\` is 100% clean, adopt these proactive security practices as your codebase expands:
 
-### 1. ⚙️ Secure Coding Guidelines
+### 1. Secure Coding Guidelines
 - **Use Parameterized Queries & ORMs:** Never concatenate user input strings directly into database or command execution calls.
 - **Strict Environment Secrets:** Never hardcode secret keys or passwords; load them at runtime via \`process.env\` or \`os.environ\`.
 
-### 2. 🤖 Automated Pre-Commit SAST Gateways
+### 2. Automated Pre-Commit SAST Gateways
 - Install Severa SAST hooks to audit every Git commit before pushing to GitHub:
 \`\`\`bash
 severa hook install --profile owasp-top10 --fail-on high
 \`\`\`
 
-### 3. 🔍 Continuous SAST Scanning
+### 3. Continuous SAST Scanning
 - Keep Severa SAST automatic scanning enabled in your workbench for real-time security feedback.`;
     }
 
-    return `### 🛡️ Severa Defender Analysis
+    return `### Severa Defender Analysis
 
 Regarding your question about **${prompt}**:
 
@@ -754,7 +754,7 @@ Your code passes all security rules cleanly! Feel free to paste new code, ask ab
   // CASE 2: File HAS Flagged Vulnerabilities (findings.length > 0)
   const flaw = targetFinding || (findings.length > 0 ? findings[0] : null);
   if (!flaw) {
-    return `### 🛡️ Severa Defender Analysis\n\nYour code passes all security rules cleanly!`;
+    return `### Severa Defender Analysis\n\nYour code passes all security rules cleanly!`;
   }
 
   const title = flaw.title || 'Security Vulnerability';
@@ -767,7 +767,7 @@ Your code passes all security rules cleanly! Feel free to paste new code, ask ab
   const impact = flaw.impact || 'Unauthorized access, data exfiltration or arbitrary code execution.';
   const remediation = flaw.remediation || 'Use parameterized statements, input sanitization, or environment variables.';
 
-  return `### 🛡️ Severa Defender AI: Deep Vulnerability Analysis
+  return `### Severa Defender AI: Deep Vulnerability Analysis
 
 **Target Vulnerability:** **${title}**
 **File & Location:** \`${fileName}\` (Line ${line}) | Severity: \`${severity}\` (\`${ruleId}\` / \`${cwe}\`)
@@ -775,13 +775,13 @@ Your code passes all security rules cleanly! Feel free to paste new code, ask ab
 
 ---
 
-### 1. 🔍 Why Did This Happen? (Root Cause Analysis)
+### 1. Why Did This Happen? (Root Cause Analysis)
 - **Unsafe Code Pattern:** ${description}
 - **Interpreter Mechanism:** Runtimes execute control instructions verbatim. Without parameter binding or escaping, dynamic inputs (e.g. \`username\`, \`password\`, or \`cmd\`) are evaluated as code statements rather than literal data.
 
 ---
 
-### 2. 🚨 What Could Happen If Allowed? (Security Impact & Exploit Risks)
+### 2. What Could Happen If Allowed? (Security Impact & Exploit Risks)
 - **Primary Risk:** ${impact}
 - **Potential Attack Scenarios:**
   - **Database Exfiltration & Manipulation:** Attackers can inject SQL syntax to bypass authentication, dump password hashes, or wipe database tables.
@@ -790,7 +790,7 @@ Your code passes all security rules cleanly! Feel free to paste new code, ask ab
 
 ---
 
-### 3. 🛡️ How to Prevent & Fix It in the Future (Remediation Strategy)
+### 3. How to Prevent & Fix It in the Future (Remediation Strategy)
 - **Immediate Fix:** ${remediation}
 - **Secure Code Refactoring Standard:**
 \`\`\`${language}
