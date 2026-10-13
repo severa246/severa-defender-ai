@@ -94,16 +94,6 @@ export default function DiffViewer({ aiReviewData, onApplyFix, onClose }) {
             <span>{applied ? '✓ Re-apply Patch' : 'Apply Patch to Editor'}</span>
           </button>
 
-          {/* Close Panel Button */}
-          {onClose && (
-            <button
-              onClick={onClose}
-              className="p-2 text-slate-400 hover:text-white hover:bg-[#232732] rounded-xl transition-colors cursor-pointer"
-              title="Close Diff Panel"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
         </div>
       </div>
 
