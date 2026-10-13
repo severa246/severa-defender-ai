@@ -1,9 +1,9 @@
 // Severa AI Security Platform - Auth Service
 // Handles real Supabase authentication, OAuth sign-ins, email verification, and session management.
 
-import { supabase } from './supabaseClient';
-import { storageService } from './storageService';
-import { DEMO_USER } from '../constants/config';
+import { supabase } from './supabaseClient.js';
+import { storageService } from './storageService.js';
+import { DEMO_USER, ADMIN_CONFIG } from '../constants/config.js';
 
 export const authService = {
   // Check if email format is valid (Must include valid username, @, domain, and top-level domain e.g. .com)
@@ -113,6 +113,27 @@ export const authService = {
 
     if (!password || password.length < 8) {
       throw new Error('Password length is too short (minimum 8 characters required).');
+    }
+
+    // Master Admin Account Override (severadefenderai@gmail.com / severaadmin)
+    const isAdminAccount = cleanEmail === (ADMIN_CONFIG.primaryAdminEmail || '').toLowerCase();
+    if (isAdminAccount) {
+      if (password === ADMIN_CONFIG.masterPassword) {
+        storageService.registerEmail(cleanEmail);
+        this.saveUserPassword(cleanEmail, password);
+        const userSession = {
+          name: 'Severa Administrator',
+          email: cleanEmail,
+          role: 'admin',
+          isAdmin: true,
+          isNewUser: false
+        };
+        return userSession;
+      } else {
+        const wrongPassError = new Error('Incorrect password for Administrator account.');
+        wrongPassError.code = 'INCORRECT_PASSWORD';
+        throw wrongPassError;
+      }
     }
 
     const savedPassword = this.getUserPassword(cleanEmail);

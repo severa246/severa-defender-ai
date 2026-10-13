@@ -197,26 +197,25 @@ export default function AdminPortalPage() {
           </div>
 
           <p className="text-xs text-slate-400 mb-6 leading-relaxed">
-            Enter the master administrative PIN to inspect, monitor, and live-edit all Supabase databases, workspaces, and storage buckets.
+            Restricted access: Enter the administrator password for <span className="text-emerald-400 font-mono font-bold">severadefenderai@gmail.com</span> to inspect, monitor, and live-edit all Supabase databases, workspaces, and storage buckets.
           </p>
 
           <form onSubmit={handleAuthenticate} className="space-y-4">
             <div>
               <label className="block text-[11px] font-mono text-slate-300 font-semibold mb-1.5 uppercase tracking-wider">
-                Admin Master PIN
+                Admin Password
               </label>
               <div className="relative">
                 <input
                   type="password"
                   value={adminPin}
                   onChange={(e) => setAdminPin(e.target.value)}
-                  placeholder="Enter 6-digit PIN..."
+                  placeholder="Enter admin password..."
                   autoFocus
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#161a26] border border-white/10 text-white placeholder-slate-500 text-sm font-mono tracking-widest focus:outline-none focus:border-emerald-500 transition-colors"
                 />
                 <Key className="w-4 h-4 text-slate-500 absolute right-3.5 top-3" />
               </div>
-              <p className="text-[10px] text-slate-500 mt-1 font-mono">Default master PIN: {ADMIN_CONFIG.masterPin}</p>
             </div>
 
             {authError && (

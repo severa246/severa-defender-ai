@@ -21,16 +21,16 @@ export const INITIAL_REGISTERED_EMAILS = [
 ];
 
 export const ADMIN_CONFIG = {
-  // Allowed Admin Emails
+  // Primary Admin Email (Restricted to this email only)
+  primaryAdminEmail: 'severadefenderai@gmail.com',
+  // Master Admin Password / PIN
+  masterPassword: 'severaadmin',
+  // Backward compatibility list
   adminEmails: [
-    'demo@severa.ai',
-    'admin@severa.ai',
-    'severa246@gmail.com',
-    'sankar@severa.ai'
+    'severadefenderai@gmail.com',
+    'demo@severa.ai'
   ],
-  // Master Admin PIN for 2-factor console verification
-  masterPin: '738291',
-  // Master override mode allows any logged-in user who enters the correct Master PIN to access admin console
+  masterPin: 'severaadmin',
   allowMasterPinAccess: true
 };
 

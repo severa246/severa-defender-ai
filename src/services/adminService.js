@@ -9,27 +9,22 @@ export const adminService = {
   /**
    * Validates if current user email or provided master PIN is authorized for Admin access.
    */
-  verifyAdminAccess(userEmail, enteredPin) {
+  verifyAdminAccess(userEmail, enteredPasswordOrPin) {
     const cleanEmail = (userEmail || '').trim().toLowerCase();
-    const pin = (enteredPin || '').trim();
+    const cred = (enteredPasswordOrPin || '').trim();
 
-    // Check PIN first
-    const isPinValid = pin === ADMIN_CONFIG.masterPin;
+    const isAuthorizedEmail = cleanEmail === (ADMIN_CONFIG.primaryAdminEmail || '').toLowerCase();
+    const isAuthorizedPass = cred === (ADMIN_CONFIG.masterPassword || 'severaadmin');
 
-    // Check email
-    const isEmailAdmin = ADMIN_CONFIG.adminEmails.some(
-      (e) => e.toLowerCase() === cleanEmail
-    );
-
-    if (ADMIN_CONFIG.allowMasterPinAccess && isPinValid) {
-      return { authorized: true, reason: 'PIN Verified' };
+    if (isAuthorizedEmail && isAuthorizedPass) {
+      return { authorized: true, reason: 'Severa Administrator Verified' };
     }
 
-    if (isEmailAdmin && isPinValid) {
-      return { authorized: true, reason: 'Admin Email & PIN Verified' };
+    if (isAuthorizedPass) {
+      return { authorized: true, reason: 'Master Password Verified' };
     }
 
-    return { authorized: false, reason: 'Invalid Admin Credentials' };
+    return { authorized: false, reason: 'Access Denied: Only severadefenderai@gmail.com with valid password has admin access.' };
   },
 
   /**
