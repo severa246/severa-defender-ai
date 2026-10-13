@@ -537,8 +537,13 @@ export default function LoginPage({ onLogin }) {
                   />
                   <button
                     type="button"
-                    onClick={() => setShowPass((s) => !s)}
+                    onClick={() => {
+                      const next = !showPass;
+                      setShowPass(next);
+                      setShowConfirmPass(next);
+                    }}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                    title={showPass ? "Hide passwords" : "Show passwords"}
                   >
                     {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
@@ -550,7 +555,7 @@ export default function LoginPage({ onLogin }) {
                   <label className="block text-xs sm:text-[13px] text-slate-300 mb-1.5 font-medium">Confirm Password</label>
                   <div className="relative">
                     <input
-                      type={showConfirmPass ? 'text' : 'password'}
+                      type={showPass ? 'text' : 'password'}
                       value={form.confirmPassword || ''}
                       onChange={(e) => setField('confirmPassword', e.target.value)}
                       placeholder="••••••••"
@@ -560,10 +565,15 @@ export default function LoginPage({ onLogin }) {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowConfirmPass((s) => !s)}
+                      onClick={() => {
+                        const next = !showPass;
+                        setShowPass(next);
+                        setShowConfirmPass(next);
+                      }}
                       className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                      title={showPass ? "Hide passwords" : "Show passwords"}
                     >
-                      {showConfirmPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                      {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
                 </div>
@@ -705,8 +715,13 @@ export default function LoginPage({ onLogin }) {
                   />
                   <button
                     type="button"
-                    onClick={() => setShowResetPass(!showResetPass)}
+                    onClick={() => {
+                      const next = !showResetPass;
+                      setShowResetPass(next);
+                      setShowResetConfirmPass(next);
+                    }}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                    title={showResetPass ? "Hide passwords" : "Show passwords"}
                   >
                     {showResetPass ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
@@ -719,7 +734,7 @@ export default function LoginPage({ onLogin }) {
                 </label>
                 <div className="relative">
                   <input
-                    type={showResetConfirmPass ? 'text' : 'password'}
+                    type={showResetPass ? 'text' : 'password'}
                     value={resetForm.confirmPassword}
                     onChange={(e) => {
                       setResetForm((f) => ({ ...f, confirmPassword: e.target.value }));
@@ -731,10 +746,15 @@ export default function LoginPage({ onLogin }) {
                   />
                   <button
                     type="button"
-                    onClick={() => setShowResetConfirmPass(!showResetConfirmPass)}
+                    onClick={() => {
+                      const next = !showResetPass;
+                      setShowResetPass(next);
+                      setShowResetConfirmPass(next);
+                    }}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                    title={showResetPass ? "Hide passwords" : "Show passwords"}
                   >
-                    {showResetConfirmPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                    {showResetPass ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
               </div>
