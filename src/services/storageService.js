@@ -1,7 +1,7 @@
 // Severa AI Security Platform - Storage Service
 // Handles user-scoped local storage persistence cleanly with error boundaries.
 
-import { INITIAL_REGISTERED_EMAILS } from '../constants/config';
+import { INITIAL_REGISTERED_EMAILS } from '../constants/config.js';
 
 export const storageService = {
   // Current logged in user session

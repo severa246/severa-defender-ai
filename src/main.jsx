@@ -4,6 +4,7 @@ import './index.css';
 import { RouterProvider, useRouter } from './router/RouterContext';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
+import AdminPortalPage from './pages/AdminPortalPage';
 import App from './App';
 import { authService } from './services/authService';
 
@@ -72,6 +73,10 @@ function Root() {
 
   if (page === '/login' || (typeof window !== 'undefined' && window.location.search && window.location.search.includes('otp='))) {
     return <LoginPage onLogin={handleLogin} />;
+  }
+
+  if (page === '/admin') {
+    return <AdminPortalPage />;
   }
 
   if (page === '/app') {

@@ -39,8 +39,10 @@ import {
   Calendar,
   ArrowDownAZ,
   ArrowUpAZ,
-  AlertTriangle
+  AlertTriangle,
+  Database
 } from 'lucide-react';
+import { useRouter } from '../router/RouterContext';
 import UploadChoiceModal from './UploadChoiceModal';
 import UserProfileModal from './UserProfileModal';
 import { buildFileTree } from '../utils/fileTreeBuilder';
@@ -323,6 +325,8 @@ export default function Sidebar({
   activeFilePath = '',
   onDownloadFixedFolder,
 }) {
+  const router = useRouter();
+  const navigate = router?.navigate || (() => {});
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(285);
   const isDraggingSidebar = useRef(false);
@@ -893,6 +897,21 @@ export default function Sidebar({
                 </button>
               );
             })}
+
+            {/* Supabase Live Admin Console Navigation Button */}
+            <button
+              onClick={() => navigate('/admin')}
+              title={isCollapsed ? 'Supabase Live Admin Console' : undefined}
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5'} rounded-xl text-sm font-medium transition-all cursor-pointer text-slate-300 hover:bg-[#191C23]/60 hover:text-emerald-300 border border-transparent hover:border-emerald-500/20`}
+            >
+              <Database className="w-4 h-4 shrink-0 text-emerald-400" />
+              {!isCollapsed && <span className="truncate">Supabase Admin</span>}
+              {!isCollapsed && (
+                <span className="ml-auto px-1.5 py-0.2 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-mono border border-emerald-500/20">
+                  Live
+                </span>
+              )}
+            </button>
           </nav>
         </div>
 
