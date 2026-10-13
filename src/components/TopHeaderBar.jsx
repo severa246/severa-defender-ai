@@ -13,6 +13,7 @@ export default function TopHeaderBar({
   activeProjectName = 'ai project',
   activeFileName = 'main.py',
   projectFolders = [],
+  syncStatus = null,
   onSelectProjectFile,
   onOpenReport,
   onScanFullProject,
@@ -183,10 +184,17 @@ export default function TopHeaderBar({
           {/* Cloud Auto-Synced Real-time Badge */}
           <div 
             className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-mono font-medium"
-            title="Real-time Cloud Auto-Save active: All workspace files, folders, and history automatically sync to your Gmail cloud session across devices"
+            title={`Real-time Cloud Auto-Save active: All workspace files and folders sync across devices with lossless Gzip compression${syncStatus?.compressionRatio ? ` (${syncStatus.compressionRatio}% saved)` : ''}`}
           >
-            <Cloud className="w-3 h-3 text-emerald-400 animate-pulse shrink-0" />
-            <span className="hidden sm:inline">Cloud Auto-Synced</span>
+            <Cloud className={`w-3 h-3 text-emerald-400 shrink-0 ${syncStatus?.status === 'syncing' ? 'animate-spin text-cyan-400' : 'animate-pulse'}`} />
+            <span className="hidden sm:inline">
+              {syncStatus?.status === 'syncing' ? 'Syncing...' : 'Cloud Synced'}
+            </span>
+            {syncStatus?.compressionRatio > 0 && (
+              <span className="hidden md:inline px-1 py-0.2 rounded bg-emerald-500/20 text-[9px] text-emerald-300 font-semibold">
+                -{syncStatus.compressionRatio}%
+              </span>
+            )}
           </div>
 
         </div>

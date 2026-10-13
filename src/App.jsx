@@ -174,6 +174,7 @@ export default function App({ user, onLogout }) {
   const [projectFiles, setProjectFiles] = useState([]);
   const [activeFilePath, setActiveFilePath] = useState('');
   const [isWorkspaceLoaded, setIsWorkspaceLoaded] = useState(false);
+  const [syncStatus, setSyncStatus] = useState({ status: 'idle', compressionRatio: 0 });
 
   // Per-User Scoped AI Configurations & API Key Persistence
   useEffect(() => {
@@ -411,36 +412,56 @@ jobs:
     loadWorkspace();
   }, [user?.email]);
 
-  // Auto-Save Workspace Snapshot on any change (Strict Per-User Storage Only)
+  // Auto-Save Workspace Snapshot on any change (Strict Per-User Storage with Compressed Cloud Sync)
   useEffect(() => {
     if (!isWorkspaceLoaded) return; // Prevent wiping storage before load completes!
 
     const userKey = user?.email ? user.email.trim().toLowerCase() : 'guest';
+    const snapshot = {
+      code,
+      language,
+      activeProjectName,
+      activeFileName,
+      projectFolders,
+      projectFiles,
+      scanSessions,
+      activeSessionId,
+      customRules,
+      apiConfig: {
+        selectedProvider,
+        selectedModel,
+        customEndpoint
+      },
+      lastSavedAt: new Date().toISOString()
+    };
+
+    // Immediate local cache persistence
     try {
-      const snapshot = {
-        code,
-        language,
-        activeProjectName,
-        activeFileName,
-        projectFolders,
-        projectFiles,
-        scanSessions,
-        activeSessionId,
-        customRules,
-        apiConfig: {
-          selectedProvider,
-          selectedModel,
-          customEndpoint
-        },
-        lastSavedAt: new Date().toISOString()
-      };
       const jsonStr = JSON.stringify(snapshot);
       localStorage.setItem(`severa_workspace_${userKey}`, jsonStr);
-
-      if (user?.email) {
-        cloudSyncService.saveUserWorkspace(user.email, snapshot);
-      }
     } catch {}
+
+    // Debounced Compressed Cloud Sync (prevents flooding network on rapid keystrokes)
+    let syncTimeout = null;
+    if (user?.email) {
+      setSyncStatus((prev) => ({ ...prev, status: 'syncing' }));
+      syncTimeout = setTimeout(async () => {
+        try {
+          await cloudSyncService.saveUserWorkspace(user.email, snapshot);
+          const meta = cloudSyncService.getSyncStatus();
+          setSyncStatus({
+            status: meta.status || 'synced',
+            compressionRatio: meta.compressionRatio || 0
+          });
+        } catch {
+          setSyncStatus({ status: 'idle', compressionRatio: 0 });
+        }
+      }, 800);
+    }
+
+    return () => {
+      if (syncTimeout) clearTimeout(syncTimeout);
+    };
   }, [
     isWorkspaceLoaded, code, language, activeProjectName, activeFileName, projectFolders,
     projectFiles, scanSessions, activeSessionId, customRules,
@@ -1909,6 +1930,7 @@ jobs:
           activeProjectName={activeProjectName}
           activeFileName={activeFileName}
           projectFolders={projectFolders}
+          syncStatus={syncStatus}
           onSelectProjectFile={handleSelectProjectFile}
           onOpenReport={() => setIsReportOpen(true)}
           onScanFullProject={handleScanFullProject}
