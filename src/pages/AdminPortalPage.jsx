@@ -8,10 +8,18 @@ import {
 import { adminService } from '../services/adminService';
 import { ADMIN_CONFIG } from '../constants/config';
 
-export default function AdminPortalPage() {
+export default function AdminPortalPage({ onBack }) {
   const router = useRouter();
   const user = router?.user || null;
   const navigate = router?.navigate || (() => {});
+
+  const handleGoBack = () => {
+    if (onBack) {
+      onBack();
+      return;
+    }
+    navigate('/app');
+  };
 
   // Authentication State
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -203,7 +211,7 @@ export default function AdminPortalPage() {
               </div>
             </div>
             <button
-              onClick={() => navigate('/app')}
+              onClick={handleGoBack}
               className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all text-xs flex items-center gap-1 cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
@@ -273,7 +281,7 @@ export default function AdminPortalPage() {
       <header className="px-6 py-3 bg-[#0d1017] border-b border-white/10 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-4">
           <button
-            onClick={() => navigate('/app')}
+            onClick={handleGoBack}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-mono transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-3.5 h-3.5 text-emerald-400" />

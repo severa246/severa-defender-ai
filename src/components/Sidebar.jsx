@@ -434,11 +434,13 @@ export default function Sidebar({
     }
   }, [user?.email, isDemoUser, propProjectFolders]);
 
+  const isAdminUser = (user?.email || '').trim().toLowerCase() === 'severadefenderai@gmail.com';
+
   const navItems = [
     { id: 'workbench', label: 'Code Workbench', icon: Code2, badge: scanMetrics?.totalFindings },
     { id: 'sca', label: 'SCA Dependencies', icon: PackageCheck },
     { id: 'dashboard', label: 'Executive Dashboard', icon: LayoutDashboard },
-    { id: 'admin', label: 'Supabase Admin', icon: Database, isSpecial: true }
+    ...(isAdminUser ? [{ id: 'admin', label: 'Supabase Admin', icon: Database, isSpecial: true }] : [])
   ];
 
   // Calculate total folder size helper

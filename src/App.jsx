@@ -2054,7 +2054,7 @@ jobs:
           {/* Pillar 4: Supabase Live Admin Control Center */}
           {activeTab === 'admin' && (
             <div className="h-[calc(100vh-115px)] overflow-hidden rounded-2xl border border-white/10">
-              <AdminPortalPage />
+              <AdminPortalPage onBack={() => setActiveTab('workbench')} />
             </div>
           )}
         </main>
