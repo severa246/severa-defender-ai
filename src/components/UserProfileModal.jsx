@@ -119,9 +119,15 @@ export default function UserProfileModal({
           <div className="flex-1 min-w-0 space-y-1">
             <div className="flex items-center gap-2">
               <h4 className="text-base font-bold text-white truncate">{name}</h4>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1 shrink-0">
-                <CheckCircle2 className="w-3 h-3" /> Verified
-              </span>
+              {email.toLowerCase() === 'severadefenderai@gmail.com' ? (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-gradient-to-r from-amber-500/20 to-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1 shrink-0">
+                  <ShieldCheck className="w-3 h-3 text-emerald-400" /> Master Admin
+                </span>
+              ) : (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1 shrink-0">
+                  <CheckCircle2 className="w-3 h-3" /> Verified
+                </span>
+              )}
             </div>
 
             <div className="flex items-center gap-2 text-xs text-slate-300">

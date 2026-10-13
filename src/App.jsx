@@ -10,6 +10,7 @@ import AuditReportModal from './components/AuditReportModal';
 import ManageModelsModal from './components/ManageModelsModal';
 import SeveraDefenderChat from './components/SeveraDefenderChat';
 import CommandPaletteModal from './components/CommandPaletteModal';
+import AdminPortalPage from './pages/AdminPortalPage';
 import { Shield, Sparkles } from 'lucide-react';
 
 import { analyzeCode } from './engine/scannerEngine';
@@ -2048,6 +2049,13 @@ jobs:
           {/* Pillar 3: Executive CISO Dashboard */}
           {activeTab === 'dashboard' && (
             <ExecutiveDashboard scanMetrics={scanMetrics} findings={findings} />
+          )}
+
+          {/* Pillar 4: Supabase Live Admin Control Center */}
+          {activeTab === 'admin' && (
+            <div className="h-[calc(100vh-115px)] overflow-hidden rounded-2xl border border-white/10">
+              <AdminPortalPage />
+            </div>
           )}
         </main>
 
