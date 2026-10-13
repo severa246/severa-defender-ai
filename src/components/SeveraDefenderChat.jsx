@@ -5,6 +5,8 @@ import {
   ChevronRight, RefreshCw, MessageSquare, Code2
 } from 'lucide-react';
 
+const CHAT_STORAGE_KEY = 'severa_defender_chat_history';
+
 export default function SeveraDefenderChat({
   isOpen,
   onClose,
@@ -18,11 +20,29 @@ export default function SeveraDefenderChat({
   selectedModel = 'gemini-1.5-flash',
   customEndpoint = '',
 }) {
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState(() => {
+    try {
+      const saved = localStorage.getItem(CHAT_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (_e) {}
+    return [];
+  });
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState(null);
   const messagesEndRef = useRef(null);
+
+  // Auto-save messages to localStorage whenever they change
+  useEffect(() => {
+    try {
+      if (messages && messages.length > 0) {
+        localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
+      }
+    } catch (_e) {}
+  }, [messages]);
 
   // Auto-scroll to bottom of chat
   const scrollToBottom = () => {
@@ -49,7 +69,6 @@ export default function SeveraDefenderChat({
 
       if (targetFinding) {
         const focusedPrompt = `Explain the vulnerability "${targetFinding.title}" on line ${targetFinding.line} in detail: 1. Why it happened (root cause), 2. What could happen if allowed or exploited (security risk & impact), and 3. How to prevent and fix it in future code.`;
-        setMessages([]);
         setInput('');
         setTimeout(() => {
           if (handleSendRef.current) {
@@ -57,19 +76,22 @@ export default function SeveraDefenderChat({
           }
         }, 120);
       } else {
-        const initialText = activeFlaw
-          ? `Hello! I am **Severa Defender**, your AI security assistant.\n\nI noticed **${findings.length} security flaw(s)** in \`${activeFileName}\`. Target: **${activeFlaw.title} (${activeFlaw.severity})** on line ${activeFlaw.line}.${apiInfo}\n\nHow can I assist you today?`
-          : `Hello! I am **Severa Defender**, your AI security assistant.\n\n\`${activeFileName}\` is loaded into context. All scan rules passed cleanly (0 Flaws Detected).${apiInfo}`;
+        // If we don't have any existing messages in chat history, show the initial welcome message
+        if (!messages || messages.length === 0) {
+          const initialText = activeFlaw
+            ? `Hello! I am **Severa Defender**, your AI security assistant.\n\nI noticed **${findings.length} security flaw(s)** in \`${activeFileName}\`. Target: **${activeFlaw.title} (${activeFlaw.severity})** on line ${activeFlaw.line}.${apiInfo}\n\nHow can I assist you today?`
+            : `Hello! I am **Severa Defender**, your AI security assistant.\n\n\`${activeFileName}\` is loaded into context. All scan rules passed cleanly (0 Flaws Detected).${apiInfo}`;
 
-        setMessages([
-          {
-            id: `welcome-${Date.now()}`,
-            sender: 'defender',
-            text: initialText,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          }
-        ]);
-        if (activeFlaw) {
+          setMessages([
+            {
+              id: `welcome-${Date.now()}`,
+              sender: 'defender',
+              text: initialText,
+              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            }
+          ]);
+        }
+        if (activeFlaw && (!input || input.trim().length === 0)) {
           setInput(`Explain the vulnerability "${activeFlaw.title}" on line ${activeFlaw.line} in detail: 1. Why it happened (root cause), 2. What could happen if allowed or exploited (security risk & impact), and 3. How to prevent and fix it in future code.`);
         }
       }
@@ -185,7 +207,7 @@ export default function SeveraDefenderChat({
       }}
     >
       <div 
-        className="relative w-full max-w-4xl h-[85vh] bg-[#12141a] border border-white/10 rounded-2xl shadow-2xl shadow-black/80 flex flex-col overflow-hidden cursor-default"
+        className="relative w-full max-w-5xl h-[90vh] sm:h-[88vh] bg-[#12141a] border border-white/10 rounded-2xl shadow-2xl shadow-black/80 flex flex-col overflow-hidden cursor-default"
         onMouseDown={(e) => e.stopPropagation()}
         onClick={(e) => e.stopPropagation()}
       >
@@ -215,12 +237,16 @@ export default function SeveraDefenderChat({
             <button
               onClick={() => {
                 const welcomeText = `Chat session reset. Target file \`${activeFileName}\` is loaded into context. How can I assist you with security analysis?`;
-                setMessages([{
+                const freshMessages = [{
                   id: `welcome-${Date.now()}`,
                   sender: 'defender',
                   text: welcomeText,
                   time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                }]);
+                }];
+                setMessages(freshMessages);
+                try {
+                  localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(freshMessages));
+                } catch (_e) {}
                 setInput('');
               }}
               title="Reset conversation and start fresh chat"
