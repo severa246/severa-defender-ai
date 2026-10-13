@@ -12,6 +12,15 @@ export default function DiffViewer({ aiReviewData, onApplyFix, onClose }) {
     onApplyFix(fixedCode);
   };
 
+  // Compute total lines accurately from the entered code
+  const codeLinesCount = (originalCode ? originalCode.split('\n').length : (fixedCode ? fixedCode.split('\n').length : 1));
+  const rulesCount = (aiReviewData?.verifiedFindings?.length || aiReviewData?.aiFindings?.length || 1);
+
+  // Dynamic remediation summary matching user entered code
+  const displaySummary = remediationDiffSummary && !remediationDiffSummary.includes('lines')
+    ? remediationDiffSummary
+    : `${rulesCount} security ${rulesCount === 1 ? 'rule' : 'rules'} applied across ${codeLinesCount} ${codeLinesCount === 1 ? 'line' : 'lines'}.`;
+
   return (
     <div className="bg-[#191C23] border border-white/10 rounded-2xl p-5 shadow-2xl shadow-black/60 space-y-4 transition-all">
       {/* Diff Header */}
@@ -32,7 +41,7 @@ export default function DiffViewer({ aiReviewData, onApplyFix, onClose }) {
                 </span>
               )}
             </h3>
-            <p className="text-xs text-slate-400">{remediationDiffSummary}</p>
+            <p className="text-xs text-slate-400">{displaySummary}</p>
             {aiReviewData?.provider && (
               <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono pt-1.5">
                 <span className="text-slate-500">Provenance:</span>
