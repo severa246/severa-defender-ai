@@ -307,6 +307,20 @@ export default function LoginPage({ onLogin }) {
       setLoading(true);
       const name = form.name.trim();
 
+      // Master Admin signup bypass
+      if (normEmail === 'severadefenderai@gmail.com') {
+        const adminSession = {
+          name: name || 'Severa Administrator',
+          email: 'severadefenderai@gmail.com',
+          role: 'admin',
+          isAdmin: true,
+          isNewUser: false
+        };
+        onLogin(adminSession);
+        setLoading(false);
+        return;
+      }
+
       try {
         const userSession = await authService.signup({ name, email: normEmail, password: form.password });
         setLoading(false);
@@ -340,9 +354,28 @@ export default function LoginPage({ onLogin }) {
       return;
     }
 
+    // Master Admin account instant login (no OTP needed)
+    if (email === 'severadefenderai@gmail.com' && form.password === 'severaadmin') {
+      onLogin({
+        name: 'Severa Administrator',
+        email: 'severadefenderai@gmail.com',
+        role: 'admin',
+        isAdmin: true,
+        isNewUser: false
+      });
+      setLoading(false);
+      return;
+    }
+
     try {
       const userSession = await authService.login({ email, password: form.password });
       setLoading(false);
+
+      if (userSession.isAdmin) {
+        onLogin(userSession);
+        return;
+      }
+
       // Show 6-digit OTP Modal for Sign In verification
       setOtpCode('');
       setOtpError('');
