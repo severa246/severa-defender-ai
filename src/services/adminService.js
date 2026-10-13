@@ -221,13 +221,50 @@ export const adminService = {
   },
 
   /**
+   * Fetches all registered users from Supabase or the public.auth_users view.
+   */
+  async getAuthUsers() {
+    if (!supabase) return { users: [], error: 'Supabase client missing' };
+
+    try {
+      // 1. Try public view if configured
+      const { data: viewData, error: viewError } = await supabase
+        .from('auth_users')
+        .select('*');
+
+      if (!viewError && viewData) {
+        return { users: viewData, error: null };
+      }
+
+      // 2. Try user_workspaces/workspaces distinct users
+      const { data: wsData, error: wsError } = await supabase
+        .from('workspaces')
+        .select('id, email, last_saved_at, created_at, active_project_name');
+
+      if (!wsError && wsData) {
+        const mapped = wsData.map((w) => ({
+          id: w.id,
+          email: w.email,
+          created_at: w.created_at,
+          last_sign_in_at: w.last_saved_at,
+          active_project: w.active_project_name
+        }));
+        return { users: mapped, error: null };
+      }
+
+      return { users: [], error: wsError?.message || viewError?.message || null };
+    } catch (e) {
+      return { users: [], error: e.message };
+    }
+  },
+
+  /**
    * Executes a direct SQL query or RPC function if available.
    */
   async executeRawQuery(sqlQuery) {
     if (!supabase) return { data: null, error: 'Supabase client missing' };
 
     try {
-      // Supabase supports rpc('execute_sql', { sql: ... }) when defined in database
       const { data, error } = await supabase.rpc('execute_sql', { query: sqlQuery });
       if (error) {
         return { data: null, error: error.message };

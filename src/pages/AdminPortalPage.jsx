@@ -48,6 +48,10 @@ export default function AdminPortalPage() {
   const [buckets, setBuckets] = useState([]);
   const [isLoadingBuckets, setIsLoadingBuckets] = useState(false);
 
+  // Auth Users
+  const [authUsers, setAuthUsers] = useState([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+
   // SQL Runner
   const [sqlQuery, setSqlQuery] = useState('SELECT email, active_project_name, compressed_bytes, compression_ratio, last_saved_at FROM workspaces;');
   const [sqlResult, setSqlResult] = useState(null);
@@ -128,13 +132,24 @@ export default function AdminPortalPage() {
     }
   }, []);
 
+  // Load Auth Users
+  const loadUsers = useCallback(async () => {
+    setIsLoadingUsers(true);
+    const { users, error } = await adminService.getAuthUsers();
+    setIsLoadingUsers(false);
+    if (!error) {
+      setAuthUsers(users || []);
+    }
+  }, []);
+
   useEffect(() => {
     if (isAuthenticated) {
       if (activeTab === 'workspaces') loadWorkspaces();
+      if (activeTab === 'users') loadUsers();
       if (activeTab === 'inspector') loadTableData(customTableName);
       if (activeTab === 'storage') loadBuckets();
     }
-  }, [isAuthenticated, activeTab, loadWorkspaces, loadTableData, loadBuckets, customTableName]);
+  }, [isAuthenticated, activeTab, loadWorkspaces, loadUsers, loadTableData, loadBuckets, customTableName]);
 
   // Handle Row Edit Save (Workspaces)
   const handleSaveWorkspaceEdit = async (rowId, updatedFields) => {
@@ -310,6 +325,16 @@ export default function AdminPortalPage() {
           >
             <FileCode className="w-3.5 h-3.5" />
             <span>Live Workspaces ({workspaces.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-2 ${
+              activeTab === 'users' ? 'bg-indigo-500/15 text-indigo-300 font-bold border border-indigo-500/30' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <UserCheck className="w-3.5 h-3.5" />
+            <span>Auth Users ({authUsers.length})</span>
           </button>
 
           <button
@@ -567,6 +592,83 @@ export default function AdminPortalPage() {
               </div>
             )}
 
+          </div>
+        )}
+
+        {/* ================================================================= */}
+        {/* TAB 1.5: REGISTERED SUPABASE AUTH USERS                         */}
+        {/* ================================================================= */}
+        {activeTab === 'users' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-bold text-white font-mono flex items-center gap-2">
+                  <UserCheck className="w-4 h-4 text-indigo-400" />
+                  <span>Supabase Registered Authentication Users</span>
+                </h2>
+                <p className="text-[11px] text-slate-400 font-mono">
+                  All accounts registered in your Supabase Auth provider
+                </p>
+              </div>
+              <button
+                onClick={loadUsers}
+                className="px-3 py-1.5 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 text-xs font-mono font-semibold transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <RefreshCw className="w-3 h-3 text-indigo-400" />
+                <span>Refresh Users</span>
+              </button>
+            </div>
+
+            <div className="bg-[#0e111a] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+              <table className="w-full text-left text-xs font-mono">
+                <thead className="bg-[#141824] border-b border-white/10 text-slate-400 uppercase text-[10px] tracking-wider">
+                  <tr>
+                    <th className="px-4 py-3">Email Address</th>
+                    <th className="px-4 py-3">User ID</th>
+                    <th className="px-4 py-3">Active Workspace</th>
+                    <th className="px-4 py-3">Created Date</th>
+                    <th className="px-4 py-3">Last Active</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5 text-slate-300">
+                  {isLoadingUsers ? (
+                    <tr>
+                      <td colSpan="5" className="px-4 py-8 text-center text-slate-500">
+                        <RefreshCw className="w-5 h-5 text-indigo-400 animate-spin mx-auto mb-2" />
+                        <span>Fetching Supabase user directory...</span>
+                      </td>
+                    </tr>
+                  ) : authUsers.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" className="px-4 py-8 text-center text-slate-500">
+                        No users found.
+                      </td>
+                    </tr>
+                  ) : (
+                    authUsers.map((u, idx) => (
+                      <tr key={idx} className="hover:bg-white/[0.02] transition-colors">
+                        <td className="px-4 py-3 font-semibold text-white flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                          <span>{u.email}</span>
+                        </td>
+                        <td className="px-4 py-3 text-slate-500 text-[11px] font-mono">
+                          {u.id || '-'}
+                        </td>
+                        <td className="px-4 py-3 text-cyan-300">
+                          {u.active_project || 'my-workspace'}
+                        </td>
+                        <td className="px-4 py-3 text-slate-400 text-[11px]">
+                          {u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A'}
+                        </td>
+                        <td className="px-4 py-3 text-slate-400 text-[11px]">
+                          {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleString() : 'Recently'}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
