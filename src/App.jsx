@@ -83,26 +83,63 @@ const resolveProjectFiles = (folders) => {
   });
 };
 
+// Synchronously read cached workspace for current user from localStorage to eliminate reload flicker
+export const getSynchronousCachedWorkspace = (userEmail) => {
+  if (typeof window === 'undefined') return null;
+  const userKey = userEmail ? userEmail.trim().toLowerCase() : 'guest';
+  try {
+    const savedStr = localStorage.getItem(`severa_workspace_${userKey}`);
+    if (savedStr) {
+      const parsed = JSON.parse(savedStr);
+      if (parsed && typeof parsed === 'object') {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.warn('Failed to parse cached workspace in synchronous initializer:', err);
+  }
+  return null;
+};
+
 export default function App({ user, onLogout }) {
   const isDemoUser = user?.email === 'demo@severa.ai';
 
-  const [code, setCode] = useState(() =>
-    isDemoUser ? CODE_TEMPLATES[0].code : '# Welcome to Severa AI Security Platform\n# Paste or upload your source code here to analyze with Severa...\n'
-  );
-  const [language, setLanguage] = useState(() =>
-    isDemoUser ? CODE_TEMPLATES[0].language : 'python'
-  );
+  const [code, setCode] = useState(() => {
+    const cached = getSynchronousCachedWorkspace(user?.email);
+    if (cached?.code !== undefined && cached.code.trim().length > 0) return cached.code;
+    return isDemoUser ? CODE_TEMPLATES[0].code : '# Welcome to Severa AI Security Platform\n# Paste or upload your source code here to analyze with Severa...\n';
+  });
+  const [language, setLanguage] = useState(() => {
+    const cached = getSynchronousCachedWorkspace(user?.email);
+    if (cached?.language) return cached.language;
+    return isDemoUser ? CODE_TEMPLATES[0].language : 'python';
+  });
   const [activeTab, setActiveTab] = useState('workbench');
-  const [customRules, setCustomRules] = useState([]);
+  const [customRules, setCustomRules] = useState(() => {
+    const cached = getSynchronousCachedWorkspace(user?.email);
+    return Array.isArray(cached?.customRules) ? cached.customRules : [];
+  });
   const [apiKey, setApiKey] = useState('');
   const [customEndpoint, setCustomEndpoint] = useState('');
   const [fixedLineNumbers, setFixedLineNumbers] = useState([]);
 
   // Active Project & File Breadcrumb State (User directive: Show Folder & File Name in top header)
-  const [activeProjectName, setActiveProjectName] = useState(() =>
-    isDemoUser ? 'ai project' : 'my-workspace'
-  );
-  const [activeFileName, setActiveFileName] = useState('main.py');
+  const [activeProjectName, setActiveProjectName] = useState(() => {
+    const cached = getSynchronousCachedWorkspace(user?.email);
+    if (cached?.activeProjectName) {
+      if (Array.isArray(cached.projectFolders) && cached.projectFolders.length > 0) {
+        const found = cached.projectFolders.find((p) => p.name === cached.activeProjectName);
+        if (found) return found.name;
+        return cached.projectFolders[0].name;
+      }
+      return cached.activeProjectName;
+    }
+    return isDemoUser ? 'ai project' : 'my-workspace';
+  });
+  const [activeFileName, setActiveFileName] = useState(() => {
+    const cached = getSynchronousCachedWorkspace(user?.email);
+    return cached?.activeFileName || 'main.py';
+  });
 
   // Active AI Model Provider State
   const [selectedProvider, setSelectedProvider] = useState('');
@@ -143,8 +180,12 @@ export default function App({ user, onLogout }) {
   };
 
   // Scan Sessions History State
-  const [scanSessions, setScanSessions] = useState(() =>
-    isDemoUser ? INITIAL_SESSIONS : [
+  const [scanSessions, setScanSessions] = useState(() => {
+    const cached = getSynchronousCachedWorkspace(user?.email);
+    if (cached?.scanSessions && Array.isArray(cached.scanSessions) && cached.scanSessions.length > 0) {
+      return cached.scanSessions;
+    }
+    return isDemoUser ? INITIAL_SESSIONS : [
       {
         id: 'sess-new',
         name: 'Fresh Code Audit',
@@ -153,14 +194,20 @@ export default function App({ user, onLogout }) {
         findings: [],
         timeAgo: 'Just now'
       }
-    ]
-  );
-  const [activeSessionId, setActiveSessionId] = useState(() =>
-    isDemoUser ? 'sess-1' : 'sess-new'
-  );
+    ];
+  });
+  const [activeSessionId, setActiveSessionId] = useState(() => {
+    const cached = getSynchronousCachedWorkspace(user?.email);
+    if (cached?.activeSessionId) return cached.activeSessionId;
+    return isDemoUser ? 'sess-1' : 'sess-new';
+  });
 
   // Multi-File Project Folder State & Synchronization
   const [projectFolders, setProjectFolders] = useState(() => {
+    const cached = getSynchronousCachedWorkspace(user?.email);
+    if (cached?.projectFolders && Array.isArray(cached.projectFolders) && cached.projectFolders.length > 0) {
+      return resolveProjectFiles(cached.projectFolders);
+    }
     const defaultFolders = isDemoUser ? [
       { id: 'p1', name: 'ai project', files: DEFAULT_AI_PROJECT_FILES, session: 'Flask SQLi & Secret Audit' },
       { id: 'p2', name: 'react-frontend-sec', files: [{ name: 'App.jsx', path: 'src/App.jsx', templateId: 'js-xss' }, { name: 'index.css', path: 'src/index.css', code: '/* styles */', language: 'css' }], session: 'React DOM XSS Audit' },
@@ -173,9 +220,21 @@ export default function App({ user, onLogout }) {
     return resolveProjectFiles(defaultFolders);
   });
 
-  const [projectFiles, setProjectFiles] = useState([]);
-  const [activeFilePath, setActiveFilePath] = useState('');
-  const [isWorkspaceLoaded, setIsWorkspaceLoaded] = useState(false);
+  const [projectFiles, setProjectFiles] = useState(() => {
+    const cached = getSynchronousCachedWorkspace(user?.email);
+    if (cached?.projectFiles && Array.isArray(cached.projectFiles)) {
+      return cached.projectFiles;
+    }
+    return [];
+  });
+  const [activeFilePath, setActiveFilePath] = useState(() => {
+    const cached = getSynchronousCachedWorkspace(user?.email);
+    return cached?.activeFileName || 'main.py';
+  });
+  const [isWorkspaceLoaded, setIsWorkspaceLoaded] = useState(() => {
+    const cached = getSynchronousCachedWorkspace(user?.email);
+    return !!cached;
+  });
   const [syncStatus, setSyncStatus] = useState({ status: 'idle', compressionRatio: 0 });
 
   // Per-User Scoped AI Configurations & API Key Persistence
@@ -321,28 +380,43 @@ jobs:
   // Persistent Workspace Load across Logins, Logouts, Sessions, & Devices (Strict User Isolation)
   useEffect(() => {
     const userKey = user?.email ? user.email.trim().toLowerCase() : 'guest';
-    setIsWorkspaceLoaded(false);
+    const initialCached = getSynchronousCachedWorkspace(user?.email);
+    if (!initialCached) {
+      setIsWorkspaceLoaded(false);
+    }
     
     async function loadWorkspace() {
       try {
-        // Try cloud sync first if logged in
-        let saved = null;
-        if (user?.email) {
-          saved = await cloudSyncService.fetchUserWorkspace(user.email);
+        // Step 1: Read local device cache immediately (zero latency)
+        let localSaved = null;
+        const savedStr = localStorage.getItem(`severa_workspace_${userKey}`);
+        if (savedStr) {
+          try { localSaved = JSON.parse(savedStr); } catch (_e) {}
         }
 
-        // Fallback to strict per-user local device storage (NO shared/latest fallback!)
-        if (!saved) {
-          const savedStr = localStorage.getItem(`severa_workspace_${userKey}`);
-          if (savedStr) saved = JSON.parse(savedStr);
+        // Step 2: Query cloud sync in background if authenticated
+        let cloudSaved = null;
+        if (user?.email) {
+          try {
+            cloudSaved = await cloudSyncService.fetchUserWorkspace(user.email);
+          } catch (_cloudErr) {}
+        }
+
+        // Step 3: Compare timestamps - cloud only overrides if strictly newer than local
+        let saved = localSaved;
+        if (cloudSaved) {
+          const localTime = localSaved?.updatedAt ? new Date(localSaved.updatedAt).getTime() : 0;
+          const cloudTime = cloudSaved?.updatedAt ? new Date(cloudSaved.updatedAt).getTime() : 0;
+          if (cloudTime > localTime || !localSaved) {
+            saved = cloudSaved;
+          }
         }
 
         if (saved) {
           setAiReviewData(null);
           if (saved.code !== undefined && saved.code.trim().length > 0) setCode(saved.code);
           if (saved.language) setLanguage(saved.language);
-          if (saved.activeProjectName) setActiveProjectName(saved.activeProjectName);
-          if (saved.activeFileName) setActiveFileName(saved.activeFileName);
+          
           if (saved.projectFolders && Array.isArray(saved.projectFolders) && saved.projectFolders.length > 0) {
             let loadedFolders = saved.projectFolders;
             const aiProj = loadedFolders.find((p) => p.name === 'ai project');
@@ -350,7 +424,17 @@ jobs:
               aiProj.files = DEFAULT_AI_PROJECT_FILES;
             }
             setProjectFolders(resolveProjectFiles(loadedFolders));
+
+            // Ensure activeProjectName actually belongs to loaded folders (prevent phantom deleted folder references)
+            const targetProj = saved.activeProjectName && loadedFolders.find((p) => p.name === saved.activeProjectName)
+              ? saved.activeProjectName
+              : loadedFolders[0].name;
+            setActiveProjectName(targetProj);
+          } else if (saved.activeProjectName) {
+            setActiveProjectName(saved.activeProjectName);
           }
+
+          if (saved.activeFileName) setActiveFileName(saved.activeFileName);
           if (saved.projectFiles && Array.isArray(saved.projectFiles) && saved.projectFiles.length > 0) setProjectFiles(saved.projectFiles);
           if (saved.scanSessions && Array.isArray(saved.scanSessions) && saved.scanSessions.length > 0) setScanSessions(saved.scanSessions);
           if (saved.activeSessionId) setActiveSessionId(saved.activeSessionId);

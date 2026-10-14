@@ -320,7 +320,7 @@ export default function Sidebar({
   onDeleteFileInProject,
   user,
   onLogout,
-  activeProjectName = 'ai project',
+  activeProjectName = '',
   activeFileName = 'main.py',
   activeFilePath = '',
   onDownloadFixedFolder,
@@ -356,7 +356,7 @@ export default function Sidebar({
     window.addEventListener('mouseup', onMouseUp);
   };
 
-  const [expandedProjects, setExpandedProjects] = useState({ 'ai project': true, 'flask-api-suite': true });
+  const [expandedProjects, setExpandedProjects] = useState(() => (activeProjectName ? { [activeProjectName]: true } : {}));
 
   // Interactive Project Filter & New Project Creation States
   const [isFilterActive, setIsFilterActive] = useState(false);

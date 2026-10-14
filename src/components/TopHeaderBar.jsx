@@ -10,7 +10,7 @@ export default function TopHeaderBar({
   selectedModel,
   apiKey = '',
   customEndpoint = '',
-  activeProjectName = 'ai project',
+  activeProjectName = '',
   activeFileName = 'main.py',
   projectFolders = [],
   syncStatus = null,
@@ -48,13 +48,15 @@ export default function TopHeaderBar({
   }, []);
 
   // Find active project object & files list
-  const activeProj = projectFolders.find((p) => p.name === activeProjectName) || {
-    name: activeProjectName,
-    files: [{ name: activeFileName }]
-  };
+  const activeProj = (activeProjectName && projectFolders.find((p) => p.name === activeProjectName))
+    || projectFolders[0]
+    || {
+      name: activeProjectName || 'workspace',
+      files: [{ name: activeFileName || 'main.py' }]
+    };
   const activeProjFiles = activeProj.files && activeProj.files.length > 0
     ? activeProj.files
-    : [{ name: activeFileName }];
+    : [{ name: activeFileName || 'main.py' }];
 
   return (
     <div className="flex flex-wrap items-center justify-between px-4 sm:px-5 py-2 bg-[#090b10] border-b border-slate-800/80 w-full select-none gap-2">

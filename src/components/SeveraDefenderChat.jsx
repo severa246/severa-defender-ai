@@ -11,7 +11,7 @@ const CHAT_STORAGE_KEY = 'severa_defender_chat_history';
 export default function SeveraDefenderChat({
   isOpen,
   onClose,
-  activeProjectName = 'ai project',
+  activeProjectName = '',
   activeFileName = 'main.py',
   projectFolders = [],
   onSelectProjectFile,
