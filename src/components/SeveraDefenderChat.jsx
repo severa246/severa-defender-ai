@@ -69,12 +69,7 @@ export default function SeveraDefenderChat({
 
       if (targetFinding) {
         const focusedPrompt = `Explain the vulnerability "${targetFinding.title}" on line ${targetFinding.line} in detail: 1. Why it happened (root cause), 2. What could happen if allowed or exploited (security risk & impact), and 3. How to prevent and fix it in future code.`;
-        setInput('');
-        setTimeout(() => {
-          if (handleSendRef.current) {
-            handleSendRef.current(focusedPrompt);
-          }
-        }, 120);
+        setInput(focusedPrompt);
       } else {
         // If we don't have any existing messages in chat history, show the initial welcome message
         if (!messages || messages.length === 0) {
