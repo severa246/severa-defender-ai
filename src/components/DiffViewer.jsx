@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Sparkles, Check, ChevronDown, ChevronUp, FileCheck2, X } from 'lucide-react';
+import VisualDiffViewer from './VisualDiffViewer';
 
 export default function DiffViewer({ aiReviewData, onApplyFix, onClose }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -89,34 +90,14 @@ export default function DiffViewer({ aiReviewData, onApplyFix, onClose }) {
             </div>
           )}
 
-          {/* Side-by-Side Code Diff */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-2">
-            {/* Original Vulnerable Code Panel */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between text-xs px-1">
-                <span className="font-bold text-rose-400 flex items-center gap-1">
-                  • Vulnerable Original Code
-                </span>
-                <span className="text-[10px] text-slate-500 font-mono">BEFORE</span>
-              </div>
-              <div className="bg-[#12141a] border border-rose-500/30 rounded-xl p-3 font-mono text-[11px] text-slate-300 overflow-x-auto max-h-[300px] leading-relaxed">
-                <pre>{originalCode}</pre>
-              </div>
-            </div>
-
-            {/* Remediated Secure Code Panel */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between text-xs px-1">
-                <span className="font-bold text-emerald-400 flex items-center gap-1">
-                  • AI Remediated Secure Code
-                </span>
-                <span className="text-[10px] text-emerald-400 font-mono">AFTER (SECURED)</span>
-              </div>
-              <div className="bg-[#12141a] border border-emerald-500/30 rounded-xl p-3 font-mono text-[11px] text-emerald-200 overflow-x-auto max-h-[300px] leading-relaxed">
-                <pre>{fixedCode}</pre>
-              </div>
-            </div>
-          </div>
+          {/* Side-by-Side Visual Git Diff */}
+          <VisualDiffViewer
+            originalCode={originalCode}
+            fixedCode={fixedCode}
+            summary={displaySummary}
+            onApplyFix={handleApply}
+            applied={applied}
+          />
         </div>
       )}
     </div>

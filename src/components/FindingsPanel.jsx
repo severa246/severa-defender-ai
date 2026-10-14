@@ -22,6 +22,7 @@ import {
   Info,
   FileCode
 } from 'lucide-react';
+import { EpssTooltip, CvssVectorTooltip, CweTooltip } from './EducationalTooltips';
 
 export default function FindingsPanel({ 
   findings = [], 
@@ -326,15 +327,11 @@ export default function FindingsPanel({
                         <span>Secret</span>
                       </span>
                     ) : (
-                      <span className="text-[11px] font-mono font-semibold text-slate-300 bg-white/5 px-2 py-0.5 rounded-md border border-white/10 shrink-0">
-                        {finding.cwe || 'SAST'}
-                      </span>
+                      <CweTooltip cwe={finding.cwe || 'SAST'} cweUrl={finding.cweUrl} />
                     )}
 
                     {finding.epssScore && (
-                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-white/10 text-slate-200 border border-white/15 font-semibold shrink-0" title="Exploit Prediction Scoring System probability">
-                        EPSS {finding.epssScore}
-                      </span>
+                      <EpssTooltip score={finding.epssScore} percentile={finding.epssPercentile} />
                     )}
                   </div>
 
@@ -396,19 +393,58 @@ export default function FindingsPanel({
                           {finding.owasp || (finding.isSecret ? 'A02:2021 - Cryptographic' : finding.isDependency ? 'A06:2021 - Vulnerable Components' : 'A03:2021 - Injection')}
                         </span>
                       </div>
-                      <div className="bg-black/40 rounded-lg p-2.5 border border-white/10">
-                        <span className="text-[10px] text-slate-400 block font-sans">CVSS v3.1 Score</span>
-                        <span className="font-bold text-amber-300 text-[11px] block">
-                          {finding.cvssScore ? `${finding.cvssScore} / 10.0` : (finding.severity === 'CRITICAL' ? '9.8 / 10.0' : finding.severity === 'HIGH' ? '7.5 / 10.0' : '5.3 / 10.0')}
-                        </span>
-                      </div>
-                      <div className="bg-black/40 rounded-lg p-2.5 border border-white/10 col-span-2 sm:col-span-1">
-                        <span className="text-[10px] text-slate-400 block font-sans">EPSS Exploitation</span>
-                        <span className="font-semibold text-slate-200 text-[11px] block">
-                          {finding.epssScore ? `Score: ${finding.epssScore}` : '0.04% (Low in wild)'}
-                        </span>
-                      </div>
+
+                      <CvssVectorTooltip
+                        score={finding.cvssScore ? String(finding.cvssScore) : (finding.severity === 'CRITICAL' ? '9.8' : finding.severity === 'HIGH' ? '7.5' : '5.3')}
+                        vector={finding.cvssVector || 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H'}
+                        severity={finding.severity}
+                        className="w-full"
+                      >
+                        <div className="bg-black/40 hover:bg-black/60 rounded-lg p-2.5 border border-white/10 hover:border-emerald-500/40 transition-colors w-full h-full text-left">
+                          <span className="text-[10px] text-slate-400 block font-sans flex items-center justify-between">
+                            <span>CVSS v3.1 Score</span>
+                            <span className="text-[9px] text-emerald-400 font-mono">Hover Guide</span>
+                          </span>
+                          <span className="font-bold text-amber-300 text-[11px] block">
+                            {finding.cvssScore ? `${finding.cvssScore} / 10.0` : (finding.severity === 'CRITICAL' ? '9.8 / 10.0' : finding.severity === 'HIGH' ? '7.5 / 10.0' : '5.3 / 10.0')}
+                          </span>
+                        </div>
+                      </CvssVectorTooltip>
+
+                      <EpssTooltip
+                        score={finding.epssScore || (finding.severity === 'CRITICAL' ? '94.2%' : '42.1%')}
+                        percentile={finding.epssPercentile || (finding.severity === 'CRITICAL' ? '98th' : '79th')}
+                        className="col-span-2 sm:col-span-1 w-full"
+                      >
+                        <div className="bg-black/40 hover:bg-black/60 rounded-lg p-2.5 border border-white/10 hover:border-amber-500/40 transition-colors w-full h-full text-left">
+                          <span className="text-[10px] text-slate-400 block font-sans flex items-center justify-between">
+                            <span>EPSS Exploitation</span>
+                            <span className="text-[9px] text-amber-400 font-mono">Hover Guide</span>
+                          </span>
+                          <span className="font-semibold text-slate-200 text-[11px] block">
+                            {finding.epssScore ? `Score: ${finding.epssScore}` : '0.04% (Low in wild)'}
+                          </span>
+                        </div>
+                      </EpssTooltip>
                     </div>
+
+                    {/* CVSS Vector Breakdown Bar with Educational Explanations */}
+                    <CvssVectorTooltip
+                      score={finding.cvssScore ? String(finding.cvssScore) : (finding.severity === 'CRITICAL' ? '9.8' : finding.severity === 'HIGH' ? '7.5' : '5.3')}
+                      vector={finding.cvssVector || 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H'}
+                      severity={finding.severity}
+                      className="w-full"
+                    >
+                      <div className="flex items-center justify-between bg-black/60 hover:bg-black/80 px-3 py-1.5 rounded-lg border border-white/10 hover:border-emerald-500/30 transition-all font-mono text-[11px] cursor-help">
+                        <div className="flex items-center gap-1.5 text-slate-400">
+                          <span className="text-[10px] font-sans font-semibold uppercase text-slate-400">CVSS Vector:</span>
+                          <code className="text-emerald-300 font-bold">{finding.cvssVector || 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H'}</code>
+                        </div>
+                        <span className="text-[10px] text-emerald-400 underline decoration-emerald-500/40 font-sans hidden sm:inline">
+                          View Metric Guide &amp; Breakdown
+                        </span>
+                      </div>
+                    </CvssVectorTooltip>
 
                     {/* Root Cause Analysis & Description */}
                     <div className="p-3 rounded-lg bg-black/40 border border-white/10 space-y-1.5">

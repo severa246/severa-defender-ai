@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { scanDependencies, scanDependenciesLive } from '../engine/scaScanner';
 import { PackageCheck, FileJson, ArrowUpRight, CheckCircle2, Globe2, ShieldCheck, ExternalLink, Loader2, Wand2, Check } from 'lucide-react';
+import { EpssTooltip, CvssVectorTooltip } from './EducationalTooltips';
 
 const SAMPLE_PACKAGE_JSON = `{
   "name": "vulnerable-web-app",
@@ -225,21 +226,30 @@ export default function DependencyScanner() {
                     </div>
 
                     <div className="flex items-center gap-1.5">
-                      <span
-                        className={`text-[10px] font-mono font-medium px-2 py-0.5 rounded border ${
-                          item.severity === 'CRITICAL'
-                            ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                            : item.severity === 'HIGH'
-                            ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                            : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
-                        }`}
+                      <CvssVectorTooltip
+                        score={item.cvssScore || '8.2'}
+                        vector={item.cvssVector || 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H'}
+                        severity={item.severity}
                       >
-                        {item.severity} • CVSS {item.cvssScore || '8.2'}
-                      </span>
-                      {item.epssScore && (
-                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/[0.04] text-slate-300 border border-white/[0.06]" title="Exploit Prediction Scoring System probability">
-                          EPSS {item.epssScore}
+                        <span
+                          className={`text-[10px] font-mono font-medium px-2 py-0.5 rounded border transition-colors cursor-help ${
+                            item.severity === 'CRITICAL'
+                              ? 'bg-rose-500/10 text-rose-400 border-rose-500/20 hover:border-rose-500/40'
+                              : item.severity === 'HIGH'
+                              ? 'bg-amber-500/10 text-amber-400 border-amber-500/20 hover:border-amber-500/40'
+                              : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20 hover:border-indigo-500/40'
+                          }`}
+                        >
+                          {item.severity} • CVSS {item.cvssScore || '8.2'}
                         </span>
+                      </CvssVectorTooltip>
+
+                      {item.epssScore && (
+                        <EpssTooltip score={item.epssScore} percentile={item.epssPercentile || '92nd'}>
+                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 border border-white/[0.06] hover:border-amber-400/40 transition-colors cursor-help">
+                            EPSS {item.epssScore}
+                          </span>
+                        </EpssTooltip>
                       )}
                     </div>
                   </div>
@@ -249,9 +259,11 @@ export default function DependencyScanner() {
 
                   {/* CVSS Vector String Drawer */}
                   {item.cvssVector && (
-                    <div className="p-1.5 rounded bg-black/40 border border-white/[0.04] font-mono text-[10px] text-slate-400 overflow-x-auto">
-                      <code>{item.cvssVector}</code>
-                    </div>
+                    <CvssVectorTooltip score={item.cvssScore || '8.2'} vector={item.cvssVector} severity={item.severity} className="w-full">
+                      <div className="p-1.5 rounded bg-black/40 hover:bg-black/60 border border-white/[0.04] hover:border-white/[0.12] font-mono text-[10px] text-slate-400 overflow-x-auto transition-colors cursor-help">
+                        <code>{item.cvssVector}</code>
+                      </div>
+                    </CvssVectorTooltip>
                   )}
 
                   {/* Footer Row: CVE & Upgrade Target with 1-Click Auto-Bump */}

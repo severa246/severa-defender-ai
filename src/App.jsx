@@ -4,6 +4,7 @@ import TopHeaderBar from './components/TopHeaderBar';
 import EditorContainer from './components/EditorContainer';
 import FindingsPanel from './components/FindingsPanel';
 import DiffViewer from './components/DiffViewer';
+import VisualDiffViewer from './components/VisualDiffViewer';
 import ExecutiveDashboard from './components/ExecutiveDashboard';
 import DependencyScanner from './components/DependencyScanner';
 import AuditReportModal from './components/AuditReportModal';
@@ -2112,10 +2113,10 @@ jobs:
         customEndpoint={customEndpoint}
       />
 
-      {/* Interactive AI Fix Confirmation Modal ("Apply Correct Code") */}
+      {/* Interactive AI Fix Confirmation Modal ("Apply Correct Code" with Side-by-Side Visual Git Diff) */}
       {isApplyFixModalOpen && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn cursor-pointer"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md animate-fadeIn cursor-pointer"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) setIsApplyFixModalOpen(false);
           }}
@@ -2124,44 +2125,21 @@ jobs:
           }}
         >
           <div 
-            className="w-full max-w-lg bg-[#191C23] border border-white/10 rounded-2xl p-6 shadow-2xl space-y-4 cursor-default"
+            className="w-full max-w-5xl cursor-default"
             onMouseDown={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-[#232732] border border-white/10 text-emerald-400">
-                <Sparkles className="w-6 h-6 animate-pulse" />
-              </div>
-              <div>
-                <h3 className="text-base font-extrabold text-white">AI Security Patch Ready</h3>
-                <p className="text-xs text-zinc-400">Severa AI generated a remediated patch for <span className="text-emerald-400 font-mono font-bold">{activeFileName}</span></p>
-              </div>
-            </div>
-
-            <div className="bg-[#12141a] p-3.5 rounded-xl border border-white/10 text-xs text-zinc-300 space-y-2">
-              <p className="font-semibold text-emerald-400">🛡️ Refactored Security Standard Applied:</p>
-              <p className="text-zinc-400">This fix eliminates unvalidated inputs, replaces raw dynamic concatenations with parameterized statements, and enforces environment secret loading.</p>
-            </div>
-
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
-              <button
-                type="button"
-                onClick={() => setIsApplyFixModalOpen(false)}
-                className="px-4 py-2 rounded-xl text-xs font-bold text-zinc-400 hover:text-white hover:bg-[#232732] transition-all cursor-pointer"
-              >
-                Cancel
-              </button>
-              
-              <button
-                type="button"
-                onClick={() => {
-                  handleApplyFix();
-                }}
-                className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-extrabold shadow-lg shadow-emerald-500/20 transition-all cursor-pointer flex items-center gap-1.5"
-              >
-                <span>Apply Correct Code</span>
-              </button>
-            </div>
+            <VisualDiffViewer
+              originalCode={aiReviewData?.originalCode || code}
+              fixedCode={aiReviewData?.fixedCode || ''}
+              fileName={activeFileName}
+              language={language}
+              summary={aiReviewData?.remediationDiffSummary || `Review AI proposed security modifications for ${activeFileName}`}
+              onApplyFix={(remediatedCode) => handleApplyFix(remediatedCode)}
+              onClose={() => setIsApplyFixModalOpen(false)}
+              isModal={true}
+              applied={aiReviewData?.applied}
+            />
           </div>
         </div>
       )}
