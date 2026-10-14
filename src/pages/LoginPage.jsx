@@ -674,7 +674,7 @@ export default function LoginPage({ onLogin }) {
 
             {/* Quick demo link */}
             {tab === 'login' && (
-              <div className="mt-5 p-3.5 sm:p-4 rounded-xl bg-[#191C23] border border-white/10 shadow-md space-y-2">
+              <div className="mt-5 p-3.5 rounded-xl bg-[#191C23] border border-white/10 shadow-md">
                 <p className="text-xs text-slate-300 text-center leading-relaxed">
                   Quick demo (Analyst):{' '}
                   <button type="button" onClick={() => {
@@ -684,17 +684,6 @@ export default function LoginPage({ onLogin }) {
                     demo@severa.ai / demo1234
                   </button>
                 </p>
-                <div className="border-t border-white/5 pt-1.5">
-                  <p className="text-xs text-slate-300 text-center leading-relaxed">
-                    Master Admin:{' '}
-                    <button type="button" onClick={() => {
-                      setField('email', 'severadefenderai@gmail.com');
-                      setField('password', 'severaadmin');
-                    }} className="text-cyan-400 hover:underline font-mono font-bold cursor-pointer">
-                      severadefenderai@gmail.com / severaadmin
-                    </button>
-                  </p>
-                </div>
               </div>
             )}
 
