@@ -110,25 +110,25 @@ export default function FindingsPanel({
   return (
     <div className="bg-[#090D16] border border-white/[0.08] rounded-xl p-3.5 sm:p-4 flex flex-col h-full max-h-full overflow-hidden shadow-2xl">
       
-      {/* Inspector Panel Top Header */}
+      {/* Clean Modern Header */}
       <div className="shrink-0 space-y-3 pb-3 border-b border-white/10">
         
-        {/* Title, Count & Scan Button */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2.5">
+        {/* Top Title & Scan Trigger */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
               <ShieldAlert className="w-4 h-4" />
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h2 className="text-xs font-bold text-white uppercase tracking-wider">Findings Inspector</h2>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold border ${
-                  filteredFindings.length > 0 ? 'bg-rose-500/15 text-rose-300 border-rose-500/30' : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                <h2 className="text-xs font-bold text-white uppercase tracking-wider truncate">Security Findings</h2>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold shrink-0 border ${
+                  filteredFindings.length > 0 ? 'bg-rose-500/20 text-rose-300 border-rose-500/40' : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
                 }`}>
-                  {filteredFindings.length} {filteredFindings.length === 1 ? 'Flaw' : 'Flaws'}
+                  {filteredFindings.length}
                 </span>
               </div>
-              <p className="text-[10px] text-slate-400 font-mono">SAST & Dependency SCA Engine</p>
+              <p className="text-[10px] text-slate-400 font-mono truncate">SAST & Dependency SCA Engine</p>
             </div>
           </div>
 
@@ -140,19 +140,19 @@ export default function FindingsPanel({
                 onScanFullProject();
               }}
               className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer shadow-md shadow-emerald-500/20 shrink-0"
-              title="Run 1-Click Scan Across All Code & Manifests"
+              title="Run security scan across active files"
             >
-              <Play className="w-3 h-3 fill-slate-950 text-slate-950" />
-              <span>Scan Project</span>
+              <Play className="w-3.5 h-3.5 fill-slate-950 text-slate-950" />
+              <span>Scan</span>
             </button>
           )}
         </div>
 
-        {/* Primary Scope Toggle: Active File vs Project Wide */}
-        <div className="flex p-1 bg-[#121624] rounded-lg border border-white/10 text-xs font-mono">
+        {/* Unified Clean Scope & Filter Control */}
+        <div className="grid grid-cols-2 p-1 bg-[#121624] rounded-lg border border-white/10 text-xs font-mono">
           <button
             onClick={() => setViewMode('ACTIVE')}
-            className={`flex-1 py-1.5 rounded-md font-semibold transition-all cursor-pointer text-center ${
+            className={`py-1.5 rounded-md font-semibold transition-all cursor-pointer text-center ${
               viewMode === 'ACTIVE' 
                 ? 'bg-white/15 text-white shadow-sm' 
                 : 'text-slate-400 hover:text-slate-200'
@@ -162,7 +162,7 @@ export default function FindingsPanel({
           </button>
           <button
             onClick={() => setViewMode('PROJECT_WIDE')}
-            className={`flex-1 py-1.5 rounded-md font-semibold transition-all cursor-pointer text-center ${
+            className={`py-1.5 rounded-md font-semibold transition-all cursor-pointer text-center ${
               viewMode === 'PROJECT_WIDE' 
                 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm' 
                 : 'text-slate-400 hover:text-slate-200'
@@ -172,23 +172,22 @@ export default function FindingsPanel({
           </button>
         </div>
 
-        {/* Consolidated Filters: Category & Severity */}
-        <div className="flex items-center justify-between gap-2 pt-0.5">
-          {/* Category Pills */}
-          <div className="flex items-center gap-1 overflow-x-auto custom-scrollbar pb-0.5">
+        {/* Clean Filter Chips (No ugly scrollbars) */}
+        <div className="flex items-center justify-between gap-1 text-[11px] font-mono">
+          <div className="flex items-center gap-1">
             {[
-              { id: 'ALL', label: `All (${activeList.length})` },
-              { id: 'CODE', label: `Code (${codeCount})` },
-              { id: 'DEPS', label: `Deps (${depCount})` },
-              { id: 'SECRETS', label: `Secrets (${secretCount})` }
+              { id: 'ALL', label: `All` },
+              { id: 'CODE', label: `Code` },
+              { id: 'DEPS', label: `Deps` },
+              { id: 'SECRETS', label: `Secrets` }
             ].map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setCategoryFilter(cat.id)}
-                className={`px-2.5 py-1 rounded-md text-[11px] font-mono whitespace-nowrap transition-all cursor-pointer ${
+                className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
                   categoryFilter === cat.id
-                    ? 'bg-slate-200 text-slate-950 font-bold shadow-sm'
-                    : 'bg-[#121624] text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-white/5'
+                    ? 'bg-white/20 text-white font-bold border border-white/20'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
                 }`}
               >
                 {cat.label}
@@ -196,57 +195,48 @@ export default function FindingsPanel({
             ))}
           </div>
 
-          {/* Severity Dropdown / Selector */}
-          <div className="flex items-center gap-1 shrink-0">
-            {['ALL', 'CRITICAL', 'HIGH'].map((sev) => (
+          {/* Quick Severity Pill */}
+          <div className="flex items-center gap-1">
+            {['ALL', 'CRITICAL'].map((sev) => (
               <button
                 key={sev}
                 onClick={() => setSeverityFilter(sev)}
-                className={`px-2 py-1 rounded-md text-[10px] font-mono font-bold transition-all cursor-pointer ${
+                className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
                   severityFilter === sev
                     ? sev === 'CRITICAL'
                       ? 'bg-rose-500/25 text-rose-300 border border-rose-500/50'
-                      : sev === 'HIGH'
-                      ? 'bg-amber-500/25 text-amber-300 border border-amber-500/50'
-                      : 'bg-white/20 text-white'
+                      : 'bg-white/20 text-white border border-white/20'
                     : 'text-slate-500 hover:text-slate-300'
                 }`}
               >
-                {sev === 'CRITICAL' ? 'CRIT' : sev}
+                {sev === 'CRITICAL' ? 'Critical' : 'All'}
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      {/* File Breakdown Bar (Project-Wide mode) */}
+      {/* File Location Bar (when in Project-Wide mode) */}
       {viewMode === 'PROJECT_WIDE' && projectFiles.length > 0 && (
-        <div className="shrink-0 py-2 space-y-1.5 border-b border-white/10">
-          <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
-            <span className="flex items-center gap-1 font-semibold text-slate-300">
-              <Layers className="w-3.5 h-3.5 text-emerald-400" /> Files with Findings:
-            </span>
-            <span>{projectFiles.filter(f => (f.findings?.length || 0) > 0).length} of {projectFiles.length} files</span>
-          </div>
-          <div className="flex gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
+        <div className="shrink-0 py-2 border-b border-white/10 flex items-center justify-between gap-2 text-xs font-mono">
+          <span className="text-slate-400 flex items-center gap-1.5 shrink-0">
+            <Layers className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Files:</span>
+          </span>
+          <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar min-w-0">
             {projectFiles.map((file) => {
               const flaws = file.findings?.length || 0;
-              const isManifest = file.name === 'package.json' || file.name === 'requirements.txt' || file.name === 'go.mod';
               return (
                 <button
                   key={file.path || file.name}
                   onClick={() => onSelectFile && onSelectFile(file)}
-                  className={`px-2.5 py-1 rounded-md text-[11px] font-mono border whitespace-nowrap flex items-center gap-1.5 transition-all cursor-pointer ${
+                  className={`px-2 py-0.5 rounded text-[11px] font-mono border whitespace-nowrap transition-all cursor-pointer ${
                     flaws > 0 
-                      ? (isManifest 
-                          ? 'bg-sky-500/15 text-sky-200 border-sky-500/30 hover:bg-sky-500/25' 
-                          : 'bg-rose-500/15 text-rose-200 border-rose-500/30 hover:bg-rose-500/25')
+                      ? 'bg-rose-500/15 text-rose-200 border-rose-500/30 hover:bg-rose-500/25' 
                       : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20 hover:bg-emerald-500/20'
                   }`}
                 >
-                  {isManifest && <Package className="w-3 h-3 text-sky-400" />}
-                  <span>{file.name}</span>
-                  <span className="font-bold opacity-80">({flaws})</span>
+                  {file.name} ({flaws})
                 </button>
               );
             })}
@@ -299,14 +289,14 @@ export default function FindingsPanel({
                     : 'border-white/10 hover:border-white/20 bg-[#101422] hover:bg-[#13182a] shadow-sm'
                 }`}
               >
-                {/* Card Header: Badges & Location */}
-                <div className="flex items-center justify-between pb-2.5 border-b border-white/10 flex-wrap gap-2">
+                {/* Clean Top Meta Row: Severity Pill, CWE, File & Line */}
+                <div className="flex items-center justify-between pb-2 border-b border-white/10 gap-2 flex-wrap">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded-md border ${sevBadge.classes}`}>
+                    <span className={`text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full border ${sevBadge.classes}`}>
                       {sevBadge.label}
                     </span>
                     
-                    {/* Category Identifier Tag */}
+                    {/* Category / Rule Badge */}
                     {finding.isDependency ? (
                       <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-300 border border-sky-500/30 flex items-center gap-1">
                         <Package className="w-3 h-3" />
@@ -323,12 +313,6 @@ export default function FindingsPanel({
                       </span>
                     )}
 
-                    {finding.owasp && !finding.isDependency && (
-                      <span className="text-[11px] font-mono text-slate-400">
-                        {finding.owasp.split(' - ')[0]}
-                      </span>
-                    )}
-                    
                     {finding.epssScore && (
                       <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-white/10 text-slate-200 border border-white/15 font-semibold" title="Exploit Prediction Scoring System probability">
                         EPSS {finding.epssScore}
@@ -336,41 +320,33 @@ export default function FindingsPanel({
                     )}
                   </div>
 
-                  <span className="text-xs font-mono font-bold text-slate-300 bg-white/5 px-2 py-0.5 rounded border border-white/10">
+                  {/* Clean Location Indicator */}
+                  <span className="text-xs font-mono font-semibold text-slate-300 bg-white/5 px-2 py-0.5 rounded-md border border-white/10">
                     {finding.fileName ? `${finding.fileName}:${finding.line}` : `Line ${finding.line}`}
                   </span>
                 </div>
 
-                {/* Finding Title */}
-                <div>
+                {/* Finding Title & Link */}
+                <div className="space-y-1">
                   <h4 className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors flex items-center justify-between">
                     <span>{finding.title}</span>
                     <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all" />
                   </h4>
 
-                  {/* Advisory Link */}
-                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                    {finding.cweUrl && (
+                  {finding.cweUrl && (
+                    <div>
                       <a
                         href={finding.cweUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-[11px] font-mono text-emerald-400 hover:text-emerald-300 flex items-center gap-1 font-semibold underline decoration-emerald-500/40"
+                        className="text-[11px] font-mono text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-1 font-semibold underline decoration-emerald-500/40"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <span>{finding.isDependency ? 'NVD Advisory' : 'MITRE Advisory'}</span>
+                        <span>{finding.isDependency ? 'NVD Security Advisory' : 'MITRE CWE Advisory'}</span>
                         <ExternalLink className="w-3 h-3" />
                       </a>
-                    )}
-                    {finding.cvssVector && (
-                      <>
-                        <span className="text-slate-600">•</span>
-                        <span className="text-[10px] font-mono text-slate-400 truncate max-w-[220px]" title={finding.cvssVector}>
-                          {finding.cvssVector}
-                        </span>
-                      </>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* DEPENDENCY CVE (SCA) SPECIALIZED CARD SECTION */}
@@ -474,7 +450,7 @@ export default function FindingsPanel({
                   </div>
                 )}
 
-                {/* Code Snippet Box — High Contrast & Clear */}
+                {/* Clean Offending Code Box */}
                 {finding.codeSnippet && (
                   <div className="p-3 rounded-lg bg-[#07090e] border border-rose-500/20 font-mono text-xs text-rose-200 overflow-x-auto shadow-inner leading-relaxed">
                     <div className="text-[10px] font-mono text-rose-400/80 uppercase font-semibold mb-1">Offending Code:</div>
