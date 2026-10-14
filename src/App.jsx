@@ -2129,7 +2129,13 @@ jobs:
           )}
 
           {/* Pillar 2: Software Composition Analysis (SCA) */}
-          {activeTab === 'sca' && <DependencyScanner />}
+          {activeTab === 'sca' && (
+            <DependencyScanner
+              activeProjectName={activeProjectName}
+              projectFolders={projectFolders}
+              onAutoBumpDependency={handleAutoBumpDependency}
+            />
+          )}
 
           {/* Pillar 3: Executive CISO Dashboard */}
           {activeTab === 'dashboard' && (
