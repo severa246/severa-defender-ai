@@ -111,24 +111,24 @@ export default function FindingsPanel({
     <div className="bg-[#090D16] border border-white/[0.08] rounded-xl p-3.5 sm:p-4 flex flex-col h-full max-h-full overflow-hidden shadow-2xl">
       
       {/* Clean Modern Header */}
-      <div className="shrink-0 space-y-3 pb-3 border-b border-white/10">
+      <div className="shrink-0 space-y-2.5 pb-3 border-b border-white/10">
         
         {/* Top Title & Scan Trigger */}
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-7 h-7 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
               <ShieldAlert className="w-4 h-4" />
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h2 className="text-xs font-bold text-white uppercase tracking-wider truncate">Security Findings</h2>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold shrink-0 border ${
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <h2 className="text-xs font-bold text-white uppercase tracking-wider">Findings</h2>
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold shrink-0 border ${
                   filteredFindings.length > 0 ? 'bg-rose-500/20 text-rose-300 border-rose-500/40' : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
                 }`}>
                   {filteredFindings.length}
                 </span>
               </div>
-              <p className="text-[10px] text-slate-400 font-mono truncate">SAST & Dependency SCA Engine</p>
+              <p className="text-[10px] text-slate-400 font-mono truncate">Unified SAST & SCA</p>
             </div>
           </div>
 
@@ -139,7 +139,7 @@ export default function FindingsPanel({
                 setViewMode('PROJECT_WIDE');
                 onScanFullProject();
               }}
-              className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer shadow-md shadow-emerald-500/20 shrink-0"
+              className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-2.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer shadow-md shadow-emerald-500/20 shrink-0"
               title="Run security scan across active files"
             >
               <Play className="w-3.5 h-3.5 fill-slate-950 text-slate-950" />
@@ -148,47 +148,48 @@ export default function FindingsPanel({
           )}
         </div>
 
-        {/* Unified Clean Scope & Filter Control */}
-        <div className="grid grid-cols-2 p-1 bg-[#121624] rounded-lg border border-white/10 text-xs font-mono">
+        {/* Primary Scope Toggle: Active File vs Project Wide */}
+        <div className="grid grid-cols-2 p-0.5 bg-[#121624] rounded-lg border border-white/10 text-xs font-mono">
           <button
             onClick={() => setViewMode('ACTIVE')}
-            className={`py-1.5 rounded-md font-semibold transition-all cursor-pointer text-center ${
+            className={`py-1.5 px-1 rounded-md font-semibold transition-all cursor-pointer text-center truncate ${
               viewMode === 'ACTIVE' 
                 ? 'bg-white/15 text-white shadow-sm' 
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            Active File ({findings.length})
+            Active ({findings.length})
           </button>
           <button
             onClick={() => setViewMode('PROJECT_WIDE')}
-            className={`py-1.5 rounded-md font-semibold transition-all cursor-pointer text-center ${
+            className={`py-1.5 px-1 rounded-md font-semibold transition-all cursor-pointer text-center truncate ${
               viewMode === 'PROJECT_WIDE' 
                 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm' 
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            Project-Wide ({allProjectFindings.length})
+            Project ({allProjectFindings.length})
           </button>
         </div>
 
-        {/* Line 1: Category Filter Buttons */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-[11px] font-mono">
-            <span className="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">Category</span>
-            <div className="flex items-center gap-1">
+        {/* Filters Group */}
+        <div className="space-y-2 pt-0.5">
+          {/* Row 1: Category Filter Buttons */}
+          <div className="space-y-1">
+            <span className="text-slate-400 font-semibold uppercase tracking-wider text-[10px] font-mono block">Category</span>
+            <div className="grid grid-cols-4 gap-1 font-mono text-[11px]">
               {[
-                { id: 'ALL', label: `All` },
-                { id: 'CODE', label: `Code` },
-                { id: 'DEPS', label: `Deps` },
-                { id: 'SECRETS', label: `Secrets` }
+                { id: 'ALL', label: 'All' },
+                { id: 'CODE', label: 'Code' },
+                { id: 'DEPS', label: 'Deps' },
+                { id: 'SECRETS', label: 'Secret' }
               ].map((cat) => (
                 <button
                   key={cat.id}
                   onClick={() => setCategoryFilter(cat.id)}
-                  className={`px-2.5 py-1 rounded-md text-xs font-mono transition-all cursor-pointer ${
+                  className={`py-1 rounded text-center transition-all cursor-pointer truncate ${
                     categoryFilter === cat.id
-                      ? 'bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40 shadow-sm'
+                      ? 'bg-emerald-500/25 text-emerald-300 font-bold border border-emerald-500/50 shadow-sm'
                       : 'bg-[#121624] text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-white/5'
                   }`}
                 >
@@ -198,22 +199,23 @@ export default function FindingsPanel({
             </div>
           </div>
 
-          {/* Line 2: Severity Filter Buttons (Separate Next Line) */}
-          <div className="flex items-center justify-between text-[11px] font-mono pt-1 border-t border-white/5">
-            <span className="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">Severity</span>
-            <div className="flex items-center gap-1.5">
+          {/* Row 2: Severity Filter Buttons (All, Critical, High, Med, Low) */}
+          <div className="space-y-1">
+            <span className="text-slate-400 font-semibold uppercase tracking-wider text-[10px] font-mono block">Severity</span>
+            <div className="grid grid-cols-5 gap-1 font-mono text-[11px]">
               {[
-                { id: 'ALL', label: 'All Severities' },
-                { id: 'CRITICAL', label: 'Critical Only' }
+                { id: 'ALL', label: 'All', badgeClass: 'bg-white/20 text-white border-white/30' },
+                { id: 'CRITICAL', label: 'Crit', badgeClass: 'bg-rose-500/25 text-rose-300 border-rose-500/50' },
+                { id: 'HIGH', label: 'High', badgeClass: 'bg-amber-500/25 text-amber-300 border-amber-500/50' },
+                { id: 'MEDIUM', label: 'Med', badgeClass: 'bg-yellow-500/25 text-yellow-300 border-yellow-500/50' },
+                { id: 'LOW', label: 'Low', badgeClass: 'bg-slate-500/25 text-slate-300 border-slate-500/50' }
               ].map((sev) => (
                 <button
                   key={sev.id}
                   onClick={() => setSeverityFilter(sev.id)}
-                  className={`px-3 py-1 rounded-md text-xs font-mono font-semibold transition-all cursor-pointer ${
+                  className={`py-1 rounded text-center font-semibold transition-all cursor-pointer truncate ${
                     severityFilter === sev.id
-                      ? sev.id === 'CRITICAL'
-                        ? 'bg-rose-500/25 text-rose-300 border border-rose-500/50 shadow-sm'
-                        : 'bg-white/20 text-white border border-white/30 shadow-sm'
+                      ? `${sev.badgeClass} border shadow-sm`
                       : 'bg-[#121624] text-slate-400 hover:text-slate-200 border border-white/5'
                   }`}
                 >
@@ -228,7 +230,7 @@ export default function FindingsPanel({
       {/* File Location Bar (when in Project-Wide mode) */}
       {viewMode === 'PROJECT_WIDE' && projectFiles.length > 0 && (
         <div className="shrink-0 py-2 border-b border-white/10 flex items-center justify-between gap-2 text-xs font-mono">
-          <span className="text-slate-400 flex items-center gap-1.5 shrink-0">
+          <span className="text-slate-400 flex items-center gap-1 shrink-0 text-[11px]">
             <Layers className="w-3.5 h-3.5 text-emerald-400" />
             <span>Files:</span>
           </span>
