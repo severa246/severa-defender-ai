@@ -110,7 +110,7 @@ export default function SeveraDefenderChat({
     };
 
     setMessages((prev) => [...prev, userMsg]);
-    if (!customPrompt) setInput('');
+    setInput('');
     setIsTyping(true);
 
     try {

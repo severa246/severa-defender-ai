@@ -301,38 +301,38 @@ export default function FindingsPanel({
                 }`}
               >
                 {/* Clean Top Meta Row: Severity Pill, CWE, File & Line */}
-                <div className="flex items-center justify-between pb-2 border-b border-white/10 gap-2 flex-wrap">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className={`text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full border ${sevBadge.classes}`}>
+                <div className="flex items-center justify-between pb-2 border-b border-white/10 gap-1.5 flex-wrap">
+                  <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                    <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border shrink-0 ${sevBadge.classes}`}>
                       {sevBadge.label}
                     </span>
                     
                     {/* Category / Rule Badge */}
                     {finding.isDependency ? (
-                      <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-300 border border-sky-500/30 flex items-center gap-1">
+                      <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-300 border border-sky-500/30 flex items-center gap-1 shrink-0">
                         <Package className="w-3 h-3" />
-                        <span>SCA Dependency</span>
+                        <span>SCA</span>
                       </span>
                     ) : finding.isSecret ? (
-                      <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                      <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1 shrink-0">
                         <Key className="w-3 h-3" />
-                        <span>Shannon Secret</span>
+                        <span>Secret</span>
                       </span>
                     ) : (
-                      <span className="text-xs font-mono font-semibold text-slate-300 bg-white/5 px-2 py-0.5 rounded-md border border-white/10">
+                      <span className="text-[11px] font-mono font-semibold text-slate-300 bg-white/5 px-2 py-0.5 rounded-md border border-white/10 shrink-0">
                         {finding.cwe}
                       </span>
                     )}
 
                     {finding.epssScore && (
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-white/10 text-slate-200 border border-white/15 font-semibold" title="Exploit Prediction Scoring System probability">
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-white/10 text-slate-200 border border-white/15 font-semibold shrink-0" title="Exploit Prediction Scoring System probability">
                         EPSS {finding.epssScore}
                       </span>
                     )}
                   </div>
 
                   {/* Clean Location Indicator */}
-                  <span className="text-xs font-mono font-semibold text-slate-300 bg-white/5 px-2 py-0.5 rounded-md border border-white/10">
+                  <span className="text-[11px] font-mono font-semibold text-slate-300 bg-white/5 px-2 py-0.5 rounded-md border border-white/10 shrink-0 ml-auto">
                     {finding.fileName ? `${finding.fileName}:${finding.line}` : `Line ${finding.line}`}
                   </span>
                 </div>
@@ -506,11 +506,11 @@ export default function FindingsPanel({
           {onApplyFixAll && (
             <button
               onClick={onApplyFixAll}
-              className="w-full py-2.5 bg-[#141824] hover:bg-[#1a2133] text-slate-200 hover:text-white rounded-xl text-xs font-bold border border-white/10 hover:border-emerald-500/40 flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md"
+              className="w-full py-2.5 px-3 bg-[#141824] hover:bg-[#1a2133] text-slate-200 hover:text-white rounded-xl text-xs font-bold border border-white/10 hover:border-emerald-500/40 flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md leading-snug text-center"
               title="Apply AI Security Fixes Across ALL Files in Current Project Folder"
             >
-              <CheckCheck className="w-4 h-4 text-emerald-400" />
-              <span>Apply Fix to Current Project Folder ({projectFiles.length > 0 ? projectFiles.length : 1} {projectFiles.length === 1 ? 'file' : 'files'})</span>
+              <CheckCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>Apply Fix to All Project Files ({projectFiles.length > 0 ? projectFiles.length : 1})</span>
             </button>
           )}
 
@@ -518,19 +518,19 @@ export default function FindingsPanel({
           {aiReviewData?.fixedCode && onApplyFix && (
             <button
               onClick={() => onApplyFix(aiReviewData.fixedCode)}
-              className="w-full py-2.5 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 hover:text-emerald-200 rounded-xl text-xs font-bold border border-emerald-500/30 flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
+              className="w-full py-2.5 px-3 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 hover:text-emerald-200 rounded-xl text-xs font-bold border border-emerald-500/30 flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm leading-snug text-center"
             >
-              <Check className="w-4 h-4 text-emerald-400" />
-              <span>Apply Active File Only ({findings.length} {findings.length === 1 ? 'Flaw' : 'Flaws'})</span>
+              <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>Apply Active File Only ({findings.length})</span>
             </button>
           )}
 
           {/* Primary Action Button: Re-Generate */}
           <button
             onClick={onGenerateAiFix}
-            className="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 rounded-xl text-xs font-extrabold uppercase tracking-wider shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
+            className="w-full py-2.5 px-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 rounded-xl text-xs font-extrabold uppercase tracking-wider shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer text-center"
           >
-            <ShieldCheck className="w-4 h-4 text-slate-950" />
+            <ShieldCheck className="w-4 h-4 text-slate-950 shrink-0" />
             <span>{aiReviewData?.fixedCode ? 'Re-Generate' : 'Generate Enterprise Security Patch'}</span>
           </button>
         </div>
