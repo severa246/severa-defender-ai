@@ -68,14 +68,14 @@ export default function SeveraDefenderChat({
         : `\n\n**Local Engine Active:** Using Severa AST Intelligence.`;
 
       if (targetFinding) {
-        const focusedPrompt = `Explain the vulnerability "${targetFinding.title}" on line ${targetFinding.line} in detail: 1. Why it happened (root cause), 2. What could happen if allowed or exploited (security risk & impact), and 3. How to prevent and fix it in future code.`;
+        const focusedPrompt = `Can you explain the "${targetFinding.title}" vulnerability in ${targetFinding.fileName || activeFileName} on line ${targetFinding.line}? Please break down the root cause, what the security impact is, and how I can refactor this code safely.`;
         setInput(focusedPrompt);
       } else {
         // If we don't have any existing messages in chat history, show the initial welcome message
         if (!messages || messages.length === 0) {
           const initialText = activeFlaw
-            ? `Hello! I am **Severa Defender**, your AI security assistant.\n\nI noticed **${findings.length} security flaw(s)** in \`${activeFileName}\`. Target: **${activeFlaw.title} (${activeFlaw.severity})** on line ${activeFlaw.line}.${apiInfo}\n\nHow can I assist you today?`
-            : `Hello! I am **Severa Defender**, your AI security assistant.\n\n\`${activeFileName}\` is loaded into context. All scan rules passed cleanly (0 Flaws Detected).${apiInfo}`;
+            ? `Hello! I'm **Severa Defender**, your AI security partner.\n\nI analyzed \`${activeFileName}\` and found **${findings.length} security issue(s)**. The highest priority is **${activeFlaw.title} (${activeFlaw.severity})** on line ${activeFlaw.line}.${apiInfo}\n\nAsk me anything about these findings, or request a complete refactored patch!`
+            : `Hello! I'm **Severa Defender**, your AI security partner.\n\n\`${activeFileName}\` is loaded into context and passed all security benchmarks with **0 flaws flagged**!${apiInfo}\n\nFeel free to ask questions about secure code architectures or test other files.`;
 
           setMessages([
             {
@@ -87,7 +87,7 @@ export default function SeveraDefenderChat({
           ]);
         }
         if (activeFlaw && (!input || input.trim().length === 0)) {
-          setInput(`Explain the vulnerability "${activeFlaw.title}" on line ${activeFlaw.line} in detail: 1. Why it happened (root cause), 2. What could happen if allowed or exploited (security risk & impact), and 3. How to prevent and fix it in future code.`);
+          setInput(`Can you explain the "${activeFlaw.title}" vulnerability on line ${activeFlaw.line} in detail and show how to fix it?`);
         }
       }
     }
@@ -293,32 +293,32 @@ export default function SeveraDefenderChat({
         </div>
 
         {/* Preset Quick Actions */}
-        <div className="px-6 py-3 bg-[#191C23] border-b border-white/10 flex flex-wrap gap-2 shrink-0">
+        <div className="px-6 py-3 bg-[#181a20] border-b border-white/10 flex flex-wrap gap-2 shrink-0">
           <button
-            onClick={() => setInput("Explain why this vulnerability happened in detail.")}
+            onClick={() => setInput("Can you explain why this vulnerability occurred and what the root cause is?")}
             disabled={isTyping}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#12141a] hover:bg-[#232732] border border-amber-500/30 text-amber-300 text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
-            title="Pre-fill prompt: Why did this happen?"
+            title="Ask: Why did this happen?"
           >
             <HelpCircle className="w-3.5 h-3.5" />
             <span>Why did this happen?</span>
           </button>
 
           <button
-            onClick={() => setInput("Show me how to refactor and fix this code safely.")}
+            onClick={() => setInput("Show me how to refactor and patch this code safely.")}
             disabled={isTyping}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#12141a] hover:bg-[#232732] border border-white/10 text-slate-200 hover:text-white text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
-            title="Pre-fill prompt: How can we fix it?"
+            title="Ask: How can we fix it?"
           >
             <Wrench className="w-3.5 h-3.5" />
             <span>How can we fix it?</span>
           </button>
 
           <button
-            onClick={() => setInput("How can we overcome and prevent this vulnerability in the future after fix?")}
+            onClick={() => setInput("What best practices should we follow to prevent this vulnerability in the future?")}
             disabled={isTyping}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#12141a] hover:bg-[#232732] border border-emerald-500/30 text-emerald-400 text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
-            title="Pre-fill prompt: How to overcome in future?"
+            title="Ask: How to overcome in future?"
           >
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>How to overcome in future?</span>
@@ -326,34 +326,34 @@ export default function SeveraDefenderChat({
         </div>
 
         {/* Messages Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4 font-sans bg-[#12141a]">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 font-sans bg-[#0f1117]">
           {messages.map((msg, i) => (
             <div
               key={msg.id}
               className={`flex gap-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               {msg.sender === 'defender' && (
-                <div className="w-8 h-8 rounded-xl bg-[#191C23] border border-white/10 flex items-center justify-center text-emerald-400 shrink-0 mt-1 shadow-md shadow-black/30">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5 shadow-sm">
                   <Shield className="w-4 h-4" />
                 </div>
               )}
 
               <div
-                className={`max-w-2xl rounded-2xl p-4 text-xs leading-relaxed space-y-2 shadow-md shadow-black/30 ${
+                className={`max-w-2xl rounded-2xl p-4 sm:p-5 text-xs sm:text-[13px] leading-relaxed shadow-md shadow-black/20 ${
                   msg.sender === 'user'
-                    ? 'bg-[#232732] border border-white/15 text-white rounded-tr-none'
-                    : 'bg-[#191C23] border border-white/10 text-slate-200 rounded-tl-none'
+                    ? 'bg-[#252834] border border-white/15 text-white rounded-tr-none px-4 py-3'
+                    : 'bg-[#181a20] border border-white/10 text-slate-200 rounded-tl-none'
                 }`}
               >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-bold text-[11px] opacity-75">
-                    {msg.sender === 'user' ? 'You' : 'Severa Defender AI'}
+                <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-white/[0.06]">
+                  <span className="font-semibold text-[11px] text-slate-400">
+                    {msg.sender === 'user' ? 'You' : 'Severa Defender'}
                   </span>
-                  <span className="text-[10px] opacity-50 font-mono">{msg.time}</span>
+                  <span className="text-[10px] text-slate-500 font-mono">{msg.time}</span>
                 </div>
 
-                <div className="whitespace-pre-wrap space-y-2">
-                  {formatMarkdown(msg.text)}
+                <div>
+                  {renderChatGPTMarkdown(msg.text)}
                 </div>
 
                 {msg.sender === 'defender' && (
@@ -440,37 +440,178 @@ export default function SeveraDefenderChat({
   );
 }
 
-// ── Helper to format response sections nicely ────────────────────────────────
-function formatMarkdown(text) {
-  const lines = text.split('\n');
-  return lines.map((line, idx) => {
-    if (line.startsWith('### ')) {
-      return <h4 key={idx} className="text-sm font-bold text-emerald-400 mt-2 mb-1">{line.replace('### ', '')}</h4>;
+// ── ChatGPT-Style Rich Markdown & Syntax-Highlighted Code Component ──────────
+function renderChatGPTMarkdown(text) {
+  if (!text) return null;
+
+  // Split by fenced code blocks: ```lang ... ```
+  const codeBlockRegex = /```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g;
+  const parts = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = codeBlockRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push({ type: 'text', content: text.substring(lastIndex, match.index) });
     }
-    if (line.startsWith('**') && line.endsWith('**')) {
-      return <p key={idx} className="font-bold text-white mt-1">{line.replace(/\*\*/g, '')}</p>;
-    }
-    if (line.startsWith('- ') || line.startsWith('• ')) {
-      return (
-        <div key={idx} className="flex items-start gap-2 pl-2">
-          <span className="text-emerald-400 font-bold">•</span>
-          <span className="text-slate-300">{formatInline(line.substring(2))}</span>
-        </div>
-      );
-    }
-    return <p key={idx} className="text-slate-300 leading-relaxed">{formatInline(line)}</p>;
-  });
+    parts.push({
+      type: 'code',
+      language: match[1] || 'code',
+      code: match[2].trimEnd()
+    });
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push({ type: 'text', content: text.substring(lastIndex) });
+  }
+
+  return (
+    <div className="space-y-1.5 text-slate-200 text-xs sm:text-[13px] leading-relaxed">
+      {parts.map((part, idx) => {
+        if (part.type === 'code') {
+          return <CodeSnippetBlock key={idx} language={part.language} code={part.code} />;
+        }
+        return <TextMarkdownBlock key={idx} content={part.content} />;
+      })}
+    </div>
+  );
+}
+
+function CodeSnippetBlock({ language, code }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="my-2.5 rounded-xl overflow-hidden border border-white/10 bg-[#0d1117] shadow-lg shadow-black/40">
+      {/* Top Header Bar like ChatGPT */}
+      <div className="flex items-center justify-between px-3.5 py-1.5 bg-[#161b22] border-b border-white/10 text-xs font-mono">
+        <span className="text-[11px] text-slate-400 font-semibold lowercase">
+          {language || 'code'}
+        </span>
+        <button
+          onClick={handleCopyCode}
+          className="flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-white transition-colors cursor-pointer py-0.5 px-2 rounded hover:bg-white/5"
+          title="Copy code to clipboard"
+        >
+          {copied ? (
+            <>
+              <Check className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-emerald-400 font-sans font-medium">Copied!</span>
+            </>
+          ) : (
+            <>
+              <Copy className="w-3.5 h-3.5 text-slate-400" />
+              <span className="font-sans">Copy code</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Code Area */}
+      <pre className="p-3.5 overflow-x-auto text-[12px] font-mono leading-relaxed text-slate-200 bg-[#090d13]">
+        <code>{code}</code>
+      </pre>
+    </div>
+  );
+}
+
+function TextMarkdownBlock({ content }) {
+  const lines = content.split('\n');
+  return (
+    <div className="space-y-1">
+      {lines.map((line, idx) => {
+        const trimmed = line.trim();
+        if (!trimmed) return <div key={idx} className="h-1" />;
+
+        // Horizontal Rule
+        if (trimmed === '---' || trimmed === '***') {
+          return <hr key={idx} className="border-white/10 my-2.5" />;
+        }
+
+        // Heading 3
+        if (line.startsWith('### ')) {
+          return (
+            <h3 key={idx} className="text-sm font-semibold text-slate-100 mt-3 mb-1 tracking-tight flex items-center gap-1.5">
+              {formatInline(line.replace('### ', ''))}
+            </h3>
+          );
+        }
+
+        // Heading 2
+        if (line.startsWith('## ')) {
+          return (
+            <h2 key={idx} className="text-base font-semibold text-white mt-3.5 mb-1.5 tracking-tight">
+              {formatInline(line.replace('## ', ''))}
+            </h2>
+          );
+        }
+
+        // Heading 1
+        if (line.startsWith('# ')) {
+          return (
+            <h1 key={idx} className="text-lg font-bold text-white mt-4 mb-2 tracking-tight">
+              {formatInline(line.replace('# ', ''))}
+            </h1>
+          );
+        }
+
+        // Blockquote
+        if (line.startsWith('> ')) {
+          return (
+            <div key={idx} className="border-l-2 border-emerald-500/60 bg-emerald-500/5 px-3 py-2 rounded-r-lg text-slate-200 italic text-xs my-2">
+              {formatInline(line.substring(2))}
+            </div>
+          );
+        }
+
+        // Numbered list: "1. ", "2. ", etc.
+        const numMatch = line.match(/^(\d+)\.\s+(.*)$/);
+        if (numMatch) {
+          return (
+            <div key={idx} className="flex items-start gap-2 pl-1.5 my-1">
+              <span className="text-slate-400 font-mono text-xs font-semibold shrink-0">{numMatch[1]}.</span>
+              <span className="text-slate-200 leading-relaxed">{formatInline(numMatch[2])}</span>
+            </div>
+          );
+        }
+
+        // Bulleted list: "- " or "* " or "• "
+        if (line.startsWith('- ') || line.startsWith('* ') || line.startsWith('• ')) {
+          return (
+            <div key={idx} className="flex items-start gap-2 pl-2 my-1">
+              <span className="text-slate-400 font-bold text-sm leading-none shrink-0">•</span>
+              <span className="text-slate-200 leading-relaxed">{formatInline(line.substring(2))}</span>
+            </div>
+          );
+        }
+
+        // Standard paragraph
+        return (
+          <p key={idx} className="text-slate-200 text-xs sm:text-[13px] leading-relaxed">
+            {formatInline(line)}
+          </p>
+        );
+      })}
+    </div>
+  );
 }
 
 function formatInline(str) {
+  if (!str) return '';
   const parts = str.split(/(\*\*.*?\*\*|`.*?`)/g);
   return parts.map((part, i) => {
     if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={i} className="text-white font-bold">{part.slice(2, -2)}</strong>;
+      return <strong key={i} className="text-white font-semibold">{part.slice(2, -2)}</strong>;
     }
     if (part.startsWith('`') && part.endsWith('`')) {
       return (
-        <code key={i} className="px-1.5 py-0.5 rounded bg-[#16181f] border border-white/10 text-emerald-300 font-mono text-[11px]">
+        <code key={i} className="px-1.5 py-0.5 rounded bg-[#2b2d38] border border-white/10 text-slate-100 font-mono text-[11px] font-semibold mx-0.5">
           {part.slice(1, -1)}
         </code>
       );
@@ -494,7 +635,7 @@ async function fetchLiveAiDefenderResponse({
   const activeFlaw = findings[0] || null;
   const hasFlaws = findings.length > 0;
 
-  const systemPrompt = `You are Severa Defender AI, a Principal Cybersecurity Architect.
+  const systemPrompt = `You are Severa Defender AI, an expert Principal Security Engineer communicating in the natural, clear, conversational style of ChatGPT.
 Target File: ${fileName} (${language.toUpperCase()})
 Active Vulnerabilities Count: ${findings.length}
 ${hasFlaws ? `Primary Flagged Vulnerability: ${JSON.stringify(activeFlaw)}` : 'Audit Status: Clean (0 Vulnerabilities Flagged)'}
@@ -507,12 +648,17 @@ ${code}
 
 User Question: ${prompt}
 
-Formatting Rules:
-- Respond in formatted markdown.
-- If asking WHY it happened, explain root cause, attack vector, and CWE details (or confirm code is clean if 0 flaws).
-- If asking HOW TO FIX, provide safe refactored code patch and explain changes (or state no fix needed if clean).
-- If asking HOW TO OVERCOME IN FUTURE, provide actionable prevention guidelines.
-- Keep explanations professional, precise, and practical.`;
+Communication Style & Instructions (ChatGPT Style):
+- Write in a natural, friendly, expert, and conversational tone (like ChatGPT).
+- Do not use robotic forms, questionnaire templates, or repetitive labels like "Target Vulnerability:" or "Flagged Snippet:".
+- Directly answer the developer's question with clarity and depth.
+- Use clean Markdown with headers (###), bullet points, and syntax-highlighted code blocks with language tags (\`\`\`${language}).
+- When explaining a vulnerability, cover:
+  1. Root cause in plain terms.
+  2. Concrete real-world exploitation impact and threat scenarios.
+  3. Actionable remediation with a "Before (Vulnerable)" vs "After (Secured)" code comparison.
+  4. Industry best practices to prevent similar bugs in the future.
+- If the code is clean, congratulate the developer and offer helpful security tips for scaling.`;
 
   const provider = (selectedProvider || 'google').toLowerCase();
 
@@ -693,105 +839,141 @@ Formatting Rules:
 function generateDefenderResponse(prompt, findings = [], fileName = 'main.py', code = '', language = 'javascript', targetFinding = null) {
   const query = prompt.toLowerCase();
   const hasFlaws = findings.length > 0 || Boolean(targetFinding);
-
-  // CASE 1: File has ZERO flaws or code is clean/empty
-  if (!hasFlaws) {
-    if (query.includes('why') || query.includes('happened') || query.includes('cause') || query.includes('explain')) {
-      return `### Security Status: Code Clean (0 Vulnerabilities Flagged)
-
-**Target File:** \`${fileName}\` (${language.toUpperCase()})
-
-**Why Did This Happen?**
-- **Zero Flaws Detected:** All Severa SAST static analysis security rules passed cleanly on \`${fileName}\`.
-- **No Unsafe Patterns:** The code does not contain unvalidated input concatenation, raw SQL queries, DOM XSS sinks, or exposed secrets.
-- **Pass Status:** Code complies with standard security benchmarks. No vulnerability root cause to analyze!`;
-    }
-
-    if (query.includes('fix') || query.includes('refactor') || query.includes('how can we fix') || query.includes('patch')) {
-      return `### Code Remediation & Refactoring Status
-
-**Target File:** \`${fileName}\` (${language.toUpperCase()})
-
-**Remediation Action:**
-- **No Patch Required:** Your file currently has **0 security vulnerabilities**.
-- The existing code is clean and passes all default rule parameters. No refactoring or emergency patch is needed!`;
-    }
-
-    if (query.includes('future') || query.includes('overcome') || query.includes('prevent') || query.includes('avoid')) {
-      return `### Blueprint: Maintaining Secure Code Standards
-
-Even though your current file \`${fileName}\` is 100% clean, adopt these proactive security practices as your codebase expands:
-
-### 1. Secure Coding Guidelines
-- **Use Parameterized Queries & ORMs:** Never concatenate user input strings directly into database or command execution calls.
-- **Strict Environment Secrets:** Never hardcode secret keys or passwords; load them at runtime via \`process.env\` or \`os.environ\`.
-
-### 2. Automated Pre-Commit SAST Gateways
-- Install Severa SAST hooks to audit every Git commit before pushing to GitHub:
-\`\`\`bash
-severa hook install --profile owasp-top10 --fail-on high
-\`\`\`
-
-### 3. Continuous SAST Scanning
-- Keep Severa SAST automatic scanning enabled in your workbench for real-time security feedback.`;
-    }
-
-    return `### Severa Defender Analysis
-
-Regarding your question about **${prompt}**:
-
-- **File Context:** \`${fileName}\` (${language.toUpperCase()})
-- **Audit Status:** Clean (0 Flaws Flagged)
-
-Your code passes all security rules cleanly! Feel free to paste new code, ask about security architectures, or request custom security reviews.`;
-  }
-
-  // CASE 2: File HAS Flagged Vulnerabilities (findings.length > 0)
   const flaw = targetFinding || (findings.length > 0 ? findings[0] : null);
-  if (!flaw) {
-    return `### Severa Defender Analysis\n\nYour code passes all security rules cleanly!`;
+
+  // CASE 1: File is completely clean
+  if (!hasFlaws || !flaw) {
+    if (query.includes('fix') || query.includes('refactor') || query.includes('patch')) {
+      return `### No Fix Required — Code Passes All Security Gates
+
+Great news! There are currently **0 security vulnerabilities** detected in \`${fileName}\`.
+
+Your source code cleanly passes all Severa SAST rules, dependency audits, and secret scanning checks. The existing implementation does not require any emergency security refactoring or patches.
+
+If you add new endpoints or integrate third-party data inputs later, remember to use parameterized queries and strict schema validation.`;
+    }
+
+    if (query.includes('future') || query.includes('prevent') || query.includes('best practice')) {
+      return `### Proactive Security Best Practices for \`${fileName}\`
+
+Even though \`${fileName}\` is currently clean, here are four core defense-in-depth practices to keep in mind as your codebase expands:
+
+1. **Parameterize All Dynamic Queries:**
+   Never concatenate untrusted input into SQL, shell commands, or eval routines. Always use ORM bindings or parameterized statements.
+
+2. **Strict Environment Secrets Management:**
+   Store all tokens, database credentials, and API keys in environment variables or a vault (e.g., AWS Secrets Manager, HashiCorp Vault), never directly in code.
+
+3. **Input Validation & Sanitization:**
+   Validate incoming payloads using runtime schemas (like Zod for TypeScript/JavaScript or Pydantic for Python) to reject unexpected structures early.
+
+4. **Continuous Pre-Commit SAST Audits:**
+   Enforce automated static scanning in your CI/CD pipeline so any newly introduced flaws are flagged before hitting production.`;
+    }
+
+    return `I reviewed \`${fileName}\` (${language.toUpperCase()}) and verified that **no security vulnerabilities** were detected.
+
+All Severa static analysis benchmarks (OWASP Top 10, CWE, and Shannon entropy secret scans) passed cleanly. 
+
+Feel free to ask any questions about secure architecture design, or load another file to inspect!`;
   }
 
+  // CASE 2: File has flagged vulnerabilities
   const title = flaw.title || 'Security Vulnerability';
   const severity = flaw.severity || 'HIGH';
   const line = flaw.line || 1;
   const ruleId = flaw.ruleId || 'SEC-01';
-  const snippet = flaw.codeSnippet ? `\`${flaw.codeSnippet}\`` : 'dynamic expression';
+  const snippet = flaw.codeSnippet ? flaw.codeSnippet.trim() : '';
   const cwe = flaw.cwe || 'CWE-89';
-  const description = flaw.description || 'Untrusted input reaches execution sink.';
-  const impact = flaw.impact || 'Unauthorized access, data exfiltration or arbitrary code execution.';
-  const remediation = flaw.remediation || 'Use parameterized statements, input sanitization, or environment variables.';
+  const description = flaw.description || 'Untrusted data reaches an execution sink without proper sanitization.';
+  const impact = flaw.impact || 'Unauthorized access, data tampering, or arbitrary code execution.';
+  const remediation = flaw.remediation || 'Sanitize untrusted inputs and use safe parameterized APIs.';
 
-  return `### Severa Defender AI: Deep Vulnerability Analysis
+  // If user specifically asked only "how to fix"
+  if (query.includes('how to fix') || query.includes('how can we fix') || query.includes('show me how to refactor') || query.includes('patch')) {
+    let fixText = `### Refactoring Guide for ${title}
 
-**Target Vulnerability:** **${title}**
-**File & Location:** \`${fileName}\` (Line ${line}) | Severity: \`${severity}\` (\`${ruleId}\` / \`${cwe}\`)
-**Flagged Snippet:** ${snippet}
+To remediate the **${severity}** flaw on line **${line}** of \`${fileName}\`, follow this secure refactoring pattern:
 
----
+### 1. The Core Solution
+> **${remediation}**
 
-### 1. Why Did This Happen? (Root Cause Analysis)
-- **Unsafe Code Pattern:** ${description}
-- **Interpreter Mechanism:** Runtimes execute control instructions verbatim. Without parameter binding or escaping, dynamic inputs (e.g. \`username\`, \`password\`, or \`cmd\`) are evaluated as code statements rather than literal data.
+### 2. Code Comparison
 
----
-
-### 2. What Could Happen If Allowed? (Security Impact & Exploit Risks)
-- **Primary Risk:** ${impact}
-- **Potential Attack Scenarios:**
-  - **Database Exfiltration & Manipulation:** Attackers can inject SQL syntax to bypass authentication, dump password hashes, or wipe database tables.
-  - **Arbitrary Remote Code Execution (RCE):** Unsanitized shell execution or dynamic evaluation permits attackers to execute arbitrary system commands or open reverse shells.
-  - **Credentials & Key Exposure:** Hardcoded keys expose cloud resources to automated scraper bots.
-
----
-
-### 3. How to Prevent & Fix It in the Future (Remediation Strategy)
-- **Immediate Fix:** ${remediation}
-- **Secure Code Refactoring Standard:**
 \`\`\`${language}
-// SECURED REFACTOR for Line ${line} (${ruleId}):
-// Replace string concatenation with parameterized execution or environment variables:
-${remediation ? `// ${remediation}` : '// Parameterized binding applied'}
+// ❌ Vulnerable Implementation (Line ${line}):
+${snippet || '// Dynamic unvalidated execution sink'}
+
+// ✅ Secure Refactored Implementation:
+${flaw.suggestedFix?.suggestedCode || (flaw.isSecret ? `const apiKey = process.env.API_KEY; // Loaded from secure environment` : flaw.isDependency ? `// Upgrade package ${flaw.packageName} to version ${flaw.fixedIn || 'latest patch'}` : `// Use parameterized query or safe parsing\nconst sanitizedInput = sanitize(input);\nexecuteSafely(sanitizedInput);`)}
 \`\`\`
-- **Automated CI/CD Gate:** Install pre-commit SAST hooks (\`severa hook install --fail-on high\`) to block \`${ruleId}\` flaws before git push.`;
+
+### 3. Key Changes Made
+- **Boundary Validation:** Eliminated dynamic runtime interpretation of untrusted strings.
+- **Safe Execution APIs:** Replaced direct dynamic sinks with safe, parameterized equivalents.
+
+Would you like me to apply this patch to your active file?`;
+    return fixText;
+  }
+
+  // If user specifically asked only "why did this happen"
+  if (query.includes('why did this happen') || query.includes('root cause')) {
+    return `### Root Cause Analysis: ${title}
+
+In \`${fileName}\` around line **${line}**, the scanner flagged a **${severity}** vulnerability (\`${cwe}\`).
+
+### Why this happens
+${description}
+
+When external or dynamic input is passed directly into an execution context without parameterization, the runtime interpreter cannot distinguish between code and data. Attackers exploit this behavior by supplying specially crafted strings that alter execution flow.
+
+### Threat Vector
+* **Severity Rating:** \`${severity}\` (Rule: \`${ruleId}\`)
+* **Primary Impact:** ${impact}
+* **Affected Location:** Line ${line} in \`${fileName}\`
+
+Would you like to see the recommended refactoring code to patch this?`;
+  }
+
+  // Standard comprehensive ChatGPT-style response (Natural, conversational, well-formatted)
+  let response = `The issue flagged on line **${line}** of \`${fileName}\` is a **${severity} severity** vulnerability: **${title}** (\`${cwe}\`).
+
+Here is a breakdown of why this occurs, the security risks involved, and how to refactor it safely.
+
+---
+
+### 1. Root Cause Analysis
+${description}
+
+In modern runtime engines, dynamic evaluation constructs treat string inputs as raw instructions. When unvalidated or user-controlled input reaches these functions, the interpreter executes the attacker's syntax with the full privileges of the host process.
+
+### 2. Security Impact & Threat Scenarios
+If left unpatched, the primary consequence is **${impact.toLowerCase()}**
+
+* **Arbitrary Execution & Tampering:** Attackers can inject malicious statements to manipulate control flow or execute unauthorized functions.
+* **Confidentiality & Data Breach:** Attackers may bypass authentication checks, dump database records, or exfiltrate secret keys.
+* **Infrastructure Compromise:** In severe cases (such as RCE or command injection), attackers can establish reverse shells and pivot laterally across internal servers.
+
+### 3. Recommended Secure Refactoring
+The recommended fix is:
+> **${remediation}**
+
+Here is a side-by-side comparison of how to refactor the vulnerable snippet:
+
+\`\`\`${language}
+// ❌ Vulnerable (Line ${line}):
+${snippet || '// Unsafe dynamic sink'}
+
+// ✅ Secured Refactor:
+${flaw.suggestedFix?.suggestedCode || (flaw.isSecret ? `const secretKey = process.env.API_SECRET; // Read securely from environment` : flaw.isDependency ? `// Upgrade ${flaw.packageName} to ${flaw.fixedIn || 'latest release'} in package.json` : `// Parameterized and boundary-checked:\nconst result = safeHandler(input);`)}
+\`\`\`
+
+### 4. Proactive Prevention Guidelines
+1. **Never Trust Dynamic Inputs:** Always sanitize and validate user-supplied parameters against strict schemas before execution.
+2. **Use Native Parameterized APIs:** Avoid string concatenation or dynamic runtime evaluators (\`eval\`, raw SQL concatenation, or \`child_process.exec\`).
+3. **Automate Pre-Commit Checks:** Add Severa SAST hooks to your git workflow to catch \`${ruleId}\` flaws before they are committed.
+
+Let me know if you would like me to generate a complete one-click patch for this file!`;
+
+  return response;
 }
