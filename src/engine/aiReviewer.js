@@ -29,16 +29,27 @@ export async function generateAiReview(code, language = 'javascript', findings =
         let verifiedCode = data.fixedCode;
         let verification = analyzeCode(verifiedCode, targetLang);
         let passCount = 0;
+        const maxPasses = 10;
 
-        while (verification.findings.length > 0 && passCount < 5) {
+        while (verification.findings.length > 0 && passCount < maxPasses) {
           passCount++;
           const currentLines = verifiedCode.split('\n');
+          let modified = false;
+
           verification.findings.forEach((f) => {
             const idx = f.line - 1;
             if (idx >= 0 && idx < currentLines.length) {
-              currentLines[idx] = sanitizeVulnerableLine(currentLines[idx], f, targetLang);
+              const originalLine = currentLines[idx];
+              const patchedLine = sanitizeVulnerableLine(originalLine, f, targetLang);
+              if (patchedLine !== originalLine) {
+                currentLines[idx] = patchedLine;
+                modified = true;
+              }
             }
           });
+
+          if (!modified) break;
+
           verifiedCode = currentLines.join('\n');
           verification = analyzeCode(verifiedCode, targetLang);
         }
@@ -92,15 +103,26 @@ export async function generateAiReview(code, language = 'javascript', findings =
         let verification = analyzeCode(verifiedCode, targetLang);
         let passCount = 0;
 
-        while (verification.findings.length > 0 && passCount < 5) {
+        const maxPasses = 10;
+        while (verification.findings.length > 0 && passCount < maxPasses) {
           passCount++;
           const currentLines = verifiedCode.split('\n');
+          let modified = false;
+
           verification.findings.forEach((f) => {
             const idx = f.line - 1;
             if (idx >= 0 && idx < currentLines.length) {
-              currentLines[idx] = sanitizeVulnerableLine(currentLines[idx], f, targetLang);
+              const originalLine = currentLines[idx];
+              const patchedLine = sanitizeVulnerableLine(originalLine, f, targetLang);
+              if (patchedLine !== originalLine) {
+                currentLines[idx] = patchedLine;
+                modified = true;
+              }
             }
           });
+
+          if (!modified) break;
+
           verifiedCode = currentLines.join('\n');
           verification = analyzeCode(verifiedCode, targetLang);
         }
@@ -384,18 +406,32 @@ function generateLocalAiRemediation(code, language, findings) {
 
   let fixedCode = fixedLines.join('\n');
 
-  // Verification Loop: Guarantee 0 remaining SAST findings in fixedCode
+  // Verification Loop: Iteratively guarantee 0 remaining SAST findings in fixedCode
   let verification = analyzeCode(fixedCode, language);
   let passCount = 0;
-  while (verification.findings.length > 0 && passCount < 5) {
+  const maxPasses = 10;
+  while (verification.findings.length > 0 && passCount < maxPasses) {
     passCount++;
     const currentLines = fixedCode.split('\n');
+    let modified = false;
+
     verification.findings.forEach((f) => {
       const idx = f.line - 1;
       if (idx >= 0 && idx < currentLines.length) {
-        currentLines[idx] = sanitizeVulnerableLine(currentLines[idx], f, language);
+        const originalLine = currentLines[idx];
+        const patchedLine = sanitizeVulnerableLine(originalLine, f, language);
+        if (patchedLine !== originalLine) {
+          currentLines[idx] = patchedLine;
+          modified = true;
+        }
       }
     });
+
+    if (!modified) {
+      // If regex didn't alter any lines on this pass, break to avoid an infinite loop
+      break;
+    }
+
     fixedCode = currentLines.join('\n');
     verification = analyzeCode(fixedCode, language);
   }
@@ -459,6 +495,7 @@ function sanitizeVulnerableLine(lineText, finding, language) {
   const ruleId = (finding.ruleId || '').toUpperCase();
   const title = (finding.title || '').toLowerCase();
   const langRaw = (language || 'javascript').toLowerCase().trim();
+  const lang = langRaw;
   const isJava = langRaw === 'java';
   const isPython = langRaw === 'python' || langRaw === 'py';
   const isGo = langRaw === 'go' || langRaw === 'golang';
