@@ -538,13 +538,13 @@ export default function FindingsPanel({
             </button>
           )}
 
-          {/* Primary Action Button: Re-Generate Enterprise Patch */}
+          {/* Primary Action Button: Re-Generate */}
           <button
             onClick={onGenerateAiFix}
             className="w-full py-2.5 bg-white hover:bg-slate-200 text-black rounded-lg text-xs font-semibold shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer"
           >
             <ShieldCheck className="w-4 h-4 text-black" />
-            <span>{aiReviewData?.fixedCode ? 'Re-Generate Enterprise Patch' : 'Generate Enterprise Security Patch'}</span>
+            <span>{aiReviewData?.fixedCode ? 'Re-Generate' : 'Generate Enterprise Security Patch'}</span>
           </button>
         </div>
       )}
