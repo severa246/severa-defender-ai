@@ -32,9 +32,6 @@ export default function DiffViewer({ aiReviewData, onApplyFix, onClose }) {
           <div>
             <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2 flex-wrap">
               <span>AI Automated Code Remediation</span>
-              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase border ${statusBadgeClass}`}>
-                {status}
-              </span>
               {applied && (
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                   ✓ Patch Applied to Editor
@@ -42,41 +39,6 @@ export default function DiffViewer({ aiReviewData, onApplyFix, onClose }) {
               )}
             </h3>
             <p className="text-xs text-slate-400">{displaySummary}</p>
-            {aiReviewData?.provider && (
-              <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono pt-1.5">
-                <span className="text-slate-500">Provenance:</span>
-                <span className={`px-2 py-0.5 rounded font-bold uppercase ${
-                  aiReviewData.provenance === 'EXTERNAL_LLM'
-                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                    : 'bg-amber-500/10 text-amber-300 border border-amber-500/30'
-                }`}>
-                  {aiReviewData.provenance || (aiReviewData.isLiveAi ? 'EXTERNAL_LLM' : 'LOCAL_FALLBACK')}
-                </span>
-
-                <span className="text-slate-500">Request ID:</span>
-                <span className="text-emerald-400 bg-[#12141a] px-2 py-0.5 rounded border border-white/10 font-bold">
-                  {aiReviewData.requestId || 'SEVERA-QWEN-LOCAL'}
-                </span>
-
-                {aiReviewData.providerHttpStatus !== undefined && (
-                  <span className="text-slate-400 text-[10px] bg-[#12141a] px-1.5 py-0.5 rounded border border-white/10">
-                    HTTP {aiReviewData.providerHttpStatus}
-                  </span>
-                )}
-
-                {aiReviewData.fallbackReason && (
-                  <span className="text-rose-400 text-[10px] bg-rose-500/10 px-1.5 py-0.5 rounded border border-rose-500/20 font-bold">
-                    Reason: {aiReviewData.fallbackReason}
-                  </span>
-                )}
-
-                {aiReviewData.durationMs > 0 && (
-                  <span className="text-slate-500 text-[10px]">
-                    ({aiReviewData.durationMs}ms)
-                  </span>
-                )}
-              </div>
-            )}
           </div>
         </div>
 
