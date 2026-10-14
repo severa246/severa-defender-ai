@@ -3,6 +3,8 @@ import {
   ShieldAlert, 
   ExternalLink, 
   ChevronRight, 
+  ChevronDown,
+  ChevronUp,
   CheckCircle2, 
   Layers, 
   FolderSearch, 
@@ -15,7 +17,10 @@ import {
   Key,
   Zap,
   Lock,
-  Play
+  Play,
+  AlertTriangle,
+  Info,
+  FileCode
 } from 'lucide-react';
 
 export default function FindingsPanel({ 
@@ -36,6 +41,7 @@ export default function FindingsPanel({
   const [categoryFilter, setCategoryFilter] = useState('ALL'); // 'ALL', 'CODE', 'DEPS', 'SECRETS'
   const [viewMode, setViewMode] = useState('PROJECT_WIDE'); // Default to PROJECT_WIDE for unified view
   const [expandedTraceIds, setExpandedTraceIds] = useState({});
+  const [expandedFindingId, setExpandedFindingId] = useState(null);
 
   // Toggle collapsible trace drawer
   const toggleTrace = (id, e) => {
@@ -281,19 +287,20 @@ export default function FindingsPanel({
         ) : (
           filteredFindings.map((finding) => {
             const sevBadge = getSeverityBadge(finding.severity, finding.cvssScore);
+            const isExpanded = expandedFindingId === finding.id;
+            const matchFile = projectFiles.find((pf) => pf.name === finding.fileName);
 
             return (
               <div
                 key={finding.id}
                 onClick={() => {
+                  setExpandedFindingId(prev => prev === finding.id ? null : finding.id);
                   if (onSelectFinding) onSelectFinding(finding);
-                  if (onSelectFile && finding.fileName) {
-                    const matchF = projectFiles.find((pf) => pf.name === finding.fileName);
-                    if (matchF) onSelectFile(matchF);
-                  }
                 }}
                 className={`group border rounded-xl p-4 space-y-3 transition-all cursor-pointer ${
-                  finding.isDependency 
+                  isExpanded
+                    ? 'border-emerald-500/50 bg-[#111728] shadow-lg ring-1 ring-emerald-500/20'
+                    : finding.isDependency 
                     ? 'border-sky-500/30 hover:border-sky-500/60 bg-[#0e1422] shadow-sm' 
                     : finding.isSecret
                     ? 'border-emerald-500/30 hover:border-emerald-500/60 bg-[#0c1817] shadow-sm'
@@ -320,7 +327,7 @@ export default function FindingsPanel({
                       </span>
                     ) : (
                       <span className="text-[11px] font-mono font-semibold text-slate-300 bg-white/5 px-2 py-0.5 rounded-md border border-white/10 shrink-0">
-                        {finding.cwe}
+                        {finding.cwe || 'SAST'}
                       </span>
                     )}
 
@@ -339,10 +346,21 @@ export default function FindingsPanel({
 
                 {/* Finding Title & Link */}
                 <div className="space-y-1">
-                  <h4 className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors flex items-center justify-between">
-                    <span>{finding.title}</span>
-                    <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all" />
-                  </h4>
+                  <div className="flex items-start justify-between gap-2">
+                    <h4 className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors leading-snug">
+                      {finding.title}
+                    </h4>
+                    <div className="flex items-center gap-1 shrink-0 text-slate-400 group-hover:text-emerald-400 mt-0.5 transition-colors">
+                      <span className="text-[10px] font-mono font-medium hidden sm:inline text-slate-400">
+                        {isExpanded ? 'Hide Details' : 'View Details'}
+                      </span>
+                      {isExpanded ? (
+                        <ChevronUp className="w-4 h-4 text-emerald-400" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-emerald-400" />
+                      )}
+                    </div>
+                  </div>
 
                   {finding.cweUrl && (
                     <div>
@@ -360,122 +378,202 @@ export default function FindingsPanel({
                   )}
                 </div>
 
-                {/* DEPENDENCY CVE (SCA) SPECIALIZED CARD SECTION */}
-                {finding.isDependency && (
-                  <div className="p-3 rounded-lg bg-sky-950/30 border border-sky-500/30 space-y-2">
-                    <div className="flex items-center justify-between text-xs flex-wrap gap-1">
-                      <div className="flex items-center gap-1.5 text-sky-300 font-mono font-bold">
-                        <Package className="w-4 h-4 text-sky-400" />
-                        <span>{finding.packageName}</span>
-                        <span className="text-slate-400">({finding.currentVersion})</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-[11px] font-mono text-emerald-300 bg-emerald-500/15 px-2 py-0.5 rounded border border-emerald-500/30 font-bold">
-                        <span>Fixed in:</span>
-                        <span>{finding.fixedIn || 'Latest Patch'}</span>
-                      </div>
-                    </div>
-
-                    {/* 1-Click Auto-Bump Action Button */}
-                    {onAutoBumpDependency && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onAutoBumpDependency(finding.packageName, finding.fixedIn, finding.manifestFile);
-                        }}
-                        className="w-full mt-1 py-1.5 px-3 bg-sky-500/20 hover:bg-sky-500/30 text-sky-200 hover:text-white border border-sky-500/40 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm"
-                        title={`Automatically upgrade ${finding.packageName} to ${finding.fixedIn} in ${finding.manifestFile || 'manifest'}`}
-                      >
-                        <Zap className="w-3.5 h-3.5 text-sky-400" />
-                        <span>1-Click Auto-Bump to {finding.fixedIn || 'Latest Patch'}</span>
-                      </button>
-                    )}
-                  </div>
+                {/* Description preview in collapsed mode */}
+                {!isExpanded && (
+                  <p className="text-xs text-slate-300/90 leading-relaxed font-normal line-clamp-2">
+                    {finding.description}
+                  </p>
                 )}
 
-                {/* SHANNON ENTROPY SECRET DETECTION SPECIALIZED CARD SECTION */}
-                {finding.isSecret && (
-                  <div className="p-3 rounded-lg bg-emerald-950/30 border border-emerald-500/30 space-y-2">
-                    <div className="flex items-center justify-between flex-wrap gap-1 text-xs">
-                      <div className="flex items-center gap-1.5 text-emerald-300 font-mono font-bold">
-                        <Key className="w-4 h-4 text-emerald-400" />
-                        <span>{finding.secretType || 'Cryptographic Secret'}</span>
+                {/* IN-DEPTH DETAILED VULNERABILITY DRAWER WHEN EXPANDED */}
+                {isExpanded && (
+                  <div className="space-y-3 pt-2 border-t border-white/10" onClick={(e) => e.stopPropagation()}>
+                    {/* Security Ratings & Standard Classification Grid */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs font-mono">
+                      <div className="bg-black/40 rounded-lg p-2.5 border border-white/10">
+                        <span className="text-[10px] text-slate-400 block font-sans">OWASP Standard</span>
+                        <span className="font-semibold text-emerald-300 text-[11px] truncate block" title={finding.owasp || 'A03:2021 - Injection'}>
+                          {finding.owasp || (finding.isSecret ? 'A02:2021 - Cryptographic' : finding.isDependency ? 'A06:2021 - Vulnerable Components' : 'A03:2021 - Injection')}
+                        </span>
                       </div>
-                      {finding.entropyScore && (
-                        <div className="flex items-center gap-1 text-[10px] font-mono text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/40 font-bold">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                          <span>Shannon Entropy: {finding.entropyScore} bits</span>
-                        </div>
-                      )}
+                      <div className="bg-black/40 rounded-lg p-2.5 border border-white/10">
+                        <span className="text-[10px] text-slate-400 block font-sans">CVSS v3.1 Score</span>
+                        <span className="font-bold text-amber-300 text-[11px] block">
+                          {finding.cvssScore ? `${finding.cvssScore} / 10.0` : (finding.severity === 'CRITICAL' ? '9.8 / 10.0' : finding.severity === 'HIGH' ? '7.5 / 10.0' : '5.3 / 10.0')}
+                        </span>
+                      </div>
+                      <div className="bg-black/40 rounded-lg p-2.5 border border-white/10 col-span-2 sm:col-span-1">
+                        <span className="text-[10px] text-slate-400 block font-sans">EPSS Exploitation</span>
+                        <span className="font-semibold text-slate-200 text-[11px] block">
+                          {finding.epssScore ? `Score: ${finding.epssScore}` : '0.04% (Low in wild)'}
+                        </span>
+                      </div>
                     </div>
 
-                    {finding.maskedToken && (
-                      <div className="flex items-center justify-between bg-black/60 px-2.5 py-1.5 rounded border border-white/10 font-mono text-xs">
-                        <span className="text-slate-400">Masked Token:</span>
-                        <code className="text-emerald-300 font-bold tracking-wider">{finding.maskedToken}</code>
+                    {/* Root Cause Analysis & Description */}
+                    <div className="p-3 rounded-lg bg-black/40 border border-white/10 space-y-1.5">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-slate-200">
+                        <Info className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                        <span>Root Cause & Vulnerability Mechanism</span>
                       </div>
-                    )}
+                      <p className="text-xs text-slate-300 leading-relaxed font-normal">
+                        {finding.description}
+                      </p>
+                    </div>
 
-                    {finding.suggestedFix && (
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between text-[11px] font-mono text-slate-300">
-                          <span>Env Variable Advisory:</span>
-                          <span className="text-emerald-400 font-bold">{finding.suggestedFix.suggestedCode}</span>
+                    {/* Threat Impact Analysis */}
+                    <div className="p-3 rounded-lg bg-rose-950/20 border border-rose-500/25 space-y-1.5">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-rose-300">
+                        <AlertTriangle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                        <span>Security Risk & Attack Impact</span>
+                      </div>
+                      <p className="text-xs text-rose-200/90 leading-relaxed font-normal">
+                        {finding.impact || (finding.isSecret ? 'Hardcoded token or credentials exposed in source tree allow attackers to gain authenticated API access and pivot into internal infrastructure.' : finding.isDependency ? 'Publicly disclosed vulnerability in third-party library enables remote attackers to execute arbitrary code or trigger denial of service.' : 'Unsanitized input allows malicious actors to manipulate execution flow, extract sensitive records, or bypass access controls.')}
+                      </p>
+                    </div>
+
+                    {/* Remediation & Guidance */}
+                    <div className="p-3 rounded-lg bg-emerald-950/20 border border-emerald-500/25 space-y-1.5">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-300">
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        <span>Remediation Guidance</span>
+                      </div>
+                      <p className="text-xs text-emerald-200/90 leading-relaxed font-normal">
+                        {finding.remediation || (finding.isSecret ? 'Extract token to environment variables (e.g. process.env) or an enterprise secrets vault, and invalidate existing leaked credentials.' : finding.isDependency ? `Upgrade ${finding.packageName || 'dependency'} to version ${finding.fixedIn || 'latest secure release'} in package manifest.` : 'Enforce strict input validation, utilize parameterized queries or prepared statements, and validate data at all trust boundaries.')}
+                      </p>
+                    </div>
+
+                    {/* DEPENDENCY CVE (SCA) SPECIALIZED CARD SECTION */}
+                    {finding.isDependency && (
+                      <div className="p-3 rounded-lg bg-sky-950/30 border border-sky-500/30 space-y-2">
+                        <div className="flex items-center justify-between text-xs flex-wrap gap-1">
+                          <div className="flex items-center gap-1.5 text-sky-300 font-mono font-bold">
+                            <Package className="w-4 h-4 text-sky-400" />
+                            <span>{finding.packageName}</span>
+                            <span className="text-slate-400">({finding.currentVersion})</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-[11px] font-mono text-emerald-300 bg-emerald-500/15 px-2 py-0.5 rounded border border-emerald-500/30 font-bold">
+                            <span>Fixed in:</span>
+                            <span>{finding.fixedIn || 'Latest Patch'}</span>
+                          </div>
                         </div>
-                        {onApplySecretFix && (
+
+                        {/* 1-Click Auto-Bump Action Button */}
+                        {onAutoBumpDependency && (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              onApplySecretFix(finding);
+                              onAutoBumpDependency(finding.packageName, finding.fixedIn, finding.manifestFile);
                             }}
-                            className="w-full py-1.5 px-3 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 hover:text-white border border-emerald-500/40 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm"
-                            title="Migrate hardcoded secret to environment variable call"
+                            className="w-full mt-1 py-1.5 px-3 bg-sky-500/20 hover:bg-sky-500/30 text-sky-200 hover:text-white border border-sky-500/40 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                            title={`Automatically upgrade ${finding.packageName} to ${finding.fixedIn} in ${finding.manifestFile || 'manifest'}`}
                           >
-                            <Lock className="w-3.5 h-3.5 text-emerald-400" />
-                            <span>1-Click Migrate to Env Variable</span>
+                            <Zap className="w-3.5 h-3.5 text-sky-400" />
+                            <span>1-Click Auto-Bump to {finding.fixedIn || 'Latest Patch'}</span>
                           </button>
                         )}
                       </div>
                     )}
+
+                    {/* SHANNON ENTROPY SECRET DETECTION SPECIALIZED CARD SECTION */}
+                    {finding.isSecret && (
+                      <div className="p-3 rounded-lg bg-emerald-950/30 border border-emerald-500/30 space-y-2">
+                        <div className="flex items-center justify-between flex-wrap gap-1 text-xs">
+                          <div className="flex items-center gap-1.5 text-emerald-300 font-mono font-bold">
+                            <Key className="w-4 h-4 text-emerald-400" />
+                            <span>{finding.secretType || 'Cryptographic Secret'}</span>
+                          </div>
+                          {finding.entropyScore && (
+                            <div className="flex items-center gap-1 text-[10px] font-mono text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/40 font-bold">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                              <span>Shannon Entropy: {finding.entropyScore} bits</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {finding.maskedToken && (
+                          <div className="flex items-center justify-between bg-black/60 px-2.5 py-1.5 rounded border border-white/10 font-mono text-xs">
+                            <span className="text-slate-400">Masked Token:</span>
+                            <code className="text-emerald-300 font-bold tracking-wider">{finding.maskedToken}</code>
+                          </div>
+                        )}
+
+                        {finding.suggestedFix && (
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between text-[11px] font-mono text-slate-300">
+                              <span>Env Variable Advisory:</span>
+                              <span className="text-emerald-400 font-bold">{finding.suggestedFix.suggestedCode}</span>
+                            </div>
+                            {onApplySecretFix && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onApplySecretFix(finding);
+                                }}
+                                className="w-full py-1.5 px-3 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 hover:text-white border border-emerald-500/40 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                                title="Migrate hardcoded secret to environment variable call"
+                              >
+                                <Lock className="w-3.5 h-3.5 text-emerald-400" />
+                                <span>1-Click Migrate to Env Variable</span>
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Interactive Taint Trace Breadcrumb */}
+                    {finding.taintTrace && (
+                      <div className="p-2.5 rounded-lg bg-black/60 border border-white/10 text-xs font-mono text-slate-300 space-y-1.5">
+                        <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                          <span>Dataflow Taint Trace:</span>
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap text-slate-300">
+                          <span className="text-amber-300 bg-amber-500/15 px-1.5 py-0.5 rounded border border-amber-500/30 font-semibold">
+                            Src: {finding.taintTrace.source?.name} (L{finding.taintTrace.source?.line})
+                          </span>
+                          <ArrowRight className="w-3 h-3 text-slate-500" />
+                          <span className="text-slate-200 font-semibold">
+                            Var: {finding.taintTrace.propagation?.variable}
+                          </span>
+                          <ArrowRight className="w-3 h-3 text-slate-500" />
+                          <span className="text-rose-300 bg-rose-500/15 px-1.5 py-0.5 rounded border border-rose-500/30 font-semibold">
+                            Sink (L{finding.line})
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Clean Offending Code Box */}
+                    {finding.codeSnippet && (
+                      <div className="p-3 rounded-lg bg-[#07090e] border border-rose-500/20 font-mono text-xs text-rose-200 overflow-x-auto shadow-inner leading-relaxed">
+                        <div className="flex items-center justify-between text-[10px] font-mono text-rose-400/80 uppercase font-semibold mb-1">
+                          <span>Offending Code:</span>
+                          <span>Line {finding.line}</span>
+                        </div>
+                        <code>{finding.codeSnippet}</code>
+                      </div>
+                    )}
                   </div>
                 )}
 
-                {/* Interactive Taint Trace Breadcrumb (Source -> Propagation -> Sink) */}
-                {finding.taintTrace && (
-                  <div className="p-2.5 rounded-lg bg-black/60 border border-white/10 text-xs font-mono text-slate-300 space-y-1.5">
-                    <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1">
-                      <span>Dataflow Taint Trace:</span>
-                    </div>
-                    <div className="flex items-center gap-2 flex-wrap text-slate-300">
-                      <span className="text-amber-300 bg-amber-500/15 px-1.5 py-0.5 rounded border border-amber-500/30 font-semibold">
-                        Src: {finding.taintTrace.source?.name} (L{finding.taintTrace.source?.line})
-                      </span>
-                      <ArrowRight className="w-3 h-3 text-slate-500" />
-                      <span className="text-slate-200 font-semibold">
-                        Var: {finding.taintTrace.propagation?.variable}
-                      </span>
-                      <ArrowRight className="w-3 h-3 text-slate-500" />
-                      <span className="text-rose-300 bg-rose-500/15 px-1.5 py-0.5 rounded border border-rose-500/30 font-semibold">
-                        Sink (L{finding.line})
-                      </span>
-                    </div>
-                  </div>
-                )}
+                {/* Card Bottom Actions Row */}
+                <div className="flex items-center justify-between pt-2 border-t border-white/10 gap-2 flex-wrap">
+                  {matchFile && onSelectFile ? (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelectFile(matchFile);
+                        if (onSelectFinding) onSelectFinding(finding);
+                      }}
+                      className="flex items-center gap-1.5 px-2.5 py-1 text-slate-400 hover:text-slate-200 text-[11px] font-mono hover:bg-white/5 rounded-md transition-all cursor-pointer"
+                      title={`Open ${finding.fileName} at line ${finding.line} in code editor`}
+                    >
+                      <FileCode className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Jump to Editor</span>
+                    </button>
+                  ) : <div />}
 
-                {/* Clean Offending Code Box */}
-                {finding.codeSnippet && (
-                  <div className="p-3 rounded-lg bg-[#07090e] border border-rose-500/20 font-mono text-xs text-rose-200 overflow-x-auto shadow-inner leading-relaxed">
-                    <div className="text-[10px] font-mono text-rose-400/80 uppercase font-semibold mb-1">Offending Code:</div>
-                    <code>{finding.codeSnippet}</code>
-                  </div>
-                )}
-
-                {/* Description */}
-                <p className="text-xs text-slate-300 leading-relaxed font-normal">
-                  {finding.description}
-                </p>
-
-                {/* Explain with AI Action */}
-                <div className="flex items-center justify-end pt-2 border-t border-white/10">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -485,7 +583,7 @@ export default function FindingsPanel({
                         onSelectFinding(finding);
                       }
                     }}
-                    className="flex items-center gap-2 px-3.5 py-1.5 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 hover:text-emerald-200 border border-emerald-500/30 hover:border-emerald-500/50 text-xs font-bold rounded-lg transition-all shadow-sm cursor-pointer"
+                    className="flex items-center gap-2 px-3.5 py-1.5 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 hover:text-emerald-200 border border-emerald-500/30 hover:border-emerald-500/50 text-xs font-bold rounded-lg transition-all shadow-sm cursor-pointer ml-auto"
                     title="Explain this vulnerability with Severa Defender AI"
                   >
                     <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
