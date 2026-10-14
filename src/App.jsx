@@ -2098,7 +2098,10 @@ jobs:
           setIsDefenderOpen(false);
           setDefenderTargetFinding(null);
         }}
+        activeProjectName={activeProjectName}
         activeFileName={activeFileName}
+        projectFolders={projectFolders}
+        onSelectProjectFile={handleSelectProjectFile}
         language={language}
         code={code}
         findings={findings}

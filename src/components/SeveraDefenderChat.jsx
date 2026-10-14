@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Shield, Sparkles, Send, X, AlertTriangle, CheckCircle,
   HelpCircle, Wrench, ShieldCheck, Terminal, Copy, Check,
-  ChevronRight, RefreshCw, MessageSquare, Code2
+  ChevronRight, ChevronDown, RefreshCw, MessageSquare, Code2,
+  Folder, FileCode
 } from 'lucide-react';
 
 const CHAT_STORAGE_KEY = 'severa_defender_chat_history';
@@ -10,7 +11,10 @@ const CHAT_STORAGE_KEY = 'severa_defender_chat_history';
 export default function SeveraDefenderChat({
   isOpen,
   onClose,
+  activeProjectName = 'ai project',
   activeFileName = 'main.py',
+  projectFolders = [],
+  onSelectProjectFile,
   language = 'python',
   code = '',
   findings = [],
@@ -33,7 +37,34 @@ export default function SeveraDefenderChat({
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState(null);
+  const [isFolderMenuOpen, setIsFolderMenuOpen] = useState(false);
+  const [isFileMenuOpen, setIsFileMenuOpen] = useState(false);
+  const folderMenuRef = useRef(null);
+  const fileMenuRef = useRef(null);
   const messagesEndRef = useRef(null);
+
+  // Close folder & file menus when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (folderMenuRef.current && !folderMenuRef.current.contains(e.target)) {
+        setIsFolderMenuOpen(false);
+      }
+      if (fileMenuRef.current && !fileMenuRef.current.contains(e.target)) {
+        setIsFileMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Resolve current active project folder and its files list
+  const activeProj = projectFolders.find((p) => p.name === activeProjectName) || {
+    name: activeProjectName,
+    files: [{ name: activeFileName }]
+  };
+  const activeProjFiles = activeProj.files && activeProj.files.length > 0
+    ? activeProj.files
+    : [{ name: activeFileName }];
 
   // Auto-save messages to localStorage whenever they change
   useEffect(() => {
@@ -260,34 +291,144 @@ export default function SeveraDefenderChat({
           </div>
         </div>
 
-        {/* Active Context Strip */}
-        <div className="px-6 py-2.5 bg-[#16181f] border-b border-white/10 flex items-center justify-between gap-4 font-mono text-xs shrink-0">
-          <div className="flex items-center gap-2 text-slate-300">
-            <Code2 className="w-4 h-4 text-emerald-400" />
-            <span className="text-slate-400">Target File:</span>
-            <span className="font-bold text-white bg-[#191C23] px-2 py-0.5 rounded border border-white/10">{activeFileName}</span>
-            <span className="text-slate-600">|</span>
-            <span className="text-slate-400">Language:</span>
-            <span className="font-semibold text-emerald-400 uppercase">{language}</span>
+        {/* Active Context Strip: Interactive Project Folder & File Dropdowns */}
+        <div className="px-6 py-2.5 bg-[#14161e] border-b border-white/10 flex flex-wrap items-center justify-between gap-3 font-mono text-xs shrink-0 select-none">
+          <div className="flex items-center gap-2 flex-wrap min-w-0">
+            {/* Project Folder Dropdown */}
+            <div className="relative" ref={folderMenuRef}>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsFolderMenuOpen((prev) => !prev);
+                  setIsFileMenuOpen(false);
+                }}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#191C23] hover:bg-[#232732] border border-white/10 hover:border-white/20 text-slate-200 transition-all cursor-pointer group shadow-sm"
+                title="Click to switch workspace project folder"
+              >
+                <Folder className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span className="font-semibold text-slate-200 group-hover:text-emerald-300 transition-colors truncate max-w-[140px] sm:max-w-[190px]">
+                  {activeProjectName}
+                </span>
+                <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform duration-200 ${isFolderMenuOpen ? 'rotate-180 text-emerald-400' : ''}`} />
+              </button>
+
+              {/* Folder Dropdown Menu */}
+              {isFolderMenuOpen && (
+                <div className="absolute left-0 top-full mt-1.5 w-60 bg-[#191C23] border border-white/10 rounded-xl shadow-2xl z-50 py-1.5 animate-fadeIn">
+                  <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-white/10 mb-1 flex items-center justify-between">
+                    <span>Workspace Projects</span>
+                    <span className="text-emerald-400 font-bold">{projectFolders.length || 1}</span>
+                  </div>
+                  
+                  <div className="max-h-60 overflow-y-auto space-y-0.5 px-1">
+                    {(projectFolders.length > 0 ? projectFolders : [{ name: activeProjectName, files: [{ name: activeFileName }] }]).map((proj) => {
+                      const isSelected = proj.name === activeProjectName;
+                      const firstFile = proj.files?.[0]?.name || 'main.py';
+                      return (
+                        <button
+                          key={proj.id || proj.name}
+                          type="button"
+                          onClick={() => {
+                            if (onSelectProjectFile) {
+                              onSelectProjectFile(proj.name, firstFile);
+                            }
+                            setIsFolderMenuOpen(false);
+                          }}
+                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer text-left ${
+                            isSelected ? 'bg-white/10 text-white font-bold border border-white/10' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Folder className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-emerald-400' : 'text-slate-400'}`} />
+                            <span className="truncate">{proj.name}</span>
+                          </div>
+                          {isSelected && <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <ChevronRight className="w-3 h-3 text-slate-500 shrink-0" />
+
+            {/* File Dropdown Selector */}
+            <div className="relative" ref={fileMenuRef}>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsFileMenuOpen((prev) => !prev);
+                  setIsFolderMenuOpen(false);
+                }}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#191C23] hover:bg-[#232732] border border-white/10 hover:border-white/20 text-slate-200 transition-all cursor-pointer group shadow-sm"
+                title="Click to switch active file in context"
+              >
+                <FileCode className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span className="font-semibold text-slate-200 group-hover:text-emerald-300 transition-colors truncate max-w-[140px] sm:max-w-[190px]">
+                  {activeFileName}
+                </span>
+                <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform duration-200 ${isFileMenuOpen ? 'rotate-180 text-emerald-400' : ''}`} />
+              </button>
+
+              {/* File Dropdown Menu */}
+              {isFileMenuOpen && (
+                <div className="absolute left-0 top-full mt-1.5 w-64 bg-[#191C23] border border-white/10 rounded-xl shadow-2xl z-50 py-1.5 animate-fadeIn">
+                  <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-white/10 mb-1 flex items-center justify-between">
+                    <span>Files in {activeProjectName}</span>
+                    <span className="text-emerald-400 font-bold">{activeProjFiles.length}</span>
+                  </div>
+
+                  <div className="max-h-60 overflow-y-auto space-y-0.5 px-1">
+                    {activeProjFiles.map((fileObj, idx) => {
+                      const fName = typeof fileObj === 'string' ? fileObj : fileObj.name;
+                      const isSelected = fName === activeFileName;
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => {
+                            if (onSelectProjectFile) {
+                              onSelectProjectFile(activeProjectName, fName);
+                            }
+                            setIsFileMenuOpen(false);
+                          }}
+                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer text-left ${
+                            isSelected ? 'bg-white/10 text-white font-bold border border-white/10' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <FileCode className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-emerald-400' : 'text-slate-400'}`} />
+                            <span className="truncate">{fName}</span>
+                          </div>
+                          {isSelected && <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Language Tag */}
+            <span className="text-slate-500">|</span>
+            <span className="font-semibold text-emerald-400 uppercase text-[11px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
+              {language}
+            </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Active Vulnerabilities Count Badge */}
+          <div className="flex items-center gap-2 shrink-0">
             {findings.length > 0 ? (
-              <>
-                <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-                <span className="text-slate-400">Active Vulnerabilities:</span>
-                <span className="font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
-                  {findings.length} Flagged
-                </span>
-              </>
+              <div className="flex items-center gap-1.5 text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-lg border border-amber-500/20">
+                <AlertTriangle className="w-3.5 h-3.5" />
+                <span className="font-bold text-[11px]">{findings.length} Flagged</span>
+              </div>
             ) : (
-              <>
-                <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-slate-400">Audit Status:</span>
-                <span className="font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                  0 Flaws (Code Clean)
-                </span>
-              </>
+              <div className="flex items-center gap-1.5 text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/20">
+                <CheckCircle className="w-3.5 h-3.5" />
+                <span className="font-bold text-[11px]">0 Flaws (Clean)</span>
+              </div>
             )}
           </div>
         </div>
