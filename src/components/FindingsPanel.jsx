@@ -172,46 +172,55 @@ export default function FindingsPanel({
           </button>
         </div>
 
-        {/* Clean Filter Chips (No ugly scrollbars) */}
-        <div className="flex items-center justify-between gap-1 text-[11px] font-mono">
-          <div className="flex items-center gap-1">
-            {[
-              { id: 'ALL', label: `All` },
-              { id: 'CODE', label: `Code` },
-              { id: 'DEPS', label: `Deps` },
-              { id: 'SECRETS', label: `Secrets` }
-            ].map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setCategoryFilter(cat.id)}
-                className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
-                  categoryFilter === cat.id
-                    ? 'bg-white/20 text-white font-bold border border-white/20'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
-                }`}
-              >
-                {cat.label}
-              </button>
-            ))}
+        {/* Line 1: Category Filter Buttons */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-[11px] font-mono">
+            <span className="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">Category</span>
+            <div className="flex items-center gap-1">
+              {[
+                { id: 'ALL', label: `All` },
+                { id: 'CODE', label: `Code` },
+                { id: 'DEPS', label: `Deps` },
+                { id: 'SECRETS', label: `Secrets` }
+              ].map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setCategoryFilter(cat.id)}
+                  className={`px-2.5 py-1 rounded-md text-xs font-mono transition-all cursor-pointer ${
+                    categoryFilter === cat.id
+                      ? 'bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40 shadow-sm'
+                      : 'bg-[#121624] text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-white/5'
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Quick Severity Pill */}
-          <div className="flex items-center gap-1">
-            {['ALL', 'CRITICAL'].map((sev) => (
-              <button
-                key={sev}
-                onClick={() => setSeverityFilter(sev)}
-                className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
-                  severityFilter === sev
-                    ? sev === 'CRITICAL'
-                      ? 'bg-rose-500/25 text-rose-300 border border-rose-500/50'
-                      : 'bg-white/20 text-white border border-white/20'
-                    : 'text-slate-500 hover:text-slate-300'
-                }`}
-              >
-                {sev === 'CRITICAL' ? 'Critical' : 'All'}
-              </button>
-            ))}
+          {/* Line 2: Severity Filter Buttons (Separate Next Line) */}
+          <div className="flex items-center justify-between text-[11px] font-mono pt-1 border-t border-white/5">
+            <span className="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">Severity</span>
+            <div className="flex items-center gap-1.5">
+              {[
+                { id: 'ALL', label: 'All Severities' },
+                { id: 'CRITICAL', label: 'Critical Only' }
+              ].map((sev) => (
+                <button
+                  key={sev.id}
+                  onClick={() => setSeverityFilter(sev.id)}
+                  className={`px-3 py-1 rounded-md text-xs font-mono font-semibold transition-all cursor-pointer ${
+                    severityFilter === sev.id
+                      ? sev.id === 'CRITICAL'
+                        ? 'bg-rose-500/25 text-rose-300 border border-rose-500/50 shadow-sm'
+                        : 'bg-white/20 text-white border border-white/30 shadow-sm'
+                      : 'bg-[#121624] text-slate-400 hover:text-slate-200 border border-white/5'
+                  }`}
+                >
+                  {sev.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
